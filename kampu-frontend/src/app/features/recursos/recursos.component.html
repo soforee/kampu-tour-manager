@@ -1,0 +1,86 @@
+<div class="page-header">
+  <div>
+    <div class="eyebrow mb-1.5">Operaciones</div>
+    <h1 class="h1">Guías y transporte</h1>
+    <p class="page-sub">Recursos que se asignan a cada salida.</p>
+  </div>
+  <button type="button" class="btn-dark" (click)="nuevo()"><app-icon name="plus" size="w-4 h-4" /> {{ tab() === 'guias' ? 'Nuevo guía' : 'Nuevo transporte' }}</button>
+</div>
+
+<div class="toolbar">
+  <div class="seg">
+    <button type="button" class="seg-btn inline-flex items-center gap-1.5" [class.on]="tab() === 'guias'" (click)="tab.set('guias')"><app-icon name="user" size="w-4 h-4" /> Guías</button>
+    <button type="button" class="seg-btn inline-flex items-center gap-1.5" [class.on]="tab() === 'transporte'" (click)="tab.set('transporte')"><app-icon name="truck" size="w-4 h-4" /> Transporte</button>
+  </div>
+</div>
+
+@if (tab() === 'guias') {
+  <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
+    @for (g of store.guias(); track g.guiaId) {
+      <div class="card card-hover p-5 flex items-start justify-between gap-3">
+        <div class="flex items-start gap-3.5 min-w-0">
+          <div class="avatar w-11 h-11 bg-gradient-to-br from-brand-50 to-brand-100 text-brand-700 ring-1 ring-brand-100"><app-icon name="user" size="w-5 h-5" /></div>
+          <div class="min-w-0">
+            <div class="font-semibold text-zinc-900 truncate">{{ g.nombreCompleto }}</div>
+            @if (g.telefono) { <div class="text-sm text-zinc-500 flex items-center gap-1.5 mt-0.5"><app-icon name="phone" size="w-3.5 h-3.5" />{{ g.telefono }}</div> }
+            @if (g.especialidad) { <div class="mt-2"><span class="chip !font-sans">{{ g.especialidad }}</span></div> }
+          </div>
+        </div>
+        <div class="actions shrink-0">
+          <button type="button" class="icon-btn" title="Editar" (click)="editarGuia(g.guiaId)"><app-icon name="edit" size="w-[18px] h-[18px]" /></button>
+          <button type="button" class="icon-btn-danger" title="Eliminar" (click)="eliminarGuia(g.guiaId)"><app-icon name="trash" size="w-[18px] h-[18px]" /></button>
+        </div>
+      </div>
+    } @empty {
+      <div class="col-span-full card empty"><span class="ico"><app-icon name="user" size="w-6 h-6" /></span>Aún no hay guías registrados.</div>
+    }
+  </div>
+} @else {
+  <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
+    @for (t of store.transportes(); track t.transporteId) {
+      <div class="card card-hover p-5 flex items-start justify-between gap-3">
+        <div class="flex items-start gap-3.5 min-w-0">
+          <div class="avatar w-11 h-11 bg-gradient-to-br from-sky-50 to-sky-100 text-sky-700 ring-1 ring-sky-100"><app-icon name="truck" size="w-5 h-5" /></div>
+          <div class="min-w-0">
+            <div class="font-semibold text-zinc-900 truncate">{{ t.marcaModelo }}</div>
+            <div class="mt-1"><span class="inline-flex items-center rounded-md border border-zinc-300 bg-sand-50 px-2 py-0.5 font-mono text-xs font-semibold tracking-wider text-zinc-700">{{ t.placa }}</span></div>
+            <div class="text-xs text-zinc-500 mt-2 flex items-center gap-1.5"><app-icon name="users" size="w-3.5 h-3.5" />Capacidad: {{ t.capacidad }} pasajeros</div>
+          </div>
+        </div>
+        <div class="actions shrink-0">
+          <button type="button" class="icon-btn" title="Editar" (click)="editarTransporte(t.transporteId)"><app-icon name="edit" size="w-[18px] h-[18px]" /></button>
+          <button type="button" class="icon-btn-danger" title="Eliminar" (click)="eliminarTransporte(t.transporteId)"><app-icon name="trash" size="w-[18px] h-[18px]" /></button>
+        </div>
+      </div>
+    } @empty {
+      <div class="col-span-full card empty"><span class="ico"><app-icon name="truck" size="w-6 h-6" /></span>Aún no hay unidades de transporte.</div>
+    }
+  </div>
+}
+
+@if (abierto()) {
+  <app-modal [titulo]="(editId ? 'Editar ' : 'Nuevo ') + (tab() === 'guias' ? 'guía' : 'transporte')" (cerrar)="abierto.set(false)">
+    <div class="space-y-5">
+      <p class="text-xs text-zinc-500">Los campos marcados con <span class="font-bold text-rose-500">*</span> son obligatorios.</p>
+      <div class="form-section">
+        @if (tab() === 'guias') {
+          <div class="form-section-title"><app-icon name="user" size="w-4 h-4" /> Datos del guía</div>
+          <div><label class="label req">Nombre completo</label><input class="field" maxlength="150" [(ngModel)]="guia.nombreCompleto" (blur)="v.tocar('gNombre')" [class.field-invalid]="v.error('gNombre')" (beforeinput)="filtrar($event, 'nombre')" (paste)="pegar($event, 'nombre')">@if (v.error('gNombre'); as e) { <p class="field-error">{{ e }}</p> }</div>
+          <div><label class="label">Especialidad <span class="opt">Opcional</span></label><input class="field" maxlength="100" [(ngModel)]="guia.especialidad" placeholder="Aventura y trekking…" (blur)="v.tocar('gEspecialidad')" [class.field-invalid]="v.error('gEspecialidad')">@if (v.error('gEspecialidad'); as e) { <p class="field-error">{{ e }}</p> }</div>
+          <div><label class="label">Teléfono <span class="opt">Opcional</span></label><input class="field" maxlength="20" [(ngModel)]="guia.telefono" placeholder="+51 9xx xxx xxx" (blur)="v.tocar('gTelefono')" [class.field-invalid]="v.error('gTelefono')" type="tel" (beforeinput)="filtrar($event, 'telefono')" (paste)="pegar($event, 'telefono')" inputmode="tel">@if (v.error('gTelefono'); as e) { <p class="field-error">{{ e }}</p> }</div>
+        } @else {
+          <div class="form-section-title"><app-icon name="truck" size="w-4 h-4" /> Datos de la unidad</div>
+          <div><label class="label">Marca / modelo <span class="opt">Opcional</span></label><input class="field" maxlength="100" [(ngModel)]="transp.marcaModelo" placeholder="Toyota Hiace…" (blur)="v.tocar('tMarca')" [class.field-invalid]="v.error('tMarca')">@if (v.error('tMarca'); as e) { <p class="field-error">{{ e }}</p> }</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div><label class="label req">Placa</label><input class="field font-mono" maxlength="15" [(ngModel)]="transp.placa" placeholder="ABC-123" (blur)="v.tocar('tPlaca')" [class.field-invalid]="v.error('tPlaca')" (beforeinput)="filtrar($event, 'placa')" (paste)="pegar($event, 'placa')">@if (v.error('tPlaca'); as e) { <p class="field-error">{{ e }}</p> }</div>
+            <div><label class="label req">Capacidad</label><input type="number" min="1" max="999" class="field" [(ngModel)]="transp.capacidad" (blur)="v.tocar('tCapacidad')" [class.field-invalid]="v.error('tCapacidad')" (beforeinput)="filtrar($event, 'entero')" (paste)="pegar($event, 'entero')" (wheel)="rueda($event)" inputmode="numeric" step="1">@if (v.error('tCapacidad'); as e) { <p class="field-error">{{ e }}</p> }@if (!v.error('tCapacidad')) { <p class="hint">Entre 1 y 999 pasajeros.</p> }</div>
+          </div>
+        }
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn-light" (click)="abierto.set(false)">Cancelar</button>
+        <button type="button" class="btn-brand" (click)="guardar()"><app-icon name="check" size="w-4 h-4" /> Guardar</button>
+      </div>
+    </div>
+  </app-modal>
+}

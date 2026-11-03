@@ -1,0 +1,19 @@
+<div class="fixed inset-0 z-[60] flex items-end justify-center p-0 sm:items-center sm:p-6" role="dialog" aria-modal="true">
+  <div class="absolute inset-0 bg-zinc-950/45 backdrop-blur-[3px] animate-fade-in" (click)="cerrar.emit()"></div>
+  <div class="relative flex max-h-[92vh] w-full flex-col overflow-hidden rounded-t-3xl border border-zinc-200/60 bg-white shadow-modal animate-pop-in sm:max-w-xl sm:rounded-3xl">
+    <div class="mx-auto mt-2.5 h-1.5 w-10 rounded-full bg-zinc-200 sm:hidden"></div>
+    <div class="flex items-center justify-between gap-4 px-6 pb-4 pt-4 sm:pt-5">
+      <div class="flex min-w-0 items-center gap-3">
+        <span class="h-6 w-1.5 shrink-0 rounded-full bg-gradient-to-b from-brand-400 to-brand-700"></span>
+        <h3 class="truncate text-lg font-extrabold tracking-tight text-zinc-900 font-wide">{{ titulo }}</h3>
+      </div>
+      <button type="button" class="icon-btn -mr-2 shrink-0" title="Cerrar" aria-label="Cerrar" (click)="cerrar.emit()">
+        <app-icon name="x" />
+      </button>
+    </div>
+    <div class="h-px bg-zinc-100"></div>
+    <div class="overflow-y-auto p-6">
+      <ng-content />
+    </div>
+  </div>
+</div>

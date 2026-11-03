@@ -1,0 +1,69 @@
+<div class="min-h-screen lg:pl-20">
+  <header class="lg:hidden sticky top-0 z-30 h-16 px-4 flex items-center justify-between bg-white/80 backdrop-blur-md border-b border-zinc-200/70 shadow-soft">
+    <button type="button" class="icon-btn -ml-1 text-zinc-600" aria-label="Abrir menú" (click)="abierto.set(true)"><app-icon name="menu" /></button>
+    <app-logo variante="horizontal" [alto]="22" />
+    <div class="avatar w-9 h-9 text-xs bg-brand-100 text-brand-800 ring-2 ring-white">{{ iniciales() }}</div>
+  </header>
+
+  @if (abierto()) {
+    <div class="lg:hidden fixed inset-0 z-40 bg-zinc-950/40 backdrop-blur-[2px] animate-fade-in" (click)="abierto.set(false)"></div>
+  }
+
+  <aside class="sidebar group/side fixed inset-y-0 left-0 z-50 w-72 flex flex-col overflow-hidden bg-white/95 backdrop-blur-xl border-r border-zinc-200/70 shadow-lifted
+                transition-[width,transform,box-shadow] duration-300 ease-[cubic-bezier(.2,.8,.2,1)]
+                lg:w-20 lg:shadow-soft lg:translate-x-0 lg:hover:w-64 lg:hover:shadow-lifted lg:focus-within:w-64"
+         [class.-translate-x-full]="!abierto()">
+
+    <div class="relative h-20 shrink-0 border-b border-zinc-100">
+      <div class="absolute left-[24px] top-1/2 -translate-y-1/2 hidden lg:block transition-opacity duration-200 lg:group-hover/side:opacity-0 lg:group-focus-within/side:opacity-0">
+        <app-logo variante="isotipo" [alto]="26" />
+      </div>
+      <div class="absolute left-[24px] top-1/2 -translate-y-1/2 flex flex-col gap-1.5 whitespace-nowrap transition-opacity duration-200
+                  lg:opacity-0 lg:group-hover/side:opacity-100 lg:group-focus-within/side:opacity-100 lg:group-hover/side:delay-75">
+        <app-logo variante="horizontal" [alto]="26" />
+        <span class="eyebrow !text-[10px]">Tour Manager</span>
+      </div>
+      <button type="button" class="lg:hidden icon-btn absolute right-3 top-1/2 -translate-y-1/2" aria-label="Cerrar menú" (click)="abierto.set(false)">
+        <app-icon name="x" />
+      </button>
+    </div>
+
+    <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto overflow-x-hidden">
+      <div class="px-[18px] pb-2 eyebrow !text-[10px] whitespace-nowrap transition-opacity duration-200 lg:opacity-0 lg:group-hover/side:opacity-100 lg:group-focus-within/side:opacity-100">Menú</div>
+      @for (item of menu; track item.ruta) {
+        <a [routerLink]="item.ruta" (click)="abierto.set(false)" [attr.aria-label]="item.texto"
+           routerLinkActive="nav-active" [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
+           class="nav-item group/item relative flex h-11 items-center gap-3.5 rounded-xl px-[18px] text-sm font-medium text-zinc-500 outline-none
+                  transition-all duration-200 hover:bg-zinc-100 hover:text-zinc-900 focus-visible:ring-2 focus-visible:ring-brand-500/40">
+          <span class="nav-ico relative shrink-0 transition-transform duration-200 group-hover/item:scale-110">
+            <app-icon [name]="item.icono" size="w-5 h-5" />
+            @if (item.ruta === '/reservas' && pendientes() > 0) {
+              <span class="absolute -right-1 -top-1 hidden lg:block h-2.5 w-2.5 rounded-full bg-amber-500 ring-2 ring-white transition-opacity lg:group-hover/side:opacity-0"></span>
+            }
+          </span>
+          <span class="flex-1 whitespace-nowrap transition-all duration-200 lg:opacity-0 lg:-translate-x-1 lg:group-hover/side:opacity-100 lg:group-hover/side:translate-x-0 lg:group-focus-within/side:opacity-100 lg:group-focus-within/side:translate-x-0">{{ item.texto }}</span>
+          @if (item.ruta === '/reservas' && pendientes() > 0) {
+            <span class="nav-count text-[11px] font-semibold bg-amber-100 text-amber-800 rounded-full px-2 py-0.5 transition-opacity duration-200 lg:opacity-0 lg:group-hover/side:opacity-100 lg:group-focus-within/side:opacity-100">{{ pendientes() }}</span>
+          }
+        </a>
+      }
+    </nav>
+
+    <div class="shrink-0 p-3 border-t border-zinc-100">
+      <div class="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors lg:group-hover/side:bg-sand-50">
+        <div class="avatar w-10 h-10 text-sm bg-gradient-to-br from-brand-100 to-brand-200 text-brand-800 ring-2 ring-white shadow-soft">{{ iniciales() }}</div>
+        <div class="min-w-0 flex-1 whitespace-nowrap transition-opacity duration-200 lg:opacity-0 lg:group-hover/side:opacity-100 lg:group-focus-within/side:opacity-100">
+          <div class="text-sm font-semibold text-zinc-900 truncate">{{ auth.usuario()?.username }}</div>
+          <div class="eyebrow !text-[10px]">{{ auth.usuario()?.rol }}</div>
+        </div>
+        <button type="button" class="icon-btn-danger shrink-0 transition-opacity duration-200 lg:opacity-0 lg:group-hover/side:opacity-100 lg:focus-visible:opacity-100" title="Cerrar sesión" aria-label="Cerrar sesión" (click)="salir()">
+          <app-icon name="logout" size="w-[18px] h-[18px]" />
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="px-4 py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-10 max-w-7xl mx-auto">
+    @if (auth.autenticado()) { <router-outlet /> }
+  </main>
+</div>

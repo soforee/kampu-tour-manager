@@ -1,0 +1,81 @@
+<div class="min-h-screen grid lg:grid-cols-[1.1fr_1fr]">
+  <section class="hidden lg:flex relative overflow-hidden bg-zinc-900 text-white p-12 xl:p-16 flex-col justify-between">
+    <img src="paisaje_inicio.jpg" alt="" class="absolute inset-0 w-full h-full object-cover scale-105">
+    <div class="absolute inset-0 bg-gradient-to-t from-zinc-950/95 via-zinc-900/50 to-zinc-900/60"></div>
+
+    <div class="relative animate-fade-up">
+      <app-logo variante="horizontal" [oscuro]="true" colorCarpa="#FDF8E6" [alto]="36" />
+      <div class="mt-2 text-[11px] font-extrabold uppercase tracking-[0.14em] text-zinc-200">Tour Manager</div>
+    </div>
+
+    <div class="relative max-w-md animate-fade-up [animation-delay:120ms]">
+      <h1 class="text-4xl xl:text-5xl font-extrabold font-wide leading-[1.08] tracking-tight">Cada salida, reserva y pago en un solo lugar.</h1>
+      <p class="mt-5 text-zinc-200/90 leading-relaxed">Controla cupos en tiempo real, cobra con claridad y mantén a tus pasajeros y guías sincronizados.</p>
+    </div>
+
+    <div class="relative grid grid-cols-3 gap-3 text-sm text-zinc-200 animate-fade-up [animation-delay:220ms]">
+      <div class="rounded-2xl bg-white/10 p-4 ring-1 ring-white/15 backdrop-blur-md"><div class="text-2xl font-extrabold font-wide text-white">24/7</div>Control de cupos</div>
+      <div class="rounded-2xl bg-white/10 p-4 ring-1 ring-white/15 backdrop-blur-md"><div class="text-2xl font-extrabold font-wide text-white">3</div>Monedas aceptadas</div>
+      <div class="rounded-2xl bg-white/10 p-4 ring-1 ring-white/15 backdrop-blur-md"><div class="text-2xl font-extrabold font-wide text-white">100%</div>Trazabilidad de pagos</div>
+    </div>
+  </section>
+
+  <div class="lg:hidden relative h-48 overflow-hidden bg-zinc-900 flex flex-col justify-end p-6">
+    <img src="paisaje_inicio.jpg" alt="" class="absolute inset-0 w-full h-full object-cover">
+    <div class="absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-zinc-900/40 to-zinc-900/30"></div>
+    <div class="relative pb-4">
+      <app-logo variante="horizontal" [oscuro]="true" colorCarpa="#FDF8E6" [alto]="28" />
+      <div class="mt-1.5 text-[11px] font-extrabold uppercase tracking-[0.14em] text-zinc-300">Tour Manager</div>
+    </div>
+  </div>
+
+  <section class="relative flex items-start lg:items-center justify-center px-6 pt-8 pb-12 sm:px-12 lg:py-12 -mt-6 lg:mt-0 rounded-t-3xl lg:rounded-none bg-sand-50 lg:bg-transparent">
+    <div class="w-full max-w-sm animate-fade-up">
+
+      <h2 class="text-[28px] sm:text-[32px] font-black tracking-tight text-zinc-900 leading-tight">Bienvenido de nuevo</h2>
+      <p class="mt-2 text-[15px] text-zinc-500">Ingresa con tu cuenta para gestionar la agencia.</p>
+
+      <form class="mt-10 space-y-5" (ngSubmit)="entrar()">
+        <div>
+          <label class="mb-2 block text-[13px] font-bold text-zinc-700" for="login-user">Usuario</label>
+          <input id="login-user" type="text" name="username" [(ngModel)]="username" maxlength="50" autocomplete="username" placeholder="Tu usuario"
+                 class="h-12 w-full rounded-xl border border-zinc-200 bg-white px-4 text-[15px] text-zinc-900 outline-none transition placeholder:text-zinc-400 hover:border-zinc-300 focus:border-brand-500 focus:shadow-ring"
+                 [class.!border-rose-300]="error() && !username.trim()">
+        </div>
+        <div>
+          <div class="mb-2 flex items-center justify-between">
+            <label class="text-[13px] font-bold text-zinc-700" for="login-pass">Contraseña</label>
+            <button type="button" class="text-xs font-bold text-brand-600 hover:text-brand-800 transition-colors" (click)="ver.set(!ver())">{{ ver() ? 'Ocultar' : 'Mostrar' }}</button>
+          </div>
+          <input id="login-pass" [type]="ver() ? 'text' : 'password'" name="password" [(ngModel)]="password" autocomplete="current-password" placeholder="••••••••"
+                 class="h-12 w-full rounded-xl border border-zinc-200 bg-white px-4 text-[15px] text-zinc-900 outline-none transition placeholder:text-zinc-400 hover:border-zinc-300 focus:border-brand-500 focus:shadow-ring"
+                 [class.!border-rose-300]="error() && !password">
+        </div>
+
+        @if (error()) {
+          <p class="flex items-center gap-2 text-sm font-semibold text-rose-600 animate-fade-in" role="alert"><app-icon name="alert" size="w-4 h-4 shrink-0" />{{ error() }}</p>
+        }
+
+        <button type="submit" [disabled]="cargando()" class="btn-brand w-full !h-12 !rounded-xl !text-[15px] !mt-8">
+          @if (cargando()) {
+            <span class="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></span> Ingresando…
+          } @else {
+            Ingresar <app-icon name="arrow-right" size="w-4 h-4" />
+          }
+        </button>
+      </form>
+
+      <div class="mt-10">
+        <div class="flex items-center gap-3 text-xs font-semibold text-zinc-400">
+          <span class="h-px flex-1 bg-zinc-200"></span>o entra con una cuenta demo<span class="h-px flex-1 bg-zinc-200"></span>
+        </div>
+        <div class="mt-4 grid grid-cols-2 gap-3">
+          <button type="button" class="h-11 rounded-xl border border-zinc-200 bg-white/60 text-sm font-bold text-zinc-700 transition hover:border-brand-300 hover:bg-white hover:text-brand-700" (click)="rellenar('admin', 'admin123')">Administrador</button>
+          <button type="button" class="h-11 rounded-xl border border-zinc-200 bg-white/60 text-sm font-bold text-zinc-700 transition hover:border-brand-300 hover:bg-white hover:text-brand-700" (click)="rellenar('ventas', 'ventas123')">Ventas</button>
+        </div>
+      </div>
+
+      <p class="mt-12 text-center text-xs text-zinc-400">Kampu · Tour Manager</p>
+    </div>
+  </section>
+</div>

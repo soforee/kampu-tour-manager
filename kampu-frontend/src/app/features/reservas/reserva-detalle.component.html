@@ -1,0 +1,166 @@
+@if (reserva(); as r) {
+  <a routerLink="/reservas" class="group inline-flex items-center gap-1.5 rounded-lg px-2 py-1 -ml-2 text-sm font-medium text-zinc-500 hover:bg-white hover:text-zinc-900 hover:shadow-soft transition-all mb-4">
+    <app-icon name="arrow-left" size="w-4 h-4 transition-transform group-hover:-translate-x-0.5" /> Reservas
+  </a>
+
+  <div class="card p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4 mb-6">
+    <div class="flex items-center gap-4">
+      <div class="hidden sm:grid w-12 h-12 shrink-0 place-items-center rounded-2xl bg-zinc-900 text-leaf-300 shadow-soft"><app-icon name="ticket" size="w-6 h-6" /></div>
+      <div>
+      <div class="eyebrow mb-1">Reserva</div>
+      <div class="flex items-center gap-3 flex-wrap">
+        <h1 class="h1 font-mono !tracking-normal">{{ codReserva() }}</h1>
+        <app-badge [estado]="r.estadoReserva" />
+        <app-badge [estado]="r.estadoPago" />
+      </div>
+      <p class="text-sm text-zinc-500 mt-1 flex items-center gap-1.5"><app-icon name="clock" size="w-3.5 h-3.5" />Creada el {{ r.fechaReserva | date:'dd/MM/yyyy HH:mm' }}</p>
+      </div>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      @if (r.estadoReserva === 'PENDIENTE') { <button type="button" class="btn-brand" (click)="confirmar()"><app-icon name="check" size="w-4 h-4" /> Confirmar</button> }
+      @if (r.estadoReserva === 'CONFIRMADA') { <button type="button" class="btn-dark" (click)="completar()"><app-icon name="flag" size="w-4 h-4" /> Marcar completada</button> }
+      @if (r.estadoReserva === 'PENDIENTE' || r.estadoReserva === 'CONFIRMADA') {
+        <button type="button" class="btn-danger" (click)="anular()"><app-icon name="x" size="w-4 h-4" /> Anular</button>
+      }
+    </div>
+  </div>
+
+  <div class="grid lg:grid-cols-3 gap-6 items-start">
+    <div class="lg:col-span-2 space-y-6">
+      <section class="card p-6">
+        <h2 class="card-title mb-5"><span class="ico"><app-icon name="map-pin" size="w-4 h-4" /></span>Viaje</h2>
+        <dl class="grid sm:grid-cols-2 gap-3 text-sm">
+          <div class="rounded-xl border border-zinc-100 bg-sand-50/60 px-3.5 py-2.5"><dt class="text-xs font-medium text-zinc-400 mb-0.5">Paquete</dt><dd class="font-medium">{{ paquete()?.nombre }}</dd></div>
+          <div class="rounded-xl border border-zinc-100 bg-sand-50/60 px-3.5 py-2.5"><dt class="text-xs font-medium text-zinc-400 mb-0.5">Duración</dt><dd class="font-medium">{{ paquete()?.dias }} días / {{ paquete()?.noches }} noches</dd></div>
+          <div class="rounded-xl border border-zinc-100 bg-sand-50/60 px-3.5 py-2.5"><dt class="text-xs font-medium text-zinc-400 mb-0.5">Fechas</dt><dd class="font-medium">{{ salida()?.fechaInicio | date:'dd/MM/yyyy' }} → {{ salida()?.fechaFin | date:'dd/MM/yyyy' }}</dd></div>
+          <div class="rounded-xl border border-zinc-100 bg-sand-50/60 px-3.5 py-2.5"><dt class="text-xs font-medium text-zinc-400 mb-0.5">Estado de la salida</dt><dd>@if (salida(); as s) { <app-badge [estado]="s.estado" /> }</dd></div>
+          <div class="rounded-xl border border-zinc-100 bg-sand-50/60 px-3.5 py-2.5"><dt class="text-xs font-medium text-zinc-400 mb-0.5">Guía</dt><dd class="font-medium">{{ guia()?.nombreCompleto ?? 'Sin asignar' }}</dd></div>
+          <div class="rounded-xl border border-zinc-100 bg-sand-50/60 px-3.5 py-2.5"><dt class="text-xs font-medium text-zinc-400 mb-0.5">Transporte</dt><dd class="font-medium">{{ transporte() ? transporte()!.marcaModelo + ' · ' + transporte()!.placa : 'Sin asignar' }}</dd></div>
+          <div class="rounded-xl border border-zinc-100 bg-sand-50/60 px-3.5 py-2.5"><dt class="text-xs font-medium text-zinc-400 mb-0.5">Cliente</dt><dd class="font-medium">{{ cliente()?.nombreCompleto }}</dd></div>
+          <div class="rounded-xl border border-zinc-100 bg-sand-50/60 px-3.5 py-2.5"><dt class="text-xs font-medium text-zinc-400 mb-0.5">Contacto</dt><dd class="font-medium">{{ cliente()?.telefono }}</dd></div>
+        </dl>
+        @if (r.observaciones) {
+          <div class="mt-5 rounded-xl border border-zinc-100 bg-sand-50 px-4 py-3 text-sm flex gap-2.5"><app-icon name="file-text" size="w-4 h-4 text-zinc-400 shrink-0 mt-0.5" /><div><span class="font-medium text-zinc-500">Observaciones:</span> {{ r.observaciones }}</div></div>
+        }
+        @if (r.estadoReserva === 'ANULADA') {
+          <div class="alert-error mt-5"><app-icon name="alert" size="w-4 h-4" /><div>
+            Anulada por <strong>{{ usuarioAnula() }}</strong>.
+            @if (r.formaReembolso) { Reembolso por <strong>{{ r.formaReembolso }}</strong>. }
+          </div></div>
+        }
+      </section>
+
+      <section class="card overflow-hidden">
+        <div class="card-header"><h2 class="card-title"><span class="ico"><app-icon name="users" size="w-4 h-4" /></span>Pasajeros <span class="chip !font-sans">{{ pasajeros().length }}</span></h2></div>
+        <div class="overflow-x-auto">
+          <table class="tbl">
+            <thead><tr><th class="th">Nombre</th><th class="th">Tipo doc.</th><th class="th">N° documento</th><th class="th">Nacionalidad</th><th class="th">Nacimiento</th></tr></thead>
+            <tbody>
+              @for (p of pasajeros(); track p.pasajeroId) {
+                <tr class="border-t border-zinc-100 first:border-t-0">
+                  <td class="td font-medium">{{ p.nombreCompleto }}</td>
+                  <td class="td"><span class="font-mono text-xs text-zinc-500">{{ p.tipoDocumento }}</span></td>
+                  <td class="td">{{ p.numeroDocumento }}</td>
+                  <td class="td">{{ p.nacionalidad }}</td>
+                  <td class="td">{{ p.fechaNacimiento | date:'dd/MM/yyyy' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card overflow-hidden">
+        <div class="card-header"><h2 class="card-title"><span class="ico"><app-icon name="card" size="w-4 h-4" /></span>Pagos</h2></div>
+        <div class="overflow-x-auto">
+          <table class="tbl">
+            <thead><tr><th class="th">Fecha</th><th class="th">Método</th><th class="th">Código</th><th class="th text-right">Monto</th><th class="th">Estado</th><th class="th"></th></tr></thead>
+            <tbody>
+              @for (p of pagos(); track p.pagoId) {
+                <tr class="border-t border-zinc-100 first:border-t-0">
+                  <td class="td">{{ p.fechaPago | date:'dd/MM/yyyy HH:mm' }}</td>
+                  <td class="td">{{ p.metodoPago }}</td>
+                  <td class="td text-zinc-500">{{ p.codigoTransaccion }}</td>
+                  <td class="td text-right font-medium">{{ p.monto | currency:p.moneda + ' ' }}</td>
+                  <td class="td"><app-badge [estado]="p.estadoTransaccion" /></td>
+                  <td class="td text-right whitespace-nowrap">
+                    @if (p.estadoTransaccion === 'PENDIENTE') {
+                      <button type="button" class="icon-btn-success" title="Aprobar" (click)="resolver(p.pagoId, 'APROBADO')"><app-icon name="check" /></button>
+                      <button type="button" class="icon-btn-danger" title="Rechazar" (click)="resolver(p.pagoId, 'RECHAZADO')"><app-icon name="x" /></button>
+                    }
+                  </td>
+                </tr>
+              } @empty {
+                <tr><td colspan="6"><div class="empty !py-10"><span class="ico"><app-icon name="card" size="w-6 h-6" /></span>Aún no hay pagos registrados.</div></td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (puedePagar()) {
+          <div class="p-6 border-t border-zinc-100 bg-sand-50/80">
+            <h3 class="form-section-title mb-4"><app-icon name="wallet" size="w-4 h-4" /> Registrar pago</h3>
+            <div class="grid sm:grid-cols-6 gap-3">
+              <div class="sm:col-span-2">
+                <label class="label req">Monto</label>
+                <input type="number" min="0" step="0.01" class="field" [(ngModel)]="monto" placeholder="0.00" (blur)="v.tocar('monto')" [class.field-invalid]="v.error('monto')" (beforeinput)="filtrar($event, 'decimal')" (paste)="pegar($event, 'decimal')" (wheel)="rueda($event)" inputmode="decimal">@if (v.error('monto'); as e) { <p class="field-error">{{ e }}</p> }
+              </div>
+              <div>
+                <label class="label req">Moneda</label>
+                <select class="field" [(ngModel)]="moneda">
+                  @for (m of monedas; track m) { <option [value]="m">{{ m }}</option> }
+                </select>
+              </div>
+              <div class="sm:col-span-3">
+                <label class="label req">Método</label>
+                <select class="field" [(ngModel)]="metodo">
+                  @for (m of metodos; track m) { <option [value]="m">{{ m }}</option> }
+                </select>
+              </div>
+              <div class="sm:col-span-3">
+                <label class="label">Código de transacción <span class="opt">Opcional</span></label>
+                <input class="field" maxlength="100" [(ngModel)]="codigo" placeholder="Opcional (se genera si lo dejas vacío)" (blur)="v.tocar('codigo')" [class.field-invalid]="v.error('codigo')" (beforeinput)="filtrar($event, 'codigo')" (paste)="pegar($event, 'codigo')">@if (v.error('codigo'); as e) { <p class="field-error">{{ e }}</p> }
+              </div>
+              <div class="sm:col-span-3">
+                <label class="label req">Estado</label>
+                <select class="field" [(ngModel)]="estadoTx">
+                  <option value="APROBADO">Aprobado</option>
+                  <option value="PENDIENTE">Pendiente de validación</option>
+                </select>
+              </div>
+            </div>
+            <div class="flex flex-wrap items-center justify-between gap-3 mt-4">
+              <div class="text-xs text-zinc-500 rounded-lg bg-white border border-zinc-100 px-3 py-2">
+                @if (monto && moneda !== 'PEN') { Equivale a <strong>{{ equivalente() | currency:'S/ ' }}</strong> (1 {{ moneda }} = S/ {{ tasa() }}) · }
+                Saldo: <strong>{{ saldo() | currency:'S/ ' }}</strong>
+              </div>
+              <div class="flex gap-2">
+                <button type="button" class="btn-light" (click)="usarSaldo()"><app-icon name="wallet" size="w-4 h-4" /> Usar saldo</button>
+                <button type="button" class="btn-brand" [disabled]="store.ocupado()" (click)="registrarPago()"><app-icon name="check" size="w-4 h-4" /> Registrar</button>
+              </div>
+            </div>
+          </div>
+        }
+      </section>
+    </div>
+
+    <aside class="card overflow-hidden lg:sticky lg:top-8">
+      <div class="bg-gradient-to-br from-zinc-800 to-zinc-950 px-6 py-5 text-white">
+        <div class="text-[11px] font-extrabold uppercase tracking-[0.14em] text-leaf-300">Resumen financiero</div>
+        <div class="mt-1 text-2xl font-extrabold font-wide tracking-tight">{{ r.montoTotal | currency:'S/ ' }}</div>
+      </div>
+      <div class="p-6">
+      <dl class="space-y-3 text-sm">
+        <div class="flex justify-between"><dt class="text-zinc-500">Viajeros</dt><dd class="font-medium">{{ r.numeroViajeros }}</dd></div>
+        <div class="flex justify-between"><dt class="text-zinc-500">Monto total</dt><dd class="font-medium">{{ r.montoTotal | currency:'S/ ' }}</dd></div>
+        <div class="flex justify-between"><dt class="text-zinc-500">Monto pagado</dt><dd class="font-medium text-brand-700">{{ r.montoPagado | currency:'S/ ' }}</dd></div>
+      </dl>
+      <div class="progress !h-2 mt-4"><div class="bg-gradient-to-r from-brand-400 to-brand-600" [style.width.%]="avance()"></div></div>
+      <div class="mt-5 rounded-xl bg-sand-50 border border-zinc-100 px-4 py-3.5 flex items-baseline justify-between">
+        <span class="text-zinc-500 text-sm font-medium">Saldo</span>
+        <span class="text-2xl font-extrabold font-wide tracking-tight" [class]="saldo() > 0 ? 'text-amber-600' : 'text-zinc-900'">{{ saldo() | currency:'S/ ' }}</span>
+      </div>
+      </div>
+    </aside>
+  </div>
+}

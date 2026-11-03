@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" [class]="size" aria-hidden="true">
+  @switch (name) {
+    @case ('home') { <path d="M3 10.5L12 3l9 7.5"/><path d="M5 9v10a2 2 0 0 0 2 2h3v-6h4v6h3a2 2 0 0 0 2-2V9"/> }
+    @case ('compass') { <circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/> }
+    @case ('package') { <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12"/><path d="M7.5 4.21l9 5.19"/> }
+    @case ('calendar') { <rect x="3" y="4.5" width="18" height="17" rx="3"/><path d="M16 2.5v4M8 2.5v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 17.5h.01M12 17.5h.01"/> }
+    @case ('users') { <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/> }
+    @case ('ticket') { <path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v1.5a2.5 2.5 0 0 0 0 5V16a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1.5a2.5 2.5 0 0 0 0-5V8z"/><path d="M14 6v2M14 11v2M14 16v2"/> }
+    @case ('card') { <rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20M6 15h4"/> }
+    @case ('truck') { <path d="M4 17V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v11"/><path d="M4 11h16M4 17h16"/><path d="M8 7.5h8"/><circle cx="7.5" cy="19" r="1.6"/><circle cx="16.5" cy="19" r="1.6"/> }
+    @case ('user') { <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/> }
+    @case ('logout') { <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/> }
+    @case ('plus') { <path d="M12 5v14M5 12h14"/> }
+    @case ('x') { <path d="M18 6L6 18M6 6l12 12"/> }
+    @case ('edit') { <path d="M12 20h9"/><path d="M16.38 3.62a2.12 2.12 0 0 1 3 3L7.37 18.64 3 20l1.36-4.37L16.38 3.62z"/> }
+    @case ('trash') { <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M10 11v6M14 11v6"/> }
+    @case ('eye') { <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/> }
+    @case ('search') { <circle cx="11" cy="11" r="7.5"/><path d="M21 21l-4.6-4.6"/> }
+    @case ('menu') { <path d="M4 12h16M4 6h16M4 18h10"/> }
+    @case ('arrow-left') { <path d="M19 12H5M12 19l-7-7 7-7"/> }
+    @case ('arrow-right') { <path d="M5 12h14M12 5l7 7-7 7"/> }
+    @case ('chevron-right') { <path d="M9 18l6-6-6-6"/> }
+    @case ('check') { <path d="M20 6L9 17l-5-5"/> }
+    @case ('check-circle') { <circle cx="12" cy="12" r="10"/><path d="M8 12.5l2.5 2.5L16 9.5"/> }
+    @case ('alert') { <circle cx="12" cy="12" r="10"/><path d="M12 8v4.5M12 16h.01"/> }
+    @case ('info') { <circle cx="12" cy="12" r="10"/><path d="M12 16v-4.5M12 8h.01"/> }
+    @case ('mail') { <rect x="2" y="4" width="20" height="16" rx="3"/><path d="M22 7l-10 6L2 7"/> }
+    @case ('phone') { <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/> }
+    @case ('lock') { <rect x="3" y="11" width="18" height="11" rx="3"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/> }
+    @case ('chart') { <path d="M12 20V10M18 20V4M6 20v-4"/> }
+    @case ('trending-up') { <path d="M22 7l-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/> }
+    @case ('wallet') { <path d="M20 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-4a2 2 0 0 0 0 4h4v4a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2V5"/><path d="M17 14h.01"/> }
+    @case ('hourglass') { <path d="M6 2h12M6 22h12M7 2v4a5 5 0 0 0 10 0V2M7 22v-4a5 5 0 0 1 10 0v4"/> }
+    @case ('map-pin') { <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/> }
+    @case ('upload') { <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/> }
+    @case ('image') { <rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/> }
+    @case ('clock') { <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/> }
+    @case ('tag') { <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><path d="M7 7h.01"/> }
+    @case ('file-text') { <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/> }
+    @case ('id') { <rect x="2" y="5" width="20" height="14" rx="3"/><circle cx="8" cy="12" r="2.5"/><path d="M14 10h4M14 14h4"/> }
+    @case ('inbox') { <path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/> }
+    @case ('flag') { <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/> }
+    @case ('mountain') { <path d="M8 3l4 8 5-5 5 15H2L8 3z"/> }
+    @case ('sparkles') { <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 3v4M17 5h4M5 17v4M3 19h4"/> }
+  }
+</svg>

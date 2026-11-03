@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>KAMPU · Tour Manager</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 126 100'><g fill='%234B5B1D'><path d='M4 0H31Q35 0 35 4V32Q35 36.5 38.5 33.2L67 6Q73 .6 80 .6H109Q114 1 110.5 4.5L74 39.5Q71 42.5 74 45.5L124.5 94Q126.5 97.8 121.5 100H62Q51 100 49.5 94Q48.5 89 53 85Q63 77 65.5 71Q67.5 65 60 58.5Q49 50.5 30 46Q14 42.8 0 42.6V4Q0 0 4 0Z'/><path d='M0 45Q16 46.5 30 50.5Q42 54 47 59Q50.5 63 46.5 67.5Q41 72.5 30 77.5Q18 82.5 11 90.5Q6 97 3.5 98.5Q0 99.5 0 94Z'/></g></svg>">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Nunito', 'ui-rounded', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'ui-monospace', 'monospace']
+          },
+          borderRadius: { sm: '6px', DEFAULT: '8px', md: '10px', lg: '12px', xl: '16px', '2xl': '20px', '3xl': '28px' },
+          boxShadow: {
+            soft: '0 1px 2px rgba(46,56,18,.04), 0 2px 8px -2px rgba(46,56,18,.06)',
+            card: '0 1px 3px rgba(46,56,18,.05), 0 8px 24px -12px rgba(46,56,18,.12)',
+            lifted: '0 4px 10px -2px rgba(46,56,18,.08), 0 18px 40px -16px rgba(46,56,18,.22)',
+            modal: '0 24px 64px -16px rgba(29,36,9,.40), 0 2px 8px rgba(29,36,9,.08)',
+            ring: '0 0 0 4px rgba(107,125,42,.18)'
+          },
+          keyframes: {
+            'fade-up': { '0%': { opacity: '0', transform: 'translateY(8px)' }, '100%': { opacity: '1', transform: 'none' } },
+            'pop-in': { '0%': { opacity: '0', transform: 'translateY(12px) scale(.97)' }, '100%': { opacity: '1', transform: 'none' } },
+            'fade-in': { '0%': { opacity: '0' }, '100%': { opacity: '1' } }
+          },
+          animation: {
+            'fade-up': 'fade-up .35s cubic-bezier(.2,.8,.2,1) both',
+            'pop-in': 'pop-in .28s cubic-bezier(.2,.8,.2,1) both',
+            'fade-in': 'fade-in .2s ease-out both'
+          },
+          colors: {
+            white: '#FFFEF8',
+            zinc: {
+              50: '#FAF6E6', 100: '#F2EDD6', 200: '#E5DEC2', 300: '#D0C8A6', 400: '#A49D7B', 500: '#78735A',
+              600: '#5B5741', 700: '#403F2C', 800: '#3A4716', 900: '#2C3610', 950: '#1D2409'
+            },
+            brand: {
+              50: '#F4F6E4', 100: '#E7ECC9', 200: '#CED89C', 300: '#AFBF68', 400: '#8B9E3F', 500: '#6B7E2B',
+              600: '#4B5B1D', 700: '#3F4C18', 800: '#333D14', 900: '#262E0F'
+            },
+            leaf: { 50: '#FAF9E3', 100: '#F3F0C2', 200: '#E6E08F', 300: '#D7D068', 400: '#C4BD45', 500: '#A9A232', 600: '#878126', 700: '#666120' },
+            emerald: {
+              50: '#EEF4E6', 100: '#D9E7C8', 200: '#B9D29C', 300: '#94B86C', 400: '#6F9B45', 500: '#56802F',
+              600: '#446825', 700: '#36521E', 800: '#2B4218', 900: '#223513'
+            },
+            earth: { 50: '#F7F0E8', 100: '#E6D6C7', 300: '#B58E6D', 400: '#8C6A4C', 500: '#6B4A32', 600: '#5A3D28', 700: '#472F1F' },
+            sand: { 50: '#FFFCF0', 100: '#FDF8E6', 200: '#F6F0DA', 300: '#E7DEBF' }
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400..900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style type="text/tailwindcss">
+    @layer components {
+      .field { @apply w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-sm text-zinc-900 shadow-soft outline-none transition duration-200
+               placeholder:text-zinc-400 hover:border-zinc-300 focus:border-brand-500 focus:shadow-ring
+               disabled:cursor-not-allowed disabled:bg-zinc-50 disabled:text-zinc-400 disabled:shadow-none; }
+      .label { @apply mb-1.5 flex items-center gap-1 text-[13px] font-bold text-zinc-700; }
+      .label.req::after { content: '*'; @apply text-rose-500 font-bold; }
+      .opt { @apply ml-auto text-[11px] font-normal text-zinc-400; }
+      .hint { @apply mt-1.5 text-xs text-zinc-500 leading-relaxed; }
+      .field-invalid { @apply !border-rose-400 bg-rose-50/40 focus:!border-rose-500 focus:!shadow-[0_0_0_4px_rgba(225,29,72,.12)]; }
+      .field-error { @apply mt-1.5 flex items-start gap-1.5 text-xs font-semibold leading-snug text-rose-600 animate-fade-in; }
+      .field-error::before { content: '!'; @apply mt-px grid h-3.5 w-3.5 shrink-0 place-items-center rounded-full bg-rose-500 text-[9px] font-black text-white; }
+      .form-section { @apply rounded-xl border border-zinc-100 bg-sand-50/70 p-4 space-y-4; }
+      .form-section-title { @apply flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.12em] text-zinc-500; }
+      .form-section-title svg { @apply text-brand-600; }
+      .form-actions { @apply mt-6 flex flex-wrap items-center justify-end gap-2 border-t border-zinc-100 pt-5; }
+      .search { @apply relative; }
+      .search > .search-icon { @apply pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 transition-colors; }
+      .search:focus-within > .search-icon { @apply text-brand-600; }
+      .search > .field { @apply pl-10; }
+
+      .btn { @apply inline-flex select-none items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-bold
+             transition-all duration-200 ease-out outline-none focus-visible:ring-4 active:scale-[0.97]
+             disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none; }
+      .btn-dark { @apply btn bg-zinc-900 text-white shadow-soft hover:-translate-y-px hover:bg-zinc-800 hover:shadow-lifted focus-visible:ring-zinc-900/20; }
+      .btn-light { @apply btn border border-zinc-200 bg-white text-zinc-700 shadow-soft hover:border-zinc-300 hover:bg-sand-50 hover:text-zinc-900 focus-visible:ring-zinc-400/25; }
+      .btn-brand { @apply btn bg-brand-600 text-white shadow-soft hover:-translate-y-px hover:bg-brand-700 hover:shadow-lifted focus-visible:ring-brand-500/30; }
+      .btn-danger { @apply btn border border-rose-200 bg-rose-50 text-rose-700 hover:border-rose-600 hover:bg-rose-600 hover:text-white hover:shadow-lifted focus-visible:ring-rose-500/25; }
+      .btn-sm { @apply px-3 py-1.5 text-[13px] rounded-md; }
+      .icon-btn { @apply inline-flex items-center justify-center rounded-lg p-2 text-zinc-400 outline-none transition-all duration-200
+                  hover:bg-zinc-100 hover:text-zinc-800 focus-visible:ring-4 focus-visible:ring-zinc-400/25 active:scale-90; }
+      .icon-btn-danger { @apply icon-btn hover:bg-rose-50 hover:text-rose-600 focus-visible:ring-rose-500/20; }
+      .icon-btn-success { @apply icon-btn text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 focus-visible:ring-emerald-500/20; }
+      .actions { @apply inline-flex items-center gap-0.5 rounded-xl p-0.5; }
+      .link { @apply inline-flex items-center gap-1 font-medium text-brand-700 underline-offset-4 transition-colors hover:text-brand-800 hover:underline; }
+
+      .seg { @apply inline-flex max-w-full gap-1 overflow-x-auto rounded-xl border border-zinc-200/70 bg-zinc-100/80 p-1 text-sm; }
+      .seg-btn { @apply whitespace-nowrap rounded-lg px-3.5 py-1.5 font-medium text-zinc-500 outline-none transition-all duration-200 hover:text-zinc-900 focus-visible:ring-2 focus-visible:ring-brand-500/30; }
+      .seg-btn.on { @apply bg-white text-zinc-900 shadow-soft; }
+
+      .card { @apply rounded-2xl border border-zinc-200/70 bg-white shadow-card; }
+      .card-hover { @apply transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-zinc-200 hover:shadow-lifted; }
+      .card-header { @apply flex items-center justify-between gap-3 border-b border-zinc-100 px-6 py-4; }
+      .card-title { @apply flex items-center gap-2.5 font-extrabold text-zinc-900; }
+      .card-title > .ico { @apply grid h-8 w-8 place-items-center rounded-lg bg-brand-50 text-brand-700; }
+      .tbl { @apply w-full text-sm; }
+      .tbl td { @apply max-md:whitespace-nowrap; }
+      .tbl thead tr { @apply bg-sand-50; }
+      .tbl tbody tr { @apply transition-colors duration-150; }
+      .tbl tbody tr:hover { @apply !bg-brand-50/50; }
+      .th { @apply whitespace-nowrap border-b border-zinc-100 px-5 py-3 text-left text-[11px] font-extrabold uppercase tracking-[0.1em] text-zinc-500; }
+      .td { @apply px-5 py-3.5 align-middle; }
+      .empty { @apply flex flex-col items-center justify-center gap-3 px-6 py-14 text-center text-sm text-zinc-400; }
+      .empty > .ico { @apply grid h-12 w-12 place-items-center rounded-2xl bg-zinc-100 text-zinc-400; }
+      .avatar { @apply grid shrink-0 place-items-center rounded-full font-semibold; }
+      .progress { @apply h-1.5 overflow-hidden rounded-full bg-zinc-100; }
+      .progress > div { @apply h-full rounded-full transition-[width] duration-700 ease-out; }
+      .chip { @apply inline-flex items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-bold text-zinc-600; }
+
+      .alert { @apply flex items-start gap-3 rounded-xl border px-4 py-3 text-sm leading-relaxed animate-fade-in; }
+      .alert svg { @apply mt-px shrink-0; }
+      .alert-error { @apply alert border-rose-200 bg-rose-50 text-rose-700; }
+      .alert-warn { @apply alert border-amber-200 bg-amber-50 text-amber-800; }
+      .alert-info { @apply alert border-sky-200 bg-sky-50 text-sky-800; }
+
+      .h1 { @apply text-2xl font-black tracking-tight text-zinc-900 sm:text-[30px]; }
+      .eyebrow { @apply text-[11px] font-extrabold uppercase tracking-[0.14em] text-brand-600; }
+      .page-header { @apply mb-7 flex flex-wrap items-end justify-between gap-4; }
+      .page-sub { @apply mt-1.5 text-sm text-zinc-500; }
+      .toolbar { @apply mb-5 flex flex-wrap items-center gap-3; }
+    }
+  </style>
+</head>
+<body class="text-zinc-800 antialiased font-sans selection:bg-leaf-200 selection:text-zinc-900">
+  <app-root></app-root>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<div class="page-header">
+  <div>
+    <div class="eyebrow mb-1.5">Finanzas</div>
+    <h1 class="h1">Pagos</h1>
+    <p class="page-sub">Transacciones de todas las reservas. Los pagos se registran desde cada reserva.</p>
+  </div>
+  <div class="card px-5 py-3.5 flex items-center gap-4">
+    <div class="w-10 h-10 rounded-xl bg-brand-50 text-brand-700 grid place-items-center ring-1 ring-brand-100"><app-icon name="wallet" size="w-5 h-5" /></div>
+    <div class="text-right">
+      <div class="text-xs font-medium text-zinc-500">Aprobado (según filtros)</div>
+      <div class="text-2xl font-extrabold font-wide tracking-tight text-brand-700">{{ totalAprobado() | currency:'S/ ' }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="toolbar">
+  <div class="search flex-1 min-w-[220px] max-w-sm">
+    <span class="search-icon"><app-icon name="search" size="w-4 h-4" /></span>
+    <input type="search" class="field" placeholder="Reserva, cliente o código…" (input)="texto.set($any($event.target).value)">
+  </div>
+  <div class="seg">
+    @for (e of estados; track e.valor) {
+      <button type="button" class="seg-btn" [class.on]="estado() === e.valor" (click)="estado.set(e.valor)">{{ e.texto }}</button>
+    }
+  </div>
+</div>
+
+<div class="card overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="tbl">
+      <thead><tr><th class="th">Fecha</th><th class="th">Reserva</th><th class="th">Cliente</th><th class="th">Método</th><th class="th">Código</th>
+          <th class="th text-right">Monto</th><th class="th">Estado</th><th class="th text-right">Acciones</th></tr></thead>
+      <tbody>
+        @for (f of filas(); track f.pago.pagoId) {
+          <tr class="border-t border-zinc-100 first:border-t-0">
+            <td class="td whitespace-nowrap text-zinc-600">{{ f.pago.fechaPago | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td class="td"><a [routerLink]="['/reservas', f.pago.reservaId]" class="link font-mono text-[13px]">{{ f.codigo }}</a></td>
+            <td class="td font-medium text-zinc-900">{{ f.cliente }}</td>
+            <td class="td"><span class="inline-flex items-center gap-1.5 text-zinc-700"><app-icon name="card" size="w-3.5 h-3.5 text-zinc-400" />{{ f.pago.metodoPago }}</span></td>
+            <td class="td font-mono text-xs text-zinc-500">{{ f.pago.codigoTransaccion }}</td>
+            <td class="td text-right whitespace-nowrap">
+              <div class="font-semibold text-zinc-900">{{ f.pago.monto | currency:f.pago.moneda + ' ' }}</div>
+              @if (f.pago.moneda !== 'PEN') { <div class="text-xs text-zinc-400">≈ {{ f.pen | currency:'S/ ' }}</div> }
+            </td>
+            <td class="td"><app-badge [estado]="f.pago.estadoTransaccion" /></td>
+            <td class="td text-right whitespace-nowrap">
+              @if (f.pago.estadoTransaccion === 'PENDIENTE') {
+                <div class="actions">
+                  <button type="button" class="icon-btn-success" title="Aprobar" (click)="resolver(f.pago.pagoId, 'APROBADO')"><app-icon name="check" size="w-[18px] h-[18px]" /></button>
+                  <button type="button" class="icon-btn-danger" title="Rechazar" (click)="resolver(f.pago.pagoId, 'RECHAZADO')"><app-icon name="x" size="w-[18px] h-[18px]" /></button>
+                </div>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="8"><div class="empty"><span class="ico"><app-icon name="card" size="w-6 h-6" /></span>No hay pagos para mostrar.</div></td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
