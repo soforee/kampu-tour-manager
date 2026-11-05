@@ -9,4 +9,5 @@ import { Component, Input } from '@angular/core';
 export class IconComponent {
   @Input({ required: true }) name = '';
   @Input() size = 'w-5 h-5';
+  @Input() trazo = 1.8;
 }

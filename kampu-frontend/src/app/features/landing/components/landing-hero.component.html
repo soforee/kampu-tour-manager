@@ -1,0 +1,29 @@
+<section class="hero">
+  <img src="paisaje_inicio.jpg" alt="" class="hero-img" fetchpriority="high">
+  <div class="hero-overlay"></div>
+
+  <div class="relative mx-auto w-full max-w-6xl px-5 pb-36 pt-36 sm:px-8 sm:pb-44">
+    <p class="hero-anim text-[12px] font-extrabold uppercase tracking-[0.18em] text-leaf-300">Agencia de viajes y aventura</p>
+
+    <h1 class="hero-anim mt-5 max-w-3xl text-[42px] font-black leading-[1.03] tracking-tight text-white sm:text-6xl lg:text-[76px]" style="animation-delay: 120ms">
+      Descubre tu próxima aventura en
+      <span class="lugar-wrap">
+        @for (l of lugares; track l; let i = $index) {
+          <span class="lugar" [class.lugar-activo]="i === indice()" [attr.aria-hidden]="i !== indice()">{{ l }}.</span>
+        }
+      </span>
+    </h1>
+
+    <p class="hero-anim mt-6 max-w-xl text-base leading-relaxed text-white/80 sm:text-lg" style="animation-delay: 240ms">
+      Tours con salidas programadas, guías locales y reservas confirmadas al instante.
+    </p>
+
+    <div class="hero-anim mt-10 flex flex-wrap items-center gap-3" style="animation-delay: 360ms">
+      <a href="#tours" class="cta">
+        {{ textoCta }}
+        <span class="cta-flecha"><app-icon name="arrow-right" size="w-4 h-4" /></span>
+      </a>
+      <a href="#beneficios" class="cta-secundario">Por qué elegirnos</a>
+    </div>
+  </div>
+</section>

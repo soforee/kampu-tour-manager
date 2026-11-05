@@ -1,0 +1,82 @@
+.navbar {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 50;
+  color: #FFFEF8;
+  background: transparent;
+  border-bottom: 1px solid transparent;
+  transition: all .3s ease-in-out;
+}
+.navbar-solida {
+  color: var(--kp-text);
+  background: rgba(255, 254, 248, .92);
+  backdrop-filter: saturate(160%) blur(14px);
+  -webkit-backdrop-filter: saturate(160%) blur(14px);
+  border-bottom-color: var(--kp-border);
+  box-shadow: 0 8px 30px -18px rgba(29, 36, 9, .35);
+}
+
+.nav-link {
+  position: relative;
+  font-size: 14px;
+  font-weight: 700;
+  opacity: .82;
+  transition: all .3s ease-in-out;
+}
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -8px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--kp-accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .3s ease-in-out;
+}
+.nav-link:hover { opacity: 1; }
+.nav-link:hover::after { transform: scaleX(1); }
+
+.nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  height: 42px;
+  padding: 0 1.15rem;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: all .3s ease-in-out;
+}
+.nav-btn:active { transform: scale(.97); }
+.nav-btn-primario { background: var(--kp-primary); color: #FFFEF8; }
+.nav-btn-primario:hover { background: var(--kp-primary-hover); transform: translateY(-1px); box-shadow: 0 10px 24px -12px rgba(75, 91, 29, .7); }
+.nav-btn-secundario { border: 1px solid rgba(255, 254, 248, .45); color: inherit; }
+.nav-btn-secundario:hover { background: rgba(255, 254, 248, .12); border-color: rgba(255, 254, 248, .8); }
+.navbar-solida .nav-btn-secundario { border-color: var(--kp-border); }
+.navbar-solida .nav-btn-secundario:hover { background: var(--kp-primary-soft); border-color: var(--kp-secondary); color: var(--kp-primary); }
+
+.nav-toggle {
+  display: none;
+  place-items: center;
+  height: 42px;
+  width: 42px;
+  border-radius: 12px;
+  transition: all .3s ease-in-out;
+}
+.nav-toggle:hover { background: rgba(127, 127, 100, .12); }
+@media (max-width: 767px) { .nav-toggle { display: grid; } }
+
+.menu-movil {
+  display: none;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: all .3s ease-in-out;
+}
+.menu-movil > div { overflow: hidden; }
+.menu-movil.menu-abierto { grid-template-rows: 1fr; opacity: 1; }
+@media (max-width: 767px) { .menu-movil { display: grid; } }
