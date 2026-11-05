@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { mensajeError } from '../../core/utils/api';
 import { AuthService } from '../../core/services/auth.service';
 import { IconComponent } from '../../shared/icon.component';
@@ -9,7 +9,7 @@ import { LogoComponent } from '../../shared/logo.component';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, IconComponent, LogoComponent],
+  imports: [FormsModule, RouterLink, IconComponent, LogoComponent],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })

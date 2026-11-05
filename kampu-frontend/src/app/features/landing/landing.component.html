@@ -1,0 +1,189 @@
+<!-- Navegación -->
+<header class="absolute inset-x-0 top-0 z-30 text-white">
+  <nav class="mx-auto flex max-w-6xl items-center justify-between px-5 py-5 sm:px-8">
+    <a routerLink="/" aria-label="Kampu, inicio">
+      <app-logo variante="horizontal" [oscuro]="true" colorCarpa="#FDF8E6" [alto]="30" />
+    </a>
+
+    <div class="hidden items-center gap-9 md:flex">
+      <a href="#destinos" class="nav-link">Destinos</a>
+      <a href="#como-funciona" class="nav-link">Cómo funciona</a>
+      <a href="#contacto" class="nav-link">Contacto</a>
+    </div>
+
+    <div class="hidden md:block">
+      @if (auth.autenticado()) {
+        <a routerLink="/dashboard" class="btn !rounded-full bg-white/95 px-5 text-zinc-900 hover:bg-white">Ir al panel <app-icon name="arrow-right" size="w-4 h-4" /></a>
+      } @else {
+        <a routerLink="/login" class="btn !rounded-full bg-white/95 px-5 text-zinc-900 hover:bg-white">Ingresar <app-icon name="arrow-right" size="w-4 h-4" /></a>
+      }
+    </div>
+
+    <button type="button" class="rounded-lg p-2 text-white hover:bg-white/10 md:hidden" (click)="menu.set(!menu())" aria-label="Abrir menú">
+      <app-icon [name]="menu() ? 'x' : 'menu'" size="w-6 h-6" />
+    </button>
+  </nav>
+
+  @if (menu()) {
+    <div class="mx-4 rounded-2xl bg-white p-3 text-zinc-800 shadow-modal animate-pop-in md:hidden">
+      <a href="#destinos" (click)="cerrarMenu()" class="block rounded-xl px-4 py-3 font-bold hover:bg-sand-100">Destinos</a>
+      <a href="#como-funciona" (click)="cerrarMenu()" class="block rounded-xl px-4 py-3 font-bold hover:bg-sand-100">Cómo funciona</a>
+      <a href="#contacto" (click)="cerrarMenu()" class="block rounded-xl px-4 py-3 font-bold hover:bg-sand-100">Contacto</a>
+      <a [routerLink]="auth.autenticado() ? '/dashboard' : '/login'" class="btn-brand mt-2 w-full !rounded-xl">
+        {{ auth.autenticado() ? 'Ir al panel' : 'Ingresar' }}
+      </a>
+    </div>
+  }
+</header>
+
+<!-- Portada -->
+<section class="relative flex min-h-[92vh] items-end overflow-hidden bg-zinc-950 text-white">
+  <img src="paisaje_inicio.jpg" alt="Paisaje natural" class="hero-img absolute inset-0 h-full w-full object-cover">
+  <div class="absolute inset-0 bg-gradient-to-t from-zinc-950/95 via-zinc-950/35 to-zinc-950/55"></div>
+
+  <div class="relative mx-auto w-full max-w-6xl px-5 pb-20 pt-40 sm:px-8 sm:pb-28">
+    <p class="eyebrow !text-leaf-300 animate-fade-up">Agencia de viajes y aventura</p>
+    <h1 class="mt-4 max-w-3xl text-[40px] font-black leading-[1.04] tracking-tight sm:text-6xl lg:text-7xl animate-fade-up [animation-delay:100ms]">
+      Descubre el Perú a tu propio ritmo.
+    </h1>
+    <p class="mt-6 max-w-xl text-base leading-relaxed text-zinc-100/85 sm:text-lg animate-fade-up [animation-delay:200ms]">
+      Tours con salidas programadas, guías locales y todo lo que necesitas para viajar sin preocupaciones.
+    </p>
+    <div class="mt-10 flex flex-wrap gap-3 animate-fade-up [animation-delay:300ms]">
+      <a href="#destinos" class="btn-brand !h-12 !rounded-full !px-7 !text-[15px]">Ver destinos <app-icon name="arrow-right" size="w-4 h-4" /></a>
+      <a href="#contacto" class="btn !h-12 !rounded-full !px-7 !text-[15px] border border-white/30 text-white backdrop-blur-sm hover:bg-white/10">Contáctanos</a>
+    </div>
+  </div>
+</section>
+
+<!-- Ventajas -->
+<section class="border-b border-zinc-200/70 bg-white">
+  <div class="mx-auto grid max-w-6xl gap-10 px-5 py-16 sm:px-8 md:grid-cols-3">
+    @for (v of ventajas; track v.titulo) {
+      <div class="flex gap-4">
+        <div class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700"><app-icon [name]="v.icono" /></div>
+        <div>
+          <h3 class="font-extrabold text-zinc-900">{{ v.titulo }}</h3>
+          <p class="mt-1.5 text-sm leading-relaxed text-zinc-500">{{ v.texto }}</p>
+        </div>
+      </div>
+    }
+  </div>
+</section>
+
+<!-- Destinos -->
+<section id="destinos" class="scroll-mt-6">
+  <div class="mx-auto max-w-6xl px-5 py-24 sm:px-8">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="eyebrow">Nuestros paquetes</p>
+        <h2 class="mt-3 text-3xl font-black tracking-tight text-zinc-900 sm:text-4xl">Destinos para tu próximo viaje</h2>
+      </div>
+      <p class="max-w-sm text-sm leading-relaxed text-zinc-500">Precios por persona. Consulta las fechas de salida disponibles al reservar.</p>
+    </div>
+
+    @if (cargando()) {
+      <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        @for (i of [1, 2, 3]; track i) {
+          <div class="h-80 animate-pulse rounded-3xl bg-zinc-100"></div>
+        }
+      </div>
+    } @else if (destinos().length === 0) {
+      <div class="mt-12 rounded-3xl border border-dashed border-zinc-300 px-6 py-16 text-center">
+        <div class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-zinc-100 text-zinc-400"><app-icon name="compass" /></div>
+        <p class="mt-4 font-bold text-zinc-700">Pronto publicaremos nuevos destinos.</p>
+        <p class="mt-1 text-sm text-zinc-500">Escríbenos y te contamos las próximas salidas.</p>
+      </div>
+    } @else {
+      <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        @for (d of destinos(); track d.paquete.paqueteId) {
+          <article class="destino group overflow-hidden rounded-3xl border border-zinc-200/70 bg-white shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-lifted">
+            <div class="relative h-56 overflow-hidden bg-gradient-to-br" [class]="d.gradiente">
+              @if (imagenes.url(d.paquete.imagen); as src) {
+                <img [src]="src" [alt]="d.paquete.nombre" class="h-full w-full object-cover">
+              } @else {
+                <div class="grid h-full place-items-center text-white/80"><app-icon name="mountain" size="w-12 h-12" /></div>
+              }
+              <span class="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-extrabold text-zinc-800 backdrop-blur">
+                {{ duracion(d.paquete) }}
+              </span>
+            </div>
+            <div class="p-6">
+              <h3 class="text-lg font-extrabold tracking-tight text-zinc-900">{{ d.paquete.nombre }}</h3>
+              @if (d.paquete.descripcion) {
+                <p class="mt-2 line-clamp-2 text-sm leading-relaxed text-zinc-500">{{ d.paquete.descripcion }}</p>
+              }
+              <div class="mt-5 flex items-center justify-between border-t border-zinc-100 pt-4">
+                <div>
+                  <span class="text-xs text-zinc-400">Desde</span>
+                  <div class="text-xl font-black tracking-tight text-zinc-900">{{ d.paquete.precioBase | currency:'S/ ':'symbol':'1.0-0' }}</div>
+                </div>
+                <a href="#contacto" class="grid h-10 w-10 place-items-center rounded-full bg-zinc-100 text-zinc-600 transition group-hover:bg-brand-600 group-hover:text-white" [attr.aria-label]="'Consultar ' + d.paquete.nombre">
+                  <app-icon name="arrow-right" size="w-4 h-4" />
+                </a>
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+    }
+  </div>
+</section>
+
+<!-- Cómo funciona -->
+<section id="como-funciona" class="scroll-mt-6 bg-sand-100/70">
+  <div class="mx-auto max-w-6xl px-5 py-24 sm:px-8">
+    <div class="max-w-xl">
+      <p class="eyebrow">Cómo funciona</p>
+      <h2 class="mt-3 text-3xl font-black tracking-tight text-zinc-900 sm:text-4xl">Reservar es simple</h2>
+    </div>
+    <div class="mt-14 grid gap-10 md:grid-cols-3">
+      @for (p of pasos; track p.numero) {
+        <div class="border-t-2 border-zinc-900 pt-6">
+          <span class="font-mono text-sm font-semibold text-brand-600">{{ p.numero }}</span>
+          <h3 class="mt-3 text-xl font-extrabold tracking-tight text-zinc-900">{{ p.titulo }}</h3>
+          <p class="mt-2 text-sm leading-relaxed text-zinc-500">{{ p.texto }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- Contacto -->
+<section id="contacto" class="scroll-mt-6">
+  <div class="mx-auto max-w-6xl px-5 py-24 sm:px-8">
+    <div class="relative overflow-hidden rounded-[32px] bg-zinc-900 px-6 py-16 text-white sm:px-14">
+      <div class="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-leaf-400/20 blur-3xl"></div>
+      <div class="absolute -bottom-24 -left-16 h-72 w-72 rounded-full bg-brand-500/30 blur-3xl"></div>
+      <div class="relative grid items-center gap-10 lg:grid-cols-[1.3fr_1fr]">
+        <div>
+          <h2 class="text-3xl font-black leading-tight tracking-tight sm:text-4xl">¿Listo para tu próxima aventura?</h2>
+          <p class="mt-4 max-w-md leading-relaxed text-zinc-300">Escríbenos o llámanos y te ayudamos a elegir el tour y la fecha ideal para ti.</p>
+        </div>
+        <div class="space-y-3">
+          <div class="flex items-center gap-4 rounded-2xl bg-white/5 px-5 py-4 ring-1 ring-white/10">
+            <app-icon name="mail" size="w-5 h-5 text-leaf-300" />
+            <span class="font-bold">reservas&#64;kampu.pe</span>
+          </div>
+          <div class="flex items-center gap-4 rounded-2xl bg-white/5 px-5 py-4 ring-1 ring-white/10">
+            <app-icon name="phone" size="w-5 h-5 text-leaf-300" />
+            <span class="font-bold">+51 984 000 000</span>
+          </div>
+          <div class="flex items-center gap-4 rounded-2xl bg-white/5 px-5 py-4 ring-1 ring-white/10">
+            <app-icon name="map-pin" size="w-5 h-5 text-leaf-300" />
+            <span class="font-bold">Cusco, Perú</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Pie -->
+<footer class="border-t border-zinc-200/70">
+  <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-8 text-sm text-zinc-500 sm:px-8">
+    <app-logo variante="horizontal" [alto]="22" />
+    <p>© {{ anio }} Kampu. Todos los derechos reservados.</p>
+    <a routerLink="/login" class="link">Acceso del personal</a>
+  </div>
+</footer>

@@ -1,0 +1,30 @@
+:host { display: block; }
+
+.nav-link {
+  position: relative;
+  font-size: 14px;
+  font-weight: 700;
+  color: inherit;
+  opacity: .85;
+  transition: opacity .2s ease;
+}
+.nav-link:hover { opacity: 1; }
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 2px;
+  border-radius: 2px;
+  background: #C4BD45;
+  transform: scaleX(0);
+  transition: transform .25s ease;
+}
+.nav-link:hover::after { transform: scaleX(1); }
+
+.hero-img { animation: hero-zoom 14s ease-out both; }
+@keyframes hero-zoom { from { transform: scale(1.08); } to { transform: scale(1); } }
+
+.destino img { transition: transform .7s cubic-bezier(.2, .8, .2, 1); }
+.destino:hover img { transform: scale(1.06); }

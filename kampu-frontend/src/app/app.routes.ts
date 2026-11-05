@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { LandingComponent } from './features/landing/landing.component';
 import { LoginComponent } from './features/login/login.component';
 import { ShellComponent } from './layout/shell.component';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
@@ -12,12 +13,12 @@ import { ClientesComponent } from './features/clientes/clientes.component';
 import { RecursosComponent } from './features/recursos/recursos.component';
 
 export const routes: Routes = [
+  { path: '', component: LandingComponent, pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   {
     path: '',
     component: ShellComponent,
     children: [
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: DashboardComponent },
       { path: 'reservas', component: ReservasComponent },
       { path: 'reservas/nueva', component: ReservaNuevaComponent },
