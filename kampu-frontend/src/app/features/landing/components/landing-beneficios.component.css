@@ -1,0 +1,27 @@
+.beneficios { background: var(--kp-bg-alt); }
+
+.beneficio {
+  height: 100%;
+  padding: 2rem 1.75rem;
+  border-radius: 24px;
+  background: var(--kp-bg);
+  border: 1px solid transparent;
+  transition: all .3s ease-in-out;
+}
+.beneficio:hover {
+  transform: translateY(-4px);
+  border-color: var(--kp-border);
+  box-shadow: 0 24px 50px -28px rgba(29, 36, 9, .35);
+}
+
+.beneficio-icono {
+  display: grid;
+  place-items: center;
+  height: 56px;
+  width: 56px;
+  border-radius: 18px;
+  color: var(--kp-secondary);
+  background: var(--kp-primary-soft);
+  transition: all .3s ease-in-out;
+}
+.beneficio:hover .beneficio-icono { background: var(--kp-primary); color: #FFFEF8; transform: rotate(-4deg); }

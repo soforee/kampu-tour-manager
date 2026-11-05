@@ -1,0 +1,40 @@
+<header class="navbar" [class.navbar-solida]="solido() || menu()">
+  <nav class="mx-auto flex h-[72px] max-w-6xl items-center justify-between gap-6 px-5 sm:px-8" aria-label="Principal">
+    <a routerLink="/" class="shrink-0" aria-label="Kampu, inicio" (click)="cerrarMenu()">
+      <app-logo variante="horizontal" [alto]="28" [oscuro]="!(solido() || menu())"
+                [colorCarpa]="solido() || menu() ? '#4B5B1D' : '#FDF8E6'" />
+    </a>
+
+    <ul class="hidden flex-1 items-center justify-center gap-9 md:flex">
+      @for (l of links; track l.href) {
+        <li><a [href]="l.href" class="nav-link">{{ l.texto }}</a></li>
+      }
+    </ul>
+
+    <div class="hidden items-center gap-2.5 md:flex">
+      <a href="#contacto" class="nav-btn nav-btn-secundario">Contacto</a>
+      <a [routerLink]="auth.autenticado() ? '/dashboard' : '/login'" class="nav-btn nav-btn-primario">
+        <app-icon name="lock" size="w-4 h-4" [trazo]="1.6" />
+        {{ auth.autenticado() ? 'Ir al panel' : 'Acceso Admin' }}
+      </a>
+    </div>
+
+    <button type="button" class="nav-toggle" (click)="menu.set(!menu())"
+            [attr.aria-expanded]="menu()" aria-controls="menu-movil" [attr.aria-label]="menu() ? 'Cerrar menú' : 'Abrir menú'">
+      <app-icon [name]="menu() ? 'x' : 'menu'" size="w-6 h-6" />
+    </button>
+  </nav>
+
+  <div id="menu-movil" class="menu-movil" [class.menu-abierto]="menu()">
+    <div class="space-y-1 px-5 pb-6 pt-2">
+      @for (l of links; track l.href) {
+        <a [href]="l.href" (click)="cerrarMenu()" class="block rounded-xl px-4 py-3 text-[15px] font-bold text-zinc-800 hover:bg-zinc-50">{{ l.texto }}</a>
+      }
+      <a href="#contacto" (click)="cerrarMenu()" class="block rounded-xl px-4 py-3 text-[15px] font-bold text-zinc-800 hover:bg-zinc-50">Contacto</a>
+      <a [routerLink]="auth.autenticado() ? '/dashboard' : '/login'" class="nav-btn nav-btn-primario mt-3 w-full">
+        <app-icon name="lock" size="w-4 h-4" [trazo]="1.6" />
+        {{ auth.autenticado() ? 'Ir al panel' : 'Acceso Admin' }}
+      </a>
+    </div>
+  </div>
+</header>
