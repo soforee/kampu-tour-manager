@@ -8,8 +8,10 @@ import jakarta.validation.constraints.Size;
 import java.util.List;
 
 public record ReservaRequestDTO(
-        @NotNull(message = "Selecciona un cliente.")
+        // Cliente registrado, o bien "contacto" para un invitado (uno de los dos)
         Long clienteId,
+        @Valid
+        ContactoReservaDTO contacto,
         @NotNull(message = "Selecciona una salida.")
         Long salidaId,
         @Size(max = 200, message = "Las observaciones admiten máximo 200 caracteres.")

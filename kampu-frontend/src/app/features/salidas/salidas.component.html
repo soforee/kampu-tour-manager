@@ -2,7 +2,7 @@
   <div>
     <div class="eyebrow mb-1.5">Calendario</div>
     <h1 class="h1">Salidas programadas</h1>
-    <p class="page-sub">Fechas, cupos, guía y transporte de cada salida.</p>
+    <p class="page-sub">Fechas, cupos, guía, vehículo y chofer de cada salida.</p>
   </div>
   <button type="button" class="btn-dark" (click)="nuevo()"><app-icon name="plus" size="w-4 h-4" /> Nueva salida</button>
 </div>
@@ -32,7 +32,10 @@
               <div class="progress"><div [class]="f.pct >= 90 ? 'bg-gradient-to-r from-rose-400 to-rose-600' : 'bg-gradient-to-r from-brand-400 to-brand-600'" [style.width.%]="f.pct"></div></div>
             </td>
             <td class="td">@if (f.guia) { <span class="inline-flex items-center gap-1.5"><app-icon name="user" size="w-3.5 h-3.5 text-zinc-400" />{{ f.guia.nombreCompleto }}</span> } @else { <span class="text-zinc-300">—</span> }</td>
-            <td class="td">@if (f.transporte) { <span class="inline-flex items-center gap-1.5"><app-icon name="truck" size="w-3.5 h-3.5 text-zinc-400" />{{ f.transporte.marcaModelo + ' · ' + f.transporte.placa }}</span> } @else { <span class="text-zinc-300">—</span> }</td>
+            <td class="td">@if (f.transporte) {
+              <span class="inline-flex items-center gap-1.5"><app-icon name="truck" size="w-3.5 h-3.5 text-zinc-400" />{{ f.transporte.marcaModelo + ' · ' + f.transporte.placa }}</span>
+              <div class="text-xs mt-0.5 flex items-center gap-1.5" [class]="f.chofer ? 'text-zinc-500' : 'text-amber-600'"><app-icon name="user" size="w-3 h-3" />{{ f.chofer ? f.chofer.nombreCompleto : 'Sin chofer' }}</div>
+            } @else { <span class="text-zinc-300">—</span> }</td>
             <td class="td"><app-badge [estado]="f.salida.estado" /></td>
             <td class="td text-right whitespace-nowrap">
               <div class="actions">
@@ -81,9 +84,9 @@
         @if (editId) { <div class="alert-info !py-2.5 !text-xs"><app-icon name="info" size="w-4 h-4" /><span>Los cupos disponibles se recalculan según las reservas activas.</span></div> }
       </div>
       <div class="form-section">
-        <div class="form-section-title"><app-icon name="map-pin" size="w-4 h-4" /> Recursos asignados <span class="opt normal-case tracking-normal font-sans">Opcional</span></div>
+        <div class="form-section-title"><app-icon name="map-pin" size="w-4 h-4" /> Logística <span class="opt normal-case tracking-normal font-sans">Opcional</span></div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
+          <div class="sm:col-span-2">
             <label class="label">Guía</label>
             <select class="field" [(ngModel)]="form.guiaId">
               <option [ngValue]="null">Sin asignar</option>
@@ -91,11 +94,28 @@
             </select>
           </div>
           <div>
-            <label class="label">Transporte</label>
-            <select class="field" [(ngModel)]="form.transporteId" (blur)="v.tocar('transporte')" [class.field-invalid]="v.error('transporte')">
+            <label class="label">Vehículo</label>
+            <select class="field" [(ngModel)]="form.transporteId" (ngModelChange)="cambiarTransporte()" (blur)="v.tocar('transporte')" [class.field-invalid]="v.error('transporte')">
               <option [ngValue]="null">Sin asignar</option>
               @for (t of store.transportes(); track t.transporteId) { <option [ngValue]="t.transporteId">{{ t.marcaModelo }} · {{ t.placa }} ({{ t.capacidad }})</option> }
             </select>@if (v.error('transporte'); as e) { <p class="field-error">{{ e }}</p> }
+          </div>
+          <div>
+            <label class="label">Chofer</label>
+            <select class="field" [(ngModel)]="form.choferId" [disabled]="!form.transporteId" (blur)="v.tocar('chofer')" [class.field-invalid]="v.error('chofer')">
+              <option [ngValue]="null">{{ form.transporteId ? 'Sin asignar' : 'Elige primero el vehículo' }}</option>
+              @if (choferesDelVehiculo.length > 0) {
+                <optgroup label="Habituales de este vehículo">
+                  @for (c of choferesDelVehiculo; track c.choferId) { <option [ngValue]="c.choferId">{{ c.nombreCompleto }} · {{ c.categoriaLicencia }}</option> }
+                </optgroup>
+              }
+              @if (otrosChoferes.length > 0) {
+                <optgroup label="Otros choferes">
+                  @for (c of otrosChoferes; track c.choferId) { <option [ngValue]="c.choferId">{{ c.nombreCompleto }} · {{ c.categoriaLicencia }}</option> }
+                </optgroup>
+              }
+            </select>@if (v.error('chofer'); as e) { <p class="field-error">{{ e }}</p> }
+            @if (!v.error('chofer') && form.transporteId) { <p class="hint">Se propone el chofer habitual del vehículo.</p> }
           </div>
         </div>
       </div>

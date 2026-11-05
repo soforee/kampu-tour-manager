@@ -17,11 +17,16 @@ public record ReservaDTO(
         String estadoPago,
         String observaciones,
         String formaReembolso,
-        Long usuarioAnulaId
+        Long usuarioAnulaId,
+        String contactoNombre,
+        String contactoEmail,
+        String contactoTelefono,
+        LocalDateTime boletaEnviadaEn
 ) {
     public static ReservaDTO desde(Reserva r) {
         return new ReservaDTO(r.getReservaId(), r.getClienteId(), r.getSalidaId(), r.getFechaReserva(),
                 r.getNumeroViajeros(), r.getMontoTotal(), r.getMontoPagado() == null ? BigDecimal.ZERO : r.getMontoPagado(),
-                r.getEstadoReserva(), r.getEstadoPago(), r.getObservaciones() == null ? "" : r.getObservaciones(), r.getFormaReembolso(), r.getUsuarioAnulaId());
+                r.getEstadoReserva(), r.getEstadoPago(), r.getObservaciones() == null ? "" : r.getObservaciones(), r.getFormaReembolso(), r.getUsuarioAnulaId(),
+                r.getContactoNombre(), r.getContactoEmail(), r.getContactoTelefono(), r.getBoletaEnviadaEn());
     }
 }

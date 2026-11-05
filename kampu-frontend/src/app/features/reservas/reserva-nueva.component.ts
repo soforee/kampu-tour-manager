@@ -4,16 +4,17 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TourStore } from '../../core/services/tour-store.service';
 import { AlertService } from '../../core/services/alert.service';
-import { PasajeroDraft, TipoDocumento } from '../../core/models';
+import { Cliente, ContactoReserva, PasajeroDraft, TipoDocumento } from '../../core/models';
 import { hoy } from '../../core/utils/date.util';
 import { IconComponent } from '../../shared/icon.component';
 import { filtrarEscritura, filtrarPegado } from '../../core/utils/filtro';
 import { Errores, FormValidacion, V } from '../../core/utils/validacion';
+import { ClienteSelectorComponent } from './cliente-selector.component';
 
 @Component({
   selector: 'app-reserva-nueva',
   standalone: true,
-  imports: [FormsModule, RouterLink, CurrencyPipe, DatePipe, IconComponent],
+  imports: [FormsModule, RouterLink, CurrencyPipe, DatePipe, IconComponent, ClienteSelectorComponent],
   templateUrl: './reserva-nueva.component.html',
   styleUrl: './reserva-nueva.component.css'
 })
@@ -24,13 +25,21 @@ export class ReservaNuevaComponent implements OnInit {
   private route = inject(ActivatedRoute);
 
   tipos: TipoDocumento[] = ['DNI', 'CE', 'PASAPORTE'];
-  clienteId: number | null = null;
+  // 'registrado': cliente existente (buscador) · 'invitado': solo nombre, correo y teléfono
+  modo: 'registrado' | 'invitado' = 'registrado';
+  cliente: Cliente | null = null;
+  contacto: ContactoReserva = { nombre: '', email: '', telefono: '' };
   salidaId: number | null = null;
   observaciones = '';
   pasajeros: PasajeroDraft[] = [this.vacio()];
   v = new FormValidacion(() => {
     const e: Errores = {
-      cliente: this.clienteId ? null : 'Selecciona un cliente.',
+      cliente: this.modo === 'registrado' && !this.cliente ? 'Busca y selecciona un cliente.' : null,
+      cNombre: this.modo === 'invitado' ? V.nombrePersona(this.contacto.nombre, 'El nombre del contacto') : null,
+      cEmail: this.modo === 'invitado'
+        ? (this.contacto.email.trim() ? V.email(this.contacto.email) : 'El correo es obligatorio para enviarle la boleta.') : null,
+      cTelefono: this.modo === 'invitado'
+        ? (this.contacto.telefono.trim() ? V.telefono(this.contacto.telefono) : 'El teléfono es obligatorio.') : null,
       salida: this.salidaId ? null : 'Selecciona una salida.',
       observaciones: this.observaciones.length > 200 ? 'Las observaciones admiten máximo 200 caracteres.' : null
     };
@@ -65,7 +74,7 @@ export class ReservaNuevaComponent implements OnInit {
   get paquete() { return this.store.getPaquete(this.salida?.paqueteId); }
   get total() { return (this.paquete?.precioBase ?? 0) * this.pasajeros.length; }
   get excede() { return !!this.salida && this.pasajeros.length > this.salida.cuposDisponibles; }
-  get puedeGuardar() { return !this.store.ocupado() && !!this.clienteId && !!this.salida && !this.excede && this.pasajeros.length > 0; }
+  get tieneCliente() { return this.modo === 'registrado' ? !!this.cliente : !!this.contacto.nombre.trim(); }
 
   ngOnInit() {
     this.store.cargar(false, () => {
@@ -84,15 +93,44 @@ export class ReservaNuevaComponent implements OnInit {
   agregar() { if (this.pasajeros.length < 99) this.pasajeros.push(this.vacio()); }
   quitar(i: number) { this.pasajeros.splice(i, 1); }
 
+  cambiarModo(modo: 'registrado' | 'invitado') {
+    this.modo = modo;
+    this.v.reiniciar();
+  }
+
+  // Al elegir un cliente en el buscador se autocompleta el primer pasajero (si está vacío)
+  elegirCliente(c: Cliente | null) {
+    this.cliente = c;
+    this.v.tocar('cliente');
+    if (c && this.primeroVacio()) this.agregarCliente();
+  }
+
+  // Desde el buscador: "no está registrado" → pasa a invitado con lo que escribió como nombre
+  pasarAInvitado(texto: string) {
+    this.modo = 'invitado';
+    const t = texto.trim();
+    if (t.includes('@')) this.contacto.email = t;
+    else if (/^[a-zA-ZÀ-ÿ .'-]+$/.test(t)) this.contacto.nombre = t;
+    this.v.reiniciar();
+  }
+
+  private primeroVacio(): boolean {
+    const p = this.pasajeros[0];
+    return this.pasajeros.length === 1 && !p.nombreCompleto.trim() && !p.numeroDocumento.trim();
+  }
+
   agregarCliente() {
-    const c = this.store.getCliente(this.clienteId);
-    if (!c) return;
-    const dato: PasajeroDraft = {
-      nombreCompleto: c.nombreCompleto, tipoDocumento: c.tipoDocumento, numeroDocumento: c.numeroDocumento,
-      nacionalidad: 'Peruana', fechaNacimiento: ''
-    };
-    const primero = this.pasajeros[0];
-    if (this.pasajeros.length === 1 && !primero.nombreCompleto && !primero.numeroDocumento) this.pasajeros[0] = dato;
+    let dato: PasajeroDraft;
+    if (this.modo === 'registrado') {
+      const c = this.cliente;
+      if (!c) return;
+      dato = { nombreCompleto: c.nombreCompleto, tipoDocumento: c.tipoDocumento, numeroDocumento: c.numeroDocumento,
+               nacionalidad: 'Peruana', fechaNacimiento: '' };
+    } else {
+      if (!this.contacto.nombre.trim()) return;
+      dato = { nombreCompleto: this.contacto.nombre.trim(), tipoDocumento: 'DNI', numeroDocumento: '', nacionalidad: 'Peruana', fechaNacimiento: '' };
+    }
+    if (this.primeroVacio()) this.pasajeros[0] = dato;
     else this.pasajeros.push(dato);
   }
 
@@ -104,7 +142,11 @@ export class ReservaNuevaComponent implements OnInit {
       nacionalidad: p.nacionalidad.trim(), fechaNacimiento: p.fechaNacimiento
     }));
     this.store.ocupado.set(true);
-    this.store.crearReserva(this.clienteId!, this.salidaId!, this.observaciones.trim(), lista).subscribe({
+    const clienteId = this.modo === 'registrado' ? this.cliente!.clienteId : null;
+    const contacto: ContactoReserva | null = this.modo === 'invitado'
+      ? { nombre: this.contacto.nombre.trim(), email: this.contacto.email.trim(), telefono: this.contacto.telefono.trim() }
+      : null;
+    this.store.crearReserva(clienteId, contacto, this.salidaId!, this.observaciones.trim(), lista).subscribe({
       next: (reserva) => {
         this.store.ocupado.set(false);
         this.alerts.toast('Reserva creada');

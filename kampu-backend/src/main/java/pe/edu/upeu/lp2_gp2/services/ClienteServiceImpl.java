@@ -1,5 +1,6 @@
 package pe.edu.upeu.lp2_gp2.services;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pe.edu.upeu.lp2_gp2.dto.ClienteDTO;
@@ -17,6 +18,8 @@ import java.util.Optional;
 
 @Service
 public class ClienteServiceImpl implements IClienteService {
+    private static final int MAX_RESULTADOS = 8;
+
     private final ClienteRepository clienteRepository;
     private final ReservaRepository reservaRepository;
 
@@ -29,6 +32,16 @@ public class ClienteServiceImpl implements IClienteService {
     @Transactional(readOnly = true)
     public List<ClienteDTO> listarTodo() {
         return clienteRepository.findAllByOrderByClienteIdAsc().stream().map(ClienteDTO::desde).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ClienteDTO> buscar(String texto) {
+        String t = texto == null ? "" : texto.trim();
+        if (t.length() < 2) return List.of();
+        if (t.length() > 100) t = t.substring(0, 100);
+        String patron = "%" + t.toUpperCase().replace("!", "!!").replace("%", "!%").replace("_", "!_") + "%";
+        return clienteRepository.buscar(patron, PageRequest.of(0, MAX_RESULTADOS)).stream().map(ClienteDTO::desde).toList();
     }
 
     @Override

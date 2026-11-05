@@ -5,7 +5,8 @@ proyecto/
 ├── kampu-backend/      Backend Spring Boot 3.4 (Java 21) — API REST en http://localhost:8082/lp2_gp2
 │   └── src/main/resources/db/
 │       ├── 01_schema.sql   Script de tablas (el original; un solo ajuste, ver "Hallazgos")
-│       └── 02_data.sql     Datos de demostración (los mismos que tenía el frontend en seed.ts)
+│       ├── 02_data.sql     Datos de demostración (los mismos que tenía el frontend en seed.ts)
+│       └── 03_migracion_choferes_invitados.sql  Solo para una BD ya creada: choferes, invitados y boleta
 └── kampu-frontend/     Frontend Angular 18 (el diseño y las pantallas no cambian)
 ```
 
@@ -62,6 +63,23 @@ Las mismas reglas se aplican en ambos lados: `kampu-frontend/src/app/core/utils/
 > `02_data.sql` usa IDs fijos (para que coincidan las relaciones) y al final reinicia las identidades con
 > `ALTER TABLE ... MODIFY ... (START WITH LIMIT VALUE)`, para que los registros nuevos continúen desde el último ID.
 
+**¿Ya tenías la base creada?** Ejecuta solo `03_migracion_choferes_invitados.sql`: crea `CHOFERES`, agrega
+`chofer_id` a las salidas, permite reservas sin cliente (`contacto_nombre/email/telefono`) y la columna
+`boleta_enviada_en`. Si instalas desde cero no hace falta: `01` y `02` ya incluyen esos cambios.
+
+### Correo (boleta informativa)
+
+La boleta se envía sola al **confirmar una reserva** o al **aprobar un pago**, y se puede reenviar desde el detalle.
+El correo sale por SMTP (Gmail por defecto) con credenciales en variables de entorno, para no subirlas a GitHub:
+
+```bash
+export MAIL_USERNAME=tu_correo@gmail.com
+export MAIL_PASSWORD=tu_contraseña_de_aplicación   # Gmail → Seguridad → Contraseñas de aplicaciones
+```
+
+En IntelliJ: *Run → Edit Configurations → Environment variables*. Sin `MAIL_USERNAME` el envío queda desactivado
+(la reserva funciona igual) y el botón "Ver" del detalle muestra la boleta en el navegador.
+
 ## 2. Backend (`kampu-backend`)
 
 Conexión en `src/main/resources/application.yaml`. Puedes editarla ahí o usar variables de entorno:
@@ -111,9 +129,10 @@ Errores: `{ "status": 400, "error": "mensaje", "timestamp": ... }`
 | Paquetes | `GET/POST /paquetes` · `GET/PUT/DELETE /paquetes/{id}` · `POST /paquetes/imagen` (multipart `file`) → `{imagen}` |
 | Guías | `GET/POST /guias` · `GET/PUT/DELETE /guias/{id}` |
 | Transporte | `GET/POST /transportes` · `GET/PUT/DELETE /transportes/{id}` |
-| Clientes | `GET/POST /clientes` · `GET/PUT/DELETE /clientes/{id}` |
-| Salidas | `GET/POST /salidas` · `GET/PUT/DELETE /salidas/{id}` |
-| Reservas | `GET/POST /reservas` (POST incluye `pasajeros[]`) · `GET /reservas/{id}` · `GET /reservas/{id}/pasajeros` · `PATCH /reservas/{id}/confirmar` · `PATCH /reservas/{id}/completar` · `PATCH /reservas/{id}/anular` `{formaReembolso, usuarioId}` |
+| Choferes | `GET/POST /choferes` · `GET/PUT/DELETE /choferes/{id}` (vehículo habitual opcional) |
+| Clientes | `GET/POST /clientes` · `GET/PUT/DELETE /clientes/{id}` · `GET /clientes/buscar?q=` (autocompletado: nombre, documento o correo; máx. 8) |
+| Salidas | `GET/POST /salidas` · `GET/PUT/DELETE /salidas/{id}` (incluye `guiaId`, `transporteId`, `choferId`) |
+| Reservas | `GET/POST /reservas` (POST incluye `pasajeros[]` y `clienteId` **o** `contacto {nombre, email, telefono}` para invitados) · `GET /reservas/{id}/boleta` (HTML) · `POST /reservas/{id}/boleta` (envía por correo) · `GET /reservas/{id}` · `GET /reservas/{id}/pasajeros` · `PATCH /reservas/{id}/confirmar` · `PATCH /reservas/{id}/completar` · `PATCH /reservas/{id}/anular` `{formaReembolso, usuarioId}` |
 | Pasajeros | `GET /pasajeros[?reservaId=]` |
 | Pagos | `GET /pagos[?reservaId=]` · `POST /pagos` · `PATCH /pagos/{id}/resolver` `{estado: APROBADO\|RECHAZADO}` |
 

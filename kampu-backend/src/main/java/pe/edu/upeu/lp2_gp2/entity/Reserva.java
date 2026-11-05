@@ -13,7 +13,8 @@ public class Reserva {
     @Column(name = "reserva_id")
     private Long reservaId;
 
-    @Column(name = "cliente_id", nullable = false)
+    // Nulo cuando la reserva es de un invitado (sin cliente registrado)
+    @Column(name = "cliente_id")
     private Long clienteId;
 
     @Column(name = "salida_id", nullable = false)
@@ -45,6 +46,19 @@ public class Reserva {
 
     @Column(name = "usuario_anula_id")
     private Long usuarioAnulaId;
+
+    // Datos de contacto del invitado (solo si cliente_id es nulo)
+    @Column(name = "contacto_nombre", length = 150)
+    private String contactoNombre;
+
+    @Column(name = "contacto_email", length = 100)
+    private String contactoEmail;
+
+    @Column(name = "contacto_telefono", length = 20)
+    private String contactoTelefono;
+
+    @Column(name = "boleta_enviada_en")
+    private LocalDateTime boletaEnviadaEn;
 
     public Reserva() {
     }
@@ -143,5 +157,37 @@ public class Reserva {
 
     public void setUsuarioAnulaId(Long usuarioAnulaId) {
         this.usuarioAnulaId = usuarioAnulaId;
+    }
+
+    public String getContactoNombre() {
+        return contactoNombre;
+    }
+
+    public void setContactoNombre(String contactoNombre) {
+        this.contactoNombre = contactoNombre;
+    }
+
+    public String getContactoEmail() {
+        return contactoEmail;
+    }
+
+    public void setContactoEmail(String contactoEmail) {
+        this.contactoEmail = contactoEmail;
+    }
+
+    public String getContactoTelefono() {
+        return contactoTelefono;
+    }
+
+    public void setContactoTelefono(String contactoTelefono) {
+        this.contactoTelefono = contactoTelefono;
+    }
+
+    public LocalDateTime getBoletaEnviadaEn() {
+        return boletaEnviadaEn;
+    }
+
+    public void setBoletaEnviadaEn(LocalDateTime boletaEnviadaEn) {
+        this.boletaEnviadaEn = boletaEnviadaEn;
     }
 }

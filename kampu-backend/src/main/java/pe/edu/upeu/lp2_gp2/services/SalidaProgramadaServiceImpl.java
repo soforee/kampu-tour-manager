@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pe.edu.upeu.lp2_gp2.dto.SalidaProgramadaDTO;
 import pe.edu.upeu.lp2_gp2.dto.SalidaProgramadaRequestDTO;
+import pe.edu.upeu.lp2_gp2.entity.Chofer;
 import pe.edu.upeu.lp2_gp2.entity.Reserva;
 import pe.edu.upeu.lp2_gp2.entity.SalidaProgramada;
 import pe.edu.upeu.lp2_gp2.entity.Transporte;
@@ -19,15 +20,17 @@ public class SalidaProgramadaServiceImpl implements ISalidaProgramadaService {
     private final PaqueteTourRepository paqueteRepository;
     private final GuiaRepository guiaRepository;
     private final TransporteRepository transporteRepository;
+    private final ChoferRepository choferRepository;
     private final ReservaRepository reservaRepository;
 
     public SalidaProgramadaServiceImpl(SalidaProgramadaRepository salidaRepository, PaqueteTourRepository paqueteRepository,
                                        GuiaRepository guiaRepository, TransporteRepository transporteRepository,
-                                       ReservaRepository reservaRepository) {
+                                       ChoferRepository choferRepository, ReservaRepository reservaRepository) {
         this.salidaRepository = salidaRepository;
         this.paqueteRepository = paqueteRepository;
         this.guiaRepository = guiaRepository;
         this.transporteRepository = transporteRepository;
+        this.choferRepository = choferRepository;
         this.reservaRepository = reservaRepository;
     }
 
@@ -96,6 +99,12 @@ public class SalidaProgramadaServiceImpl implements ISalidaProgramadaService {
                 throw new BusinessException("Los cupos superan la capacidad del transporte (" + t.getCapacidad() + ").");
             }
         }
+        if (d.choferId() != null) {
+            if (d.transporteId() == null) throw new BusinessException("Asigna primero el vehículo que manejará el chofer.");
+            Chofer c = choferRepository.findById(d.choferId())
+                    .orElseThrow(() -> new BusinessException("El chofer seleccionado no existe."));
+            if (!"ACTIVO".equals(c.getEstado())) throw new BusinessException("El chofer " + c.getNombreCompleto() + " está inactivo.");
+        }
         boolean activa = "PROGRAMADA".equals(d.estado()) || "CONFIRMADA".equals(d.estado());
         List<String> estadosActivos = List.of("PROGRAMADA", "CONFIRMADA");
         if (activa && d.guiaId() != null) {
@@ -109,6 +118,12 @@ public class SalidaProgramadaServiceImpl implements ISalidaProgramadaService {
                     .findByTransporteIdAndEstadoInAndFechaInicioLessThanEqualAndFechaFinGreaterThanEqual(
                             d.transporteId(), estadosActivos, d.fechaFin(), d.fechaInicio());
             if (hayOtraSalida(cruces, id)) throw new BusinessException("El transporte ya está asignado a otra salida en esas fechas.");
+        }
+        if (activa && d.choferId() != null) {
+            List<SalidaProgramada> cruces = salidaRepository
+                    .findByChoferIdAndEstadoInAndFechaInicioLessThanEqualAndFechaFinGreaterThanEqual(
+                            d.choferId(), estadosActivos, d.fechaFin(), d.fechaInicio());
+            if (hayOtraSalida(cruces, id)) throw new BusinessException("El chofer ya está asignado a otra salida en esas fechas.");
         }
     }
 
@@ -134,6 +149,7 @@ public class SalidaProgramadaServiceImpl implements ISalidaProgramadaService {
         s.setCuposMaximos(d.cuposMaximos());
         s.setGuiaId(d.guiaId());
         s.setTransporteId(d.transporteId());
+        s.setChoferId(d.choferId());
         s.setEstado(d.estado());
     }
 }

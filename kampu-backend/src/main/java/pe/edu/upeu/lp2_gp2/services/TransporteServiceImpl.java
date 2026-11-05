@@ -4,10 +4,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pe.edu.upeu.lp2_gp2.dto.TransporteDTO;
 import pe.edu.upeu.lp2_gp2.dto.TransporteRequestDTO;
+import pe.edu.upeu.lp2_gp2.entity.Chofer;
 import pe.edu.upeu.lp2_gp2.entity.Transporte;
 import pe.edu.upeu.lp2_gp2.exception.BusinessException;
 import pe.edu.upeu.lp2_gp2.exception.DuplicateResourceException;
 import pe.edu.upeu.lp2_gp2.exception.ResourceNotFoundException;
+import pe.edu.upeu.lp2_gp2.repository.ChoferRepository;
 import pe.edu.upeu.lp2_gp2.repository.SalidaProgramadaRepository;
 import pe.edu.upeu.lp2_gp2.repository.TransporteRepository;
 
@@ -18,10 +20,13 @@ import java.util.Optional;
 public class TransporteServiceImpl implements ITransporteService {
     private final TransporteRepository transporteRepository;
     private final SalidaProgramadaRepository salidaRepository;
+    private final ChoferRepository choferRepository;
 
-    public TransporteServiceImpl(TransporteRepository transporteRepository, SalidaProgramadaRepository salidaRepository) {
+    public TransporteServiceImpl(TransporteRepository transporteRepository, SalidaProgramadaRepository salidaRepository,
+                                 ChoferRepository choferRepository) {
         this.transporteRepository = transporteRepository;
         this.salidaRepository = salidaRepository;
+        this.choferRepository = choferRepository;
     }
 
     @Override
@@ -57,6 +62,11 @@ public class TransporteServiceImpl implements ITransporteService {
     public void eliminar(Long id) {
         Transporte t = obtener(id);
         if (salidaRepository.existsByTransporteId(id)) throw new BusinessException("El transporte está asignado a salidas programadas.");
+        // Los choferes que lo tenían como vehículo habitual quedan sin vehículo
+        for (Chofer c : choferRepository.findByTransporteId(id)) {
+            c.setTransporteId(null);
+            choferRepository.save(c);
+        }
         transporteRepository.delete(t);
     }
 

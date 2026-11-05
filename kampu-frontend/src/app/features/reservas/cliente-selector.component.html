@@ -1,0 +1,62 @@
+@if (seleccionado; as c) {
+  <div class="seleccionado animate-fade-in">
+    <span class="avatar w-10 h-10 text-sm bg-brand-600 text-white">{{ iniciales(c.nombreCompleto) }}</span>
+    <div class="min-w-0 flex-1">
+      <div class="font-bold text-zinc-900 truncate">{{ c.nombreCompleto }}</div>
+      <div class="text-xs text-zinc-500 truncate">
+        <span class="font-mono">{{ c.tipoDocumento }} {{ c.numeroDocumento }}</span>
+        @if (c.email) { · {{ c.email }} }
+      </div>
+    </div>
+    <button type="button" class="btn-light btn-sm shrink-0" (click)="cambiar()">Cambiar</button>
+  </div>
+} @else {
+  <div class="relative">
+    <div class="search">
+      <span class="search-icon"><app-icon name="search" size="w-4 h-4" /></span>
+      <input #entrada type="text" class="field" autocomplete="off" maxlength="100"
+             placeholder="Busca por nombre, DNI/pasaporte o correo…"
+             role="combobox" aria-autocomplete="list" aria-controls="lista-clientes"
+             [attr.aria-expanded]="abierto()"
+             [attr.aria-activedescendant]="activo() >= 0 ? 'cliente-opcion-' + activo() : null"
+             [class.field-invalid]="invalido"
+             [value]="texto()" (input)="escribir($any($event.target).value)"
+             (keydown)="teclear($event)" (focus)="abierto.set(texto().trim().length >= 2)" (blur)="salir()">
+      @if (cargando()) { <span class="spinner"></span> }
+    </div>
+
+    @if (abierto() && texto().trim().length >= 2) {
+      <div class="panel animate-pop-in" id="lista-clientes" role="listbox">
+        @if (error()) {
+          <div class="px-4 py-3 text-sm text-rose-600">{{ error() }}</div>
+        } @else if (cargando() && resultados().length === 0) {
+          <div class="px-4 py-3 text-sm text-zinc-400">Buscando…</div>
+        } @else if (buscado() && resultados().length === 0) {
+          <div class="px-4 py-4 text-sm text-zinc-500">No hay clientes que coincidan con «{{ texto().trim() }}».</div>
+        }
+        @for (c of resultados(); track c.clienteId; let i = $index) {
+          <!-- mousedown evita que el input pierda el foco antes de elegir -->
+          <div class="opcion" role="option" [id]="'cliente-opcion-' + i" [attr.aria-selected]="i === activo()"
+               [class.opcion-activa]="i === activo()" (mouseenter)="activo.set(i)"
+               (mousedown)="$event.preventDefault(); elegir(c)">
+            <span class="avatar w-8 h-8 text-[11px] bg-zinc-100 text-zinc-600">{{ iniciales(c.nombreCompleto) }}</span>
+            <div class="min-w-0 flex-1">
+              <div class="text-sm font-semibold text-zinc-900 truncate">
+                @for (t of resaltar(c.nombreCompleto); track $index) {<span [class.marca]="t.marca">{{ t.texto }}</span>}
+              </div>
+              <div class="text-xs text-zinc-500 truncate">
+                <span class="font-mono">{{ c.tipoDocumento }} @for (t of resaltar(c.numeroDocumento); track $index) {<span [class.marca]="t.marca">{{ t.texto }}</span>}</span>
+                @if (c.email) { · @for (t of resaltar(c.email); track $index) {<span [class.marca]="t.marca">{{ t.texto }}</span>} }
+              </div>
+            </div>
+            @if (i === activo()) { <app-icon name="arrow-right" size="w-4 h-4 text-brand-600 shrink-0" /> }
+          </div>
+        }
+        <button type="button" class="pie" (mousedown)="$event.preventDefault(); invitado()">
+          <app-icon name="user" size="w-4 h-4" /> ¿No está registrado? <span class="font-bold">Reservar como invitado</span>
+        </button>
+      </div>
+    }
+  </div>
+  <p class="hint">Escribe al menos 2 caracteres. Usa ↑ ↓ y Enter para elegir.</p>
+}

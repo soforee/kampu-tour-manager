@@ -47,7 +47,13 @@ export class ReservaDetalleComponent {
   paquete = computed(() => this.store.getPaquete(this.salida()?.paqueteId));
   guia = computed(() => this.store.getGuia(this.salida()?.guiaId));
   transporte = computed(() => this.store.getTransporte(this.salida()?.transporteId));
+  chofer = computed(() => this.store.getChofer(this.salida()?.choferId));
   cliente = computed(() => this.store.getCliente(this.reserva()?.clienteId));
+  invitado = computed(() => this.store.esInvitado(this.reserva()));
+  nombreCliente = computed(() => this.store.nombreCliente(this.reserva()));
+  emailCliente = computed(() => this.invitado() ? this.reserva()?.contactoEmail ?? '' : this.cliente()?.email ?? '');
+  telefonoCliente = computed(() => this.invitado() ? this.reserva()?.contactoTelefono ?? '' : this.cliente()?.telefono ?? '');
+  enviandoBoleta = false;
   pasajeros = computed(() => this.store.pasajerosDe(this.id));
   pagos = computed(() => this.store.pagosDe(this.id));
   saldo = computed(() => { const r = this.reserva(); return r ? this.store.saldo(r) : 0; });
@@ -112,6 +118,29 @@ export class ReservaDetalleComponent {
       return;
     }
     this.ejecutar(this.store.anularReserva(this.id, forma), 'Reserva anulada');
+  }
+
+  verBoleta() {
+    window.open(this.store.urlBoleta(this.id), '_blank', 'noopener');
+  }
+
+  async enviarBoleta() {
+    if (this.enviandoBoleta) return;
+    const email = this.emailCliente();
+    if (!email) { this.alerts.error('El cliente no tiene correo registrado.'); return; }
+    if (!(await this.alerts.confirm(`Se enviará la boleta a ${email}.`, 'Enviar boleta', 'Enviar'))) return;
+    this.enviandoBoleta = true;
+    this.store.enviarBoleta(this.id).subscribe({
+      next: (res) => {
+        this.enviandoBoleta = false;
+        this.store.cargarReservas();
+        this.alerts.toast('Boleta enviada a ' + res.destinatario);
+      },
+      error: (err) => {
+        this.enviandoBoleta = false;
+        this.alerts.error(this.store.error(err));
+      }
+    });
   }
 
   registrarPago() {

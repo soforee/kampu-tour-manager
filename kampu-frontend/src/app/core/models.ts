@@ -7,6 +7,7 @@ export type TipoDocumento = 'DNI' | 'CE' | 'PASAPORTE';
 export type Moneda = 'PEN' | 'USD' | 'EUR';
 export type Rol = 'ADMIN' | 'VENTAS';
 export type EstadoRegistro = 'ACTIVO' | 'INACTIVO';
+export type CategoriaLicencia = 'A-IIa' | 'A-IIb' | 'A-IIIa' | 'A-IIIb' | 'A-IIIc';
 
 export interface UsuarioSistema {
   usuarioId: number;
@@ -41,6 +42,16 @@ export interface Transporte {
   capacidad: number;
 }
 
+export interface Chofer {
+  choferId: number;
+  nombreCompleto: string;
+  numeroLicencia: string;
+  categoriaLicencia: CategoriaLicencia;
+  telefono: string;
+  transporteId?: number | null;
+  estado: EstadoRegistro;
+}
+
 export interface Cliente {
   clienteId: number;
   nombreCompleto: string;
@@ -59,12 +70,13 @@ export interface SalidaProgramada {
   cuposDisponibles: number;
   guiaId?: number | null;
   transporteId?: number | null;
+  choferId?: number | null;
   estado: EstadoSalida;
 }
 
 export interface Reserva {
   reservaId: number;
-  clienteId: number;
+  clienteId: number | null;
   salidaId: number;
   fechaReserva: string;
   numeroViajeros: number;
@@ -75,6 +87,17 @@ export interface Reserva {
   observaciones: string;
   formaReembolso?: string;
   usuarioAnulaId?: number;
+  contactoNombre?: string | null;
+  contactoEmail?: string | null;
+  contactoTelefono?: string | null;
+  boletaEnviadaEn?: string | null;
+}
+
+// Datos mínimos de un cliente no registrado (invitado)
+export interface ContactoReserva {
+  nombre: string;
+  email: string;
+  telefono: string;
 }
 
 export interface PasajeroReserva {
@@ -120,6 +143,15 @@ export interface TransporteForm {
   capacidad: number;
 }
 
+export interface ChoferForm {
+  nombreCompleto: string;
+  numeroLicencia: string;
+  categoriaLicencia: CategoriaLicencia;
+  telefono: string;
+  transporteId: number | null;
+  estado: EstadoRegistro;
+}
+
 export interface ClienteForm {
   nombreCompleto: string;
   tipoDocumento: TipoDocumento;
@@ -135,6 +167,7 @@ export interface SalidaForm {
   cuposMaximos: number;
   guiaId?: number | null;
   transporteId?: number | null;
+  choferId?: number | null;
   estado: EstadoSalida;
 }
 

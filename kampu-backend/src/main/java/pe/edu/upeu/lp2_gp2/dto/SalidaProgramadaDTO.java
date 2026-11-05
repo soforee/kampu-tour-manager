@@ -13,10 +13,11 @@ public record SalidaProgramadaDTO(
         Integer cuposDisponibles,
         Long guiaId,
         Long transporteId,
+        Long choferId,
         String estado
 ) {
     public static SalidaProgramadaDTO desde(SalidaProgramada s) {
         return new SalidaProgramadaDTO(s.getSalidaId(), s.getPaqueteId(), s.getFechaInicio(), s.getFechaFin(),
-                s.getCuposMaximos(), s.getCuposDisponibles(), s.getGuiaId(), s.getTransporteId(), s.getEstado());
+                s.getCuposMaximos(), s.getCuposDisponibles(), s.getGuiaId(), s.getTransporteId(), s.getChoferId(), s.getEstado());
     }
 }

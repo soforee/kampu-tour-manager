@@ -7,6 +7,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.mail.MailException;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -41,6 +42,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DuplicateResourceException.class)
     public ResponseEntity<ErrorDTO> duplicado(DuplicateResourceException e) {
         return responder(HttpStatus.CONFLICT, e.getMessage());
+    }
+
+    @ExceptionHandler(MailException.class)
+    public ResponseEntity<ErrorDTO> correo(MailException e) {
+        System.err.println("Error de correo: " + e.getMessage());
+        return responder(HttpStatus.BAD_GATEWAY, "No se pudo enviar el correo. Revisa la configuración SMTP del servidor.");
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

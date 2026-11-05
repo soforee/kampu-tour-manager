@@ -1,5 +1,6 @@
 package pe.edu.upeu.lp2_gp2.services;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pe.edu.upeu.lp2_gp2.dto.PasajeroRequestDTO;
@@ -28,16 +29,19 @@ public class ReservaServiceImpl implements IReservaService {
     private final ClienteRepository clienteRepository;
     private final PaqueteTourRepository paqueteRepository;
     private final PagoRepository pagoRepository;
+    private final ApplicationEventPublisher eventos;
 
     public ReservaServiceImpl(ReservaRepository reservaRepository, PasajeroReservaRepository pasajeroRepository,
                               SalidaProgramadaRepository salidaRepository, ClienteRepository clienteRepository,
-                              PaqueteTourRepository paqueteRepository, PagoRepository pagoRepository) {
+                              PaqueteTourRepository paqueteRepository, PagoRepository pagoRepository,
+                              ApplicationEventPublisher eventos) {
         this.reservaRepository = reservaRepository;
         this.pasajeroRepository = pasajeroRepository;
         this.salidaRepository = salidaRepository;
         this.clienteRepository = clienteRepository;
         this.paqueteRepository = paqueteRepository;
         this.pagoRepository = pagoRepository;
+        this.eventos = eventos;
     }
 
     @Override
@@ -61,7 +65,7 @@ public class ReservaServiceImpl implements IReservaService {
                 throw new BusinessException("La fecha de nacimiento no puede ser anterior a 1900.");
             }
         }
-        if (!clienteRepository.existsById(dto.clienteId())) throw new BusinessException("Selecciona un cliente.");
+        validarCliente(dto);
         SalidaProgramada salida = salidaRepository.findByIdParaActualizar(dto.salidaId())
                 .orElseThrow(() -> new BusinessException("Selecciona una salida."));
         if (!"PROGRAMADA".equals(salida.getEstado()) && !"CONFIRMADA".equals(salida.getEstado())) {
@@ -88,6 +92,11 @@ public class ReservaServiceImpl implements IReservaService {
                 .orElseThrow(() -> new BusinessException("El paquete de la salida no existe."));
         Reserva r = new Reserva();
         r.setClienteId(dto.clienteId());
+        if (dto.clienteId() == null) {
+            r.setContactoNombre(dto.contacto().nombre().trim());
+            r.setContactoEmail(dto.contacto().email().trim().toLowerCase());
+            r.setContactoTelefono(dto.contacto().telefono().trim());
+        }
         r.setSalidaId(dto.salidaId());
         r.setFechaReserva(LocalDateTime.now());
         r.setNumeroViajeros(n);
@@ -119,7 +128,9 @@ public class ReservaServiceImpl implements IReservaService {
         Reserva r = obtener(id);
         if (!"PENDIENTE".equals(r.getEstadoReserva())) throw new BusinessException("Solo se confirman reservas pendientes.");
         r.setEstadoReserva("CONFIRMADA");
-        return ReservaDTO.desde(reservaRepository.save(r));
+        Reserva guardada = reservaRepository.save(r);
+        eventos.publishEvent(new BoletaEvento(id, "reserva confirmada"));
+        return ReservaDTO.desde(guardada);
     }
 
     @Override
@@ -170,6 +181,22 @@ public class ReservaServiceImpl implements IReservaService {
                 ? pasajeroRepository.findAllByOrderByPasajeroIdAsc()
                 : pasajeroRepository.findByReservaIdOrderByPasajeroId(reservaId);
         return lista.stream().map(PasajeroReservaDTO::desde).toList();
+    }
+
+    // Exactamente uno: un cliente registrado o los datos de contacto del invitado.
+    private void validarCliente(ReservaRequestDTO dto) {
+        if (dto.clienteId() != null && dto.contacto() != null) {
+            throw new BusinessException("Elige un cliente registrado o ingresa los datos del invitado, no ambos.");
+        }
+        if (dto.clienteId() == null && dto.contacto() == null) {
+            throw new BusinessException("Selecciona un cliente o ingresa los datos del invitado.");
+        }
+        if (dto.clienteId() != null && !clienteRepository.existsById(dto.clienteId())) {
+            throw new BusinessException("El cliente seleccionado no existe.");
+        }
+        if (dto.contacto() != null && !Reglas.telefonoValido(dto.contacto().telefono())) {
+            throw new BusinessException(Reglas.MSG_TELEFONO);
+        }
     }
 
     private Reserva obtener(Long id) {
