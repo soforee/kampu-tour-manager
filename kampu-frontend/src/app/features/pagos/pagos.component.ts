@@ -30,7 +30,7 @@ export class PagosComponent {
       .map(p => ({
         pago: p,
         codigo: this.store.codigoReserva(p.reservaId),
-        cliente: this.store.getCliente(this.store.getReserva(p.reservaId)?.clienteId)?.nombreCompleto ?? '—',
+        cliente: this.store.nombreCliente(this.store.getReserva(p.reservaId)) || '—',
         pen: aPEN(p.monto, p.moneda)
       }))
       .filter(f => !e || f.pago.estadoTransaccion === e)

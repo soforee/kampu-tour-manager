@@ -37,14 +37,15 @@ export class ReservasComponent {
         return {
           reserva: r, salida,
           codigo: this.store.codigoReserva(r.reservaId),
-          cliente: this.store.getCliente(r.clienteId),
+          cliente: this.store.nombreCliente(r),
+          invitado: this.store.esInvitado(r),
           paquete: this.store.getPaquete(salida?.paqueteId),
           saldo: this.store.saldo(r)
         };
       })
       .filter(f => !e || f.reserva.estadoReserva === e)
       .filter(f => !t || f.codigo.toLowerCase().includes(t)
-        || (f.cliente?.nombreCompleto.toLowerCase().includes(t) ?? false)
+        || f.cliente.toLowerCase().includes(t)
         || (f.paquete?.nombre.toLowerCase().includes(t) ?? false))
       .sort((a, b) => b.reserva.reservaId - a.reserva.reservaId);
   });

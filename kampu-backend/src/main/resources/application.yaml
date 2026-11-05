@@ -21,6 +21,24 @@ spring:
     deserialization:
       accept-float-as-int: false
 
+  # Correo (boleta informativa). Con Gmail usa una "contraseña de aplicación".
+  # Las credenciales se leen de variables de entorno para no subirlas a GitHub.
+  # Si MAIL_USERNAME está vacío, el envío queda desactivado (la vista previa sí funciona).
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
   servlet:
     multipart:
       max-file-size: 10MB

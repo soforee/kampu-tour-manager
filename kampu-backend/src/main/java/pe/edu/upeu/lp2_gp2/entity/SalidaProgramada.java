@@ -33,6 +33,9 @@ public class SalidaProgramada {
     @Column(name = "transporte_id")
     private Long transporteId;
 
+    @Column(name = "chofer_id")
+    private Long choferId;
+
     @Column(name = "estado", length = 20)
     private String estado;
 
@@ -101,6 +104,14 @@ public class SalidaProgramada {
 
     public void setTransporteId(Long transporteId) {
         this.transporteId = transporteId;
+    }
+
+    public Long getChoferId() {
+        return choferId;
+    }
+
+    public void setChoferId(Long choferId) {
+        this.choferId = choferId;
     }
 
     public String getEstado() {

@@ -24,6 +24,12 @@ public class ClienteController {
         return ResponseEntity.ok(clienteService.listarTodo());
     }
 
+    // Autocompletado del selector de clientes: ?q= nombre, documento o correo (mínimo 2 caracteres)
+    @GetMapping("/buscar")
+    public ResponseEntity<List<ClienteDTO>> buscar(@RequestParam(value = "q", required = false) String q) {
+        return ResponseEntity.ok(clienteService.buscar(q));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ClienteDTO> obtener(@PathVariable Long id) {
         return ResponseEntity.ok(clienteService.buscarPorId(id));

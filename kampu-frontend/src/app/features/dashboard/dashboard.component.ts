@@ -55,7 +55,7 @@ export class DashboardComponent {
       .map(r => ({
         reserva: r,
         codigo: this.store.codigoReserva(r.reservaId),
-        cliente: this.store.getCliente(r.clienteId),
+        cliente: this.store.nombreCliente(r),
         paquete: this.store.getPaquete(this.store.getSalida(r.salidaId)?.paqueteId)
       })));
 }

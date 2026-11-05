@@ -17,6 +17,7 @@ public record SalidaProgramadaRequestDTO(
         Integer cuposMaximos,
         Long guiaId,
         Long transporteId,
+        Long choferId,
         @NotNull(message = "El estado es obligatorio.")
         @Pattern(regexp = "PROGRAMADA|CONFIRMADA|COMPLETADA|CANCELADA", message = "Estado de salida no válido.")
         String estado

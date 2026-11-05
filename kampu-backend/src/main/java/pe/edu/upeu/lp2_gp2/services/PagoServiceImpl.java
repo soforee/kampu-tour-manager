@@ -1,5 +1,6 @@
 package pe.edu.upeu.lp2_gp2.services;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pe.edu.upeu.lp2_gp2.dto.PagoDTO;
@@ -20,11 +21,14 @@ public class PagoServiceImpl implements IPagoService {
     private final PagoRepository pagoRepository;
     private final ReservaRepository reservaRepository;
     private final ConversorMoneda conversor;
+    private final ApplicationEventPublisher eventos;
 
-    public PagoServiceImpl(PagoRepository pagoRepository, ReservaRepository reservaRepository, ConversorMoneda conversor) {
+    public PagoServiceImpl(PagoRepository pagoRepository, ReservaRepository reservaRepository, ConversorMoneda conversor,
+                           ApplicationEventPublisher eventos) {
         this.pagoRepository = pagoRepository;
         this.reservaRepository = reservaRepository;
         this.conversor = conversor;
+        this.eventos = eventos;
     }
 
     @Override
@@ -63,6 +67,9 @@ public class PagoServiceImpl implements IPagoService {
         p.setEstadoTransaccion(dto.estadoTransaccion());
         Pago guardado = pagoRepository.save(p);
         recalcular(r);
+        if ("APROBADO".equals(guardado.getEstadoTransaccion())) {
+            eventos.publishEvent(new BoletaEvento(r.getReservaId(), "pago aprobado"));
+        }
         return PagoDTO.desde(guardado);
     }
 
@@ -82,6 +89,9 @@ public class PagoServiceImpl implements IPagoService {
         p.setEstadoTransaccion(estado);
         Pago guardado = pagoRepository.save(p);
         recalcular(r);
+        if ("APROBADO".equals(estado)) {
+            eventos.publishEvent(new BoletaEvento(r.getReservaId(), "pago aprobado"));
+        }
         return PagoDTO.desde(guardado);
     }
 
