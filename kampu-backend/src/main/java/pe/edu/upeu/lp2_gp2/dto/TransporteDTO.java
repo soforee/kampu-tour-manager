@@ -2,8 +2,6 @@ package pe.edu.upeu.lp2_gp2.dto;
 
 import pe.edu.upeu.lp2_gp2.entity.Transporte;
 
-import static pe.edu.upeu.lp2_gp2.util.Texto.nz;
-
 public record TransporteDTO(
         Long transporteId,
         String placa,
@@ -11,6 +9,6 @@ public record TransporteDTO(
         Integer capacidad
 ) {
     public static TransporteDTO desde(Transporte t) {
-        return new TransporteDTO(t.getTransporteId(), t.getPlaca(), nz(t.getMarcaModelo()), t.getCapacidad());
+        return new TransporteDTO(t.getTransporteId(), t.getPlaca(), t.getMarcaModelo() == null ? "" : t.getMarcaModelo(), t.getCapacidad());
     }
 }

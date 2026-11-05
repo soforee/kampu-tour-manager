@@ -14,8 +14,6 @@ import pe.edu.upeu.lp2_gp2.repository.SalidaProgramadaRepository;
 import java.util.List;
 import java.util.Objects;
 
-import static pe.edu.upeu.lp2_gp2.util.Texto.limpio;
-
 @Service
 public class PaqueteTourServiceImpl implements IPaqueteTourService {
     private final PaqueteTourRepository paqueteRepository;
@@ -91,11 +89,11 @@ public class PaqueteTourServiceImpl implements IPaqueteTourService {
 
     private void copiar(PaqueteTourRequestDTO dto, PaqueteTour p) {
         p.setNombre(dto.nombre().trim());
-        p.setDescripcion(limpio(dto.descripcion()));
+        p.setDescripcion(dto.descripcion() == null || dto.descripcion().isBlank() ? null : dto.descripcion().trim());
         p.setPrecioBase(dto.precioBase());
         p.setDias(dto.dias());
         p.setNoches(dto.noches());
-        p.setImagen(limpio(dto.imagen()));
+        p.setImagen(dto.imagen() == null || dto.imagen().isBlank() ? null : dto.imagen().trim());
         p.setEstado(dto.estado() == null ? "ACTIVO" : dto.estado());
     }
 }

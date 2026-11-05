@@ -15,7 +15,7 @@ http://localhost:4200 → login (usuarios de `02_data.sql`):
 ## Estructura
 - `core/models.ts`: interfaces 1:1 con el esquema Oracle (USUARIOS_SISTEMA, CLIENTES, GUIAS, TRANSPORTE, PAQUETES_TOUR, SALIDAS_PROGRAMADAS, RESERVAS, PASAJEROS_RESERVA, PAGOS).
 - `core/services/tour-store.service.ts`: datos del backend en signals; cada operación llama a la API (`/api/v1/...`) y recarga las tablas afectadas. Las reglas de negocio (cupos, pagos, anulación/reembolso, choques de guía/transporte) las valida el backend.
-- `core/services/auth.service.ts`: login contra el backend y sesión en `localStorage`. `TourStore` envía el token en cada petición y vuelve al login si la sesión vence.
+- `core/services/auth.service.ts`: login contra el backend; el usuario logueado se guarda en `localStorage`.
 - `core/utils/api.ts`: rutas base de la API/imágenes y lectura de los mensajes de error del backend.
 - `public/paisaje_inicio.jpg`: foto de fondo del login.
 - Cada componente tiene sus tres archivos separados: `nombre.component.ts` (lógica), `nombre.component.html` (plantilla) y `nombre.component.css` (estilos).
@@ -37,5 +37,5 @@ http://localhost:4200 → login (usuarios de `02_data.sql`):
 
 ## Notas del esquema
 - `PAQUETES_TOUR.imagen` (máx. 500): las imágenes se **suben desde el equipo** (JPG, PNG o WebP). Se suben con `FormData` (máx. 10 MB) a `POST /api/v1/paquetes/imagen`; en la columna se guarda solo la ruta (`paquetes/<uuid>.jpg`) y el backend la sirve en `/lp2_gp2/images/<ruta>`.
-- Login contra `USUARIOS_SISTEMA`: `username` + `password_hash` (BCrypt, verificado en el backend) + `estado` ACTIVO.
+- Login contra `USUARIOS_SISTEMA`: `username` + `password_hash` (texto plano, verificado en el backend) + `estado` ACTIVO.
 - En localStorage solo queda la sesión (`tm3_session`). Los datos `tm3_*` de la versión sin backend ya no se usan y pueden borrarse.

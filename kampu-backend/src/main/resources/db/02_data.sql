@@ -1,5 +1,5 @@
-INSERT INTO USUARIOS_SISTEMA (usuario_id, username, password_hash, rol, estado) VALUES (1, 'admin', '$2a$10$epXHjYOSfrk9GZbVDz/NJOQUuYxElobpkWFwvsJKcMpAn4S2LGyKy', 'ADMIN', 'ACTIVO');
-INSERT INTO USUARIOS_SISTEMA (usuario_id, username, password_hash, rol, estado) VALUES (2, 'ventas', '$2a$10$hwbumrqX9mU0hd9tX5mRfOusJn5olR9VtNxwaSYcSPlNdQV3NBgJ2', 'VENTAS', 'ACTIVO');
+INSERT INTO USUARIOS_SISTEMA (usuario_id, username, password_hash, rol, estado) VALUES (1, 'admin', 'admin123', 'ADMIN', 'ACTIVO');
+INSERT INTO USUARIOS_SISTEMA (usuario_id, username, password_hash, rol, estado) VALUES (2, 'ventas', 'ventas123', 'VENTAS', 'ACTIVO');
 
 INSERT INTO CLIENTES (cliente_id, nombre_completo, tipo_documento, numero_documento, email, telefono) VALUES (1, 'Ana Ramírez Soto', 'DNI', '45871236', 'ana.ramirez@mail.com', '987654321');
 INSERT INTO CLIENTES (cliente_id, nombre_completo, tipo_documento, numero_documento, email, telefono) VALUES (2, 'Lucía Fernández Cruz', 'DNI', '71452368', 'lucia.fernandez@mail.com', '956874123');

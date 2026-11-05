@@ -14,8 +14,6 @@ import pe.edu.upeu.lp2_gp2.repository.TransporteRepository;
 import java.util.List;
 import java.util.Optional;
 
-import static pe.edu.upeu.lp2_gp2.util.Texto.limpio;
-
 @Service
 public class TransporteServiceImpl implements ITransporteService {
     private final TransporteRepository transporteRepository;
@@ -74,7 +72,7 @@ public class TransporteServiceImpl implements ITransporteService {
             throw new DuplicateResourceException("Ya existe un transporte con esa placa.");
         }
         t.setPlaca(placa);
-        t.setMarcaModelo(limpio(dto.marcaModelo()));
+        t.setMarcaModelo(dto.marcaModelo() == null || dto.marcaModelo().isBlank() ? null : dto.marcaModelo().trim());
         t.setCapacidad(dto.capacidad());
     }
 }

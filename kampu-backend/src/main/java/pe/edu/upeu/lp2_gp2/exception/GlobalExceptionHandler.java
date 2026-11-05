@@ -43,16 +43,6 @@ public class GlobalExceptionHandler {
         return responder(HttpStatus.CONFLICT, e.getMessage());
     }
 
-    @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<ErrorDTO> noAutorizado(UnauthorizedException e) {
-        return responder(HttpStatus.UNAUTHORIZED, e.getMessage());
-    }
-
-    @ExceptionHandler(ForbiddenException.class)
-    public ResponseEntity<ErrorDTO> prohibido(ForbiddenException e) {
-        return responder(HttpStatus.FORBIDDEN, e.getMessage());
-    }
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorDTO> validacion(MethodArgumentNotValidException e) {
         List<ObjectError> errores = e.getBindingResult().getAllErrors();

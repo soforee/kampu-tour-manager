@@ -20,8 +20,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static pe.edu.upeu.lp2_gp2.util.Texto.limpio;
-
 @Service
 public class ReservaServiceImpl implements IReservaService {
     private final ReservaRepository reservaRepository;
@@ -97,7 +95,7 @@ public class ReservaServiceImpl implements IReservaService {
         r.setMontoPagado(BigDecimal.ZERO);
         r.setEstadoReserva("PENDIENTE");
         r.setEstadoPago("PENDIENTE");
-        r.setObservaciones(limpio(dto.observaciones()));
+        r.setObservaciones(dto.observaciones() == null || dto.observaciones().isBlank() ? null : dto.observaciones().trim());
         Reserva guardada = reservaRepository.save(r);
 
         for (PasajeroRequestDTO p : dto.pasajeros()) {
@@ -106,7 +104,7 @@ public class ReservaServiceImpl implements IReservaService {
             pr.setNombreCompleto(p.nombreCompleto().trim());
             pr.setTipoDocumento(p.tipoDocumento());
             pr.setNumeroDocumento(p.numeroDocumento().trim());
-            pr.setNacionalidad(limpio(p.nacionalidad()));
+            pr.setNacionalidad(p.nacionalidad() == null || p.nacionalidad().isBlank() ? null : p.nacionalidad().trim());
             pr.setFechaNacimiento(p.fechaNacimiento());
             pasajeroRepository.save(pr);
         }
@@ -142,7 +140,7 @@ public class ReservaServiceImpl implements IReservaService {
             throw new BusinessException("Solo se anulan reservas pendientes o confirmadas.");
         }
         boolean hayReembolso = r.getMontoPagado() != null && r.getMontoPagado().signum() > 0;
-        String forma = limpio(formaReembolso);
+        String forma = formaReembolso == null || formaReembolso.isBlank() ? null : formaReembolso.trim();
         if (hayReembolso && forma == null) throw new BusinessException("Indica la forma de reembolso.");
 
         for (Pago p : pagoRepository.findByReservaIdAndEstadoTransaccion(id, "APROBADO")) {

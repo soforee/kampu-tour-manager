@@ -81,7 +81,7 @@ cd kampu-backend
 
 (En Windows: `mvnw.cmd spring-boot:run`, o ejecutar `Lp2Gp2Application` desde IntelliJ.)
 
-- Swagger: http://localhost:8082/lp2_gp2/swagger-ui/index.html (haz login en `POST /api/v1/auth/login`, copia el `token` y pégalo en **Authorize**).
+- Swagger: http://localhost:8082/lp2_gp2/swagger-ui/index.html .
 - Imágenes de paquetes: se guardan en la carpeta `images/` (propiedad `storage.location`) y se sirven en `/lp2_gp2/images/...`.
 - `spring.jpa.hibernate.ddl-auto` está en **`none`**: Hibernate no crea ni altera tablas; manda el script.
 
@@ -101,19 +101,19 @@ Abre http://localhost:4200 → usuario `admin` / `admin123` (o `ventas` / `venta
 
 ## 4. API REST (todas bajo `/lp2_gp2/api/v1`, JSON con los mismos nombres que `core/models.ts`)
 
-Todas exigen `Authorization: Bearer <token>`, salvo el login. Errores: `{ "status": 400, "error": "mensaje", "timestamp": ... }`
-(400 regla de negocio/validación, 401 sesión, 403 usuario inactivo, 404 no existe, 409 duplicado).
+Errores: `{ "status": 400, "error": "mensaje", "timestamp": ... }`
+(400 regla de negocio/validación/login incorrecto, 404 no existe, 409 duplicado).
 
 | Recurso | Endpoints |
 |---|---|
-| Auth | `POST /auth/login` `{username,password}` → `{token, usuario}` · `POST /auth/logout` |
+| Auth | `POST /auth/login` `{username,password}` → `usuario` |
 | Usuarios | `GET /usuarios` (sin `password_hash`) |
 | Paquetes | `GET/POST /paquetes` · `GET/PUT/DELETE /paquetes/{id}` · `POST /paquetes/imagen` (multipart `file`) → `{imagen}` |
 | Guías | `GET/POST /guias` · `GET/PUT/DELETE /guias/{id}` |
 | Transporte | `GET/POST /transportes` · `GET/PUT/DELETE /transportes/{id}` |
 | Clientes | `GET/POST /clientes` · `GET/PUT/DELETE /clientes/{id}` |
 | Salidas | `GET/POST /salidas` · `GET/PUT/DELETE /salidas/{id}` |
-| Reservas | `GET/POST /reservas` (POST incluye `pasajeros[]`) · `GET /reservas/{id}` · `GET /reservas/{id}/pasajeros` · `PATCH /reservas/{id}/confirmar` · `PATCH /reservas/{id}/completar` · `PATCH /reservas/{id}/anular` `{formaReembolso}` |
+| Reservas | `GET/POST /reservas` (POST incluye `pasajeros[]`) · `GET /reservas/{id}` · `GET /reservas/{id}/pasajeros` · `PATCH /reservas/{id}/confirmar` · `PATCH /reservas/{id}/completar` · `PATCH /reservas/{id}/anular` `{formaReembolso, usuarioId}` |
 | Pasajeros | `GET /pasajeros[?reservaId=]` |
 | Pagos | `GET /pagos[?reservaId=]` · `POST /pagos` · `PATCH /pagos/{id}/resolver` `{estado: APROBADO\|RECHAZADO}` |
 
@@ -121,7 +121,7 @@ Reglas que aplica el backend (las mismas que tenía el frontend en `TourStore`):
 reservar descuenta `cupos_disponibles` y anular los libera (con bloqueo `SELECT ... FOR UPDATE` para evitar sobreventa);
 `monto_pagado` = suma de pagos APROBADOS convertidos a PEN y `estado_pago` se deriva (PENDIENTE/PARCIAL/PAGADO);
 un pago aprobado no puede exceder el saldo; anular con dinero pagado exige `forma_reembolso`, marca los pagos como
-REEMBOLSADO y guarda `usuario_anula_id` (tomado de la sesión, no del navegador); fecha fin ≥ inicio; cupos ≤ capacidad
+REEMBOLSADO y guarda `usuario_anula_id` (el usuario logueado que envía el frontend); fecha fin ≥ inicio; cupos ≤ capacidad
 del transporte; sin cruce de guía/transporte en fechas; documento único por reserva; fecha de nacimiento < hoy;
 no se eliminan registros en uso (cliente con reservas, paquete/guía/transporte con salidas, salida con reservas).
 
@@ -137,7 +137,7 @@ no se eliminan registros en uso (cliente con reservas, paquete/guía/transporte 
 | Estados / monedas / tipo doc. | tipos unión TS | `@Pattern` con los mismos valores | `CHECK ... IN (...)` |
 | Longitudes | `maxlength` en los formularios | `@Size` | `VARCHAR2(n)` |
 | Opcionales vacíos | `''` | `''` ↔ `NULL` (Oracle guarda `''` como NULL) | columnas sin `NOT NULL` |
-| Tipos de cambio | `core/utils/moneda.ts` (`TASAS`) | `tour.tasas` en `application.yaml` | — (deben coincidir) |
+| Tipos de cambio | `core/utils/moneda.ts` (`TASAS`) | constantes en `ConversorMoneda.java` | — (deben coincidir) |
 
 ## 6. Hallazgos y cómo se resolvieron
 
@@ -151,19 +151,18 @@ no se eliminan registros en uso (cliente con reservas, paquete/guía/transporte 
    comentada y la misma regla se aplica con el trigger `TRG_PAS_FECHA_NAC` (y también en el backend).
 3. **El frontend no tenía backend** (guardaba todo en `localStorage`). Cambios en el frontend, sin tocar HTML ni CSS:
    - `TourStore` ahora llama a la API (signals con los datos; las escrituras devuelven el `Observable` de `HttpClient`).
-   - `AuthService` hace login real y guarda el token; `TourStore` envía el token en cada petición y vuelve al login si vence.
+   - `AuthService` hace login contra el backend y guarda el usuario en `localStorage`.
    - `ImagenService` sube la imagen al backend (antes la guardaba en `localStorage`).
    - Componentes: `subscribe({ next, error })` en guardar/eliminar, carga inicial en el shell y recarga directa de `/reservas/:id`.
-   - Eliminados `core/data/seed.ts` (pasó a `02_data.sql`), `local-store.ts` y `hash.ts` (el hash ahora es BCrypt en el backend).
-4. **Contraseñas:** el frontend usaba SHA-256 sin sal en el navegador. Ahora `password_hash` guarda **BCrypt** y la
-   verificación se hace en el servidor; la clave nunca se compara en el navegador.
+   - Eliminados `core/data/seed.ts` (pasó a `02_data.sql`), `local-store.ts` y `hash.ts`.
+4. **Contraseñas:** se guardan en texto plano en `password_hash` y se comparan en el backend (todavía no se ve el tema
+   de seguridad: sin interceptor, token ni BCrypt).
 
 ## 7. Pendientes / decisiones a confirmar
 
 - **Roles:** `ADMIN` y `VENTAS` tienen hoy los mismos permisos (el frontend no los diferencia). Si se necesita, se puede
   restringir por rol en el backend (por ejemplo, que solo `ADMIN` elimine o anule).
-- **Sesiones en memoria:** si se reinicia el backend, hay que volver a iniciar sesión (duran 12 h, `tour.sesion-horas`).
-- **Tipos de cambio fijos:** `TASAS` (frontend) y `tour.tasas` (backend) deben mantenerse iguales.
+- **Tipos de cambio fijos:** `TASAS` (frontend) y `ConversorMoneda` (backend) deben mantenerse iguales.
 - **Producción:** `ng build` genera archivos estáticos que llaman a `/api/v1` y `/lp2_gp2/images` en el mismo origen;
   hay que servirlos detrás de un proxy (Nginx/Apache) que redirija esas rutas al backend.
 - La hora de `fecha_reserva` / `fecha_pago` es la del servidor donde corre el backend.

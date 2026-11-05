@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Size;
 
 public record AnulacionRequestDTO(
         @Size(max = 50, message = "La forma de reembolso admite máximo 50 caracteres.")
-        String formaReembolso
+        String formaReembolso,
+        Long usuarioId
 ) {
 }

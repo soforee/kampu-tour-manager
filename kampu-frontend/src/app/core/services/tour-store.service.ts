@@ -1,6 +1,5 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
-import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import {
   Cliente, ClienteForm, EstadoTransaccion, Guia, GuiaForm, Moneda, PaqueteForm, PaqueteTour, Pago, PasajeroDraft,
@@ -14,7 +13,6 @@ import { AuthService } from './auth.service';
 export class TourStore {
   private http = inject(HttpClient);
   private auth = inject(AuthService);
-  private router = inject(Router);
 
   usuarios = signal<Sesion[]>([]);
   paquetes = signal<PaqueteTour[]>([]);
@@ -34,16 +32,7 @@ export class TourStore {
   private errorCarga = '';
   private avisos: ((error: string) => void)[] = [];
 
-  opciones() {
-    return { headers: { Authorization: 'Bearer ' + this.auth.token() } };
-  }
-
   error(e: unknown): string {
-    if (e instanceof HttpErrorResponse && e.status === 401) {
-      this.auth.cerrarSesionLocal();
-      this.limpiar();
-      this.router.navigate(['/login']);
-    }
     return mensajeError(e);
   }
 
@@ -98,55 +87,55 @@ export class TourStore {
   }
 
   cargarUsuarios(contar = false) {
-    this.http.get<Sesion[]>(`${API}/usuarios`, this.opciones()).subscribe({
+    this.http.get<Sesion[]>(`${API}/usuarios`).subscribe({
       next: data => { this.usuarios.set(data); if (contar) this.terminoTabla(); },
       error: e => { if (contar) this.terminoTabla(e); else this.error(e); }
     });
   }
   cargarPaquetes(contar = false) {
-    this.http.get<PaqueteTour[]>(`${API}/paquetes`, this.opciones()).subscribe({
+    this.http.get<PaqueteTour[]>(`${API}/paquetes`).subscribe({
       next: data => { this.paquetes.set(data); if (contar) this.terminoTabla(); },
       error: e => { if (contar) this.terminoTabla(e); else this.error(e); }
     });
   }
   cargarGuias(contar = false) {
-    this.http.get<Guia[]>(`${API}/guias`, this.opciones()).subscribe({
+    this.http.get<Guia[]>(`${API}/guias`).subscribe({
       next: data => { this.guias.set(data); if (contar) this.terminoTabla(); },
       error: e => { if (contar) this.terminoTabla(e); else this.error(e); }
     });
   }
   cargarTransportes(contar = false) {
-    this.http.get<Transporte[]>(`${API}/transportes`, this.opciones()).subscribe({
+    this.http.get<Transporte[]>(`${API}/transportes`).subscribe({
       next: data => { this.transportes.set(data); if (contar) this.terminoTabla(); },
       error: e => { if (contar) this.terminoTabla(e); else this.error(e); }
     });
   }
   cargarClientes(contar = false) {
-    this.http.get<Cliente[]>(`${API}/clientes`, this.opciones()).subscribe({
+    this.http.get<Cliente[]>(`${API}/clientes`).subscribe({
       next: data => { this.clientes.set(data); if (contar) this.terminoTabla(); },
       error: e => { if (contar) this.terminoTabla(e); else this.error(e); }
     });
   }
   cargarSalidas(contar = false) {
-    this.http.get<SalidaProgramada[]>(`${API}/salidas`, this.opciones()).subscribe({
+    this.http.get<SalidaProgramada[]>(`${API}/salidas`).subscribe({
       next: data => { this.salidas.set(data); if (contar) this.terminoTabla(); },
       error: e => { if (contar) this.terminoTabla(e); else this.error(e); }
     });
   }
   cargarReservas(contar = false) {
-    this.http.get<Reserva[]>(`${API}/reservas`, this.opciones()).subscribe({
+    this.http.get<Reserva[]>(`${API}/reservas`).subscribe({
       next: data => { this.reservas.set(data); if (contar) this.terminoTabla(); },
       error: e => { if (contar) this.terminoTabla(e); else this.error(e); }
     });
   }
   cargarPasajeros(contar = false) {
-    this.http.get<PasajeroReserva[]>(`${API}/pasajeros`, this.opciones()).subscribe({
+    this.http.get<PasajeroReserva[]>(`${API}/pasajeros`).subscribe({
       next: data => { this.pasajeros.set(data); if (contar) this.terminoTabla(); },
       error: e => { if (contar) this.terminoTabla(e); else this.error(e); }
     });
   }
   cargarPagos(contar = false) {
-    this.http.get<Pago[]>(`${API}/pagos`, this.opciones()).subscribe({
+    this.http.get<Pago[]>(`${API}/pagos`).subscribe({
       next: data => { this.pagos.set(data); if (contar) this.terminoTabla(); },
       error: e => { if (contar) this.terminoTabla(e); else this.error(e); }
     });
@@ -179,45 +168,45 @@ export class TourStore {
 
   guardarPaquete(d: PaqueteForm, id: number | null): Observable<PaqueteTour> {
     return id
-      ? this.http.put<PaqueteTour>(`${API}/paquetes/${id}`, d, this.opciones())
-      : this.http.post<PaqueteTour>(`${API}/paquetes`, d, this.opciones());
+      ? this.http.put<PaqueteTour>(`${API}/paquetes/${id}`, d)
+      : this.http.post<PaqueteTour>(`${API}/paquetes`, d);
   }
   eliminarPaquete(id: number): Observable<void> {
-    return this.http.delete<void>(`${API}/paquetes/${id}`, this.opciones());
+    return this.http.delete<void>(`${API}/paquetes/${id}`);
   }
 
   guardarGuia(d: GuiaForm, id: number | null): Observable<Guia> {
     return id
-      ? this.http.put<Guia>(`${API}/guias/${id}`, d, this.opciones())
-      : this.http.post<Guia>(`${API}/guias`, d, this.opciones());
+      ? this.http.put<Guia>(`${API}/guias/${id}`, d)
+      : this.http.post<Guia>(`${API}/guias`, d);
   }
   eliminarGuia(id: number): Observable<void> {
-    return this.http.delete<void>(`${API}/guias/${id}`, this.opciones());
+    return this.http.delete<void>(`${API}/guias/${id}`);
   }
   guardarTransporte(d: TransporteForm, id: number | null): Observable<Transporte> {
     return id
-      ? this.http.put<Transporte>(`${API}/transportes/${id}`, d, this.opciones())
-      : this.http.post<Transporte>(`${API}/transportes`, d, this.opciones());
+      ? this.http.put<Transporte>(`${API}/transportes/${id}`, d)
+      : this.http.post<Transporte>(`${API}/transportes`, d);
   }
   eliminarTransporte(id: number): Observable<void> {
-    return this.http.delete<void>(`${API}/transportes/${id}`, this.opciones());
+    return this.http.delete<void>(`${API}/transportes/${id}`);
   }
   guardarCliente(d: ClienteForm, id: number | null): Observable<Cliente> {
     return id
-      ? this.http.put<Cliente>(`${API}/clientes/${id}`, d, this.opciones())
-      : this.http.post<Cliente>(`${API}/clientes`, d, this.opciones());
+      ? this.http.put<Cliente>(`${API}/clientes/${id}`, d)
+      : this.http.post<Cliente>(`${API}/clientes`, d);
   }
   eliminarCliente(id: number): Observable<void> {
-    return this.http.delete<void>(`${API}/clientes/${id}`, this.opciones());
+    return this.http.delete<void>(`${API}/clientes/${id}`);
   }
 
   guardarSalida(d: SalidaForm, id: number | null): Observable<SalidaProgramada> {
     return id
-      ? this.http.put<SalidaProgramada>(`${API}/salidas/${id}`, d, this.opciones())
-      : this.http.post<SalidaProgramada>(`${API}/salidas`, d, this.opciones());
+      ? this.http.put<SalidaProgramada>(`${API}/salidas/${id}`, d)
+      : this.http.post<SalidaProgramada>(`${API}/salidas`, d);
   }
   eliminarSalida(id: number): Observable<void> {
-    return this.http.delete<void>(`${API}/salidas/${id}`, this.opciones());
+    return this.http.delete<void>(`${API}/salidas/${id}`);
   }
 
   crearReserva(clienteId: number, salidaId: number, observaciones: string, pasajeros: PasajeroDraft[]): Observable<Reserva> {
@@ -226,19 +215,19 @@ export class TourStore {
       nacionalidad: p.nacionalidad, fechaNacimiento: p.fechaNacimiento ? p.fechaNacimiento : null
     }));
     const cuerpo = { clienteId: clienteId, salidaId: salidaId, observaciones: observaciones, pasajeros: lista };
-    return this.http.post<Reserva>(`${API}/reservas`, cuerpo, this.opciones());
+    return this.http.post<Reserva>(`${API}/reservas`, cuerpo);
   }
 
   confirmarReserva(id: number): Observable<Reserva> {
-    return this.http.patch<Reserva>(`${API}/reservas/${id}/confirmar`, {}, this.opciones());
+    return this.http.patch<Reserva>(`${API}/reservas/${id}/confirmar`, {});
   }
 
   completarReserva(id: number): Observable<Reserva> {
-    return this.http.patch<Reserva>(`${API}/reservas/${id}/completar`, {}, this.opciones());
+    return this.http.patch<Reserva>(`${API}/reservas/${id}/completar`, {});
   }
 
   anularReserva(id: number, formaReembolso: string | null): Observable<Reserva> {
-    return this.http.patch<Reserva>(`${API}/reservas/${id}/anular`, { formaReembolso: formaReembolso }, this.opciones());
+    return this.http.patch<Reserva>(`${API}/reservas/${id}/anular`, { formaReembolso: formaReembolso, usuarioId: this.auth.usuario()?.usuarioId ?? null });
   }
 
   registrarPago(reservaId: number, monto: number, moneda: Moneda, metodoPago: string,
@@ -247,10 +236,10 @@ export class TourStore {
       reservaId: reservaId, monto: monto, moneda: moneda, metodoPago: metodoPago,
       codigoTransaccion: codigoTransaccion, estadoTransaccion: estadoTransaccion
     };
-    return this.http.post<Pago>(`${API}/pagos`, cuerpo, this.opciones());
+    return this.http.post<Pago>(`${API}/pagos`, cuerpo);
   }
 
   resolverPago(pagoId: number, estado: 'APROBADO' | 'RECHAZADO'): Observable<Pago> {
-    return this.http.patch<Pago>(`${API}/pagos/${pagoId}/resolver`, { estado: estado }, this.opciones());
+    return this.http.patch<Pago>(`${API}/pagos/${pagoId}/resolver`, { estado: estado });
   }
 }

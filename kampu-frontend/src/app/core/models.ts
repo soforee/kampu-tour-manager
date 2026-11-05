@@ -152,8 +152,3 @@ export interface Sesion {
   rol: Rol;
   estado: EstadoRegistro;
 }
-
-export interface SesionGuardada {
-  token: string;
-  usuario: Sesion;
-}

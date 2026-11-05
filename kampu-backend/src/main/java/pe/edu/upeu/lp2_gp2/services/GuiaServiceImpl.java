@@ -13,8 +13,6 @@ import pe.edu.upeu.lp2_gp2.repository.SalidaProgramadaRepository;
 
 import java.util.List;
 
-import static pe.edu.upeu.lp2_gp2.util.Texto.limpio;
-
 @Service
 public class GuiaServiceImpl implements IGuiaService {
     private final GuiaRepository guiaRepository;
@@ -69,7 +67,7 @@ public class GuiaServiceImpl implements IGuiaService {
     private void copiar(GuiaRequestDTO dto, Guia g) {
         if (!Reglas.telefonoValido(dto.telefono())) throw new BusinessException(Reglas.MSG_TELEFONO);
         g.setNombreCompleto(dto.nombreCompleto().trim());
-        g.setEspecialidad(limpio(dto.especialidad()));
-        g.setTelefono(limpio(dto.telefono()));
+        g.setEspecialidad(dto.especialidad() == null || dto.especialidad().isBlank() ? null : dto.especialidad().trim());
+        g.setTelefono(dto.telefono() == null || dto.telefono().isBlank() ? null : dto.telefono().trim());
     }
 }

@@ -15,8 +15,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static pe.edu.upeu.lp2_gp2.util.Texto.limpio;
-
 @Service
 public class PagoServiceImpl implements IPagoService {
     private final PagoRepository pagoRepository;
@@ -54,8 +52,8 @@ public class PagoServiceImpl implements IPagoService {
         p.setReservaId(dto.reservaId());
         p.setMonto(dto.monto().setScale(2, java.math.RoundingMode.HALF_UP));
         p.setMoneda(dto.moneda());
-        p.setMetodoPago(limpio(dto.metodoPago()));
-        String codigo = limpio(dto.codigoTransaccion());
+        p.setMetodoPago(dto.metodoPago() == null || dto.metodoPago().isBlank() ? null : dto.metodoPago().trim());
+        String codigo = dto.codigoTransaccion() == null || dto.codigoTransaccion().isBlank() ? null : dto.codigoTransaccion().trim();
         if (codigo == null) {
             String millis = String.valueOf(System.currentTimeMillis());
             codigo = "TRX-" + millis.substring(millis.length() - 8);

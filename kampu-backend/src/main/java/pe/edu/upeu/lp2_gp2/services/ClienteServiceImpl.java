@@ -15,8 +15,6 @@ import pe.edu.upeu.lp2_gp2.repository.ReservaRepository;
 import java.util.List;
 import java.util.Optional;
 
-import static pe.edu.upeu.lp2_gp2.util.Texto.limpio;
-
 @Service
 public class ClienteServiceImpl implements IClienteService {
     private final ClienteRepository clienteRepository;
@@ -81,7 +79,7 @@ public class ClienteServiceImpl implements IClienteService {
         c.setNombreCompleto(dto.nombreCompleto().trim());
         c.setTipoDocumento(dto.tipoDocumento());
         c.setNumeroDocumento(documento);
-        c.setEmail(limpio(dto.email()));
-        c.setTelefono(limpio(dto.telefono()));
+        c.setEmail(dto.email() == null || dto.email().isBlank() ? null : dto.email().trim());
+        c.setTelefono(dto.telefono() == null || dto.telefono().isBlank() ? null : dto.telefono().trim());
     }
 }
