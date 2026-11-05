@@ -4,7 +4,6 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import pe.edu.upeu.lp2_gp2.config.AuthInterceptor;
 import pe.edu.upeu.lp2_gp2.dto.AnulacionRequestDTO;
 import pe.edu.upeu.lp2_gp2.dto.PasajeroReservaDTO;
 import pe.edu.upeu.lp2_gp2.dto.ReservaDTO;
@@ -54,8 +53,8 @@ public class ReservaController {
 
     @PatchMapping("/{id}/anular")
     public ResponseEntity<ReservaDTO> anular(@PathVariable Long id,
-                                             @Valid @RequestBody(required = false) AnulacionRequestDTO dto,
-                                             @RequestAttribute(AuthInterceptor.USUARIO_ID) Long usuarioId) {
-        return ResponseEntity.ok(reservaService.anular(id, usuarioId, dto == null ? null : dto.formaReembolso()));
+                                             @Valid @RequestBody(required = false) AnulacionRequestDTO dto) {
+        return ResponseEntity.ok(reservaService.anular(id, dto == null ? null : dto.usuarioId(),
+                dto == null ? null : dto.formaReembolso()));
     }
 }

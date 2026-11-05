@@ -4,8 +4,6 @@ import pe.edu.upeu.lp2_gp2.entity.PaqueteTour;
 
 import java.math.BigDecimal;
 
-import static pe.edu.upeu.lp2_gp2.util.Texto.nz;
-
 public record PaqueteTourDTO(
         Long paqueteId,
         String nombre,
@@ -17,7 +15,7 @@ public record PaqueteTourDTO(
         String estado
 ) {
     public static PaqueteTourDTO desde(PaqueteTour p) {
-        return new PaqueteTourDTO(p.getPaqueteId(), p.getNombre(), nz(p.getDescripcion()), p.getPrecioBase(),
-                p.getDias(), p.getNoches(), nz(p.getImagen()), p.getEstado());
+        return new PaqueteTourDTO(p.getPaqueteId(), p.getNombre(), p.getDescripcion() == null ? "" : p.getDescripcion(), p.getPrecioBase(),
+                p.getDias(), p.getNoches(), p.getImagen() == null ? "" : p.getImagen(), p.getEstado());
     }
 }

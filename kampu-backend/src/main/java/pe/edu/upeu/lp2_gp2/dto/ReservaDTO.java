@@ -5,8 +5,6 @@ import pe.edu.upeu.lp2_gp2.entity.Reserva;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import static pe.edu.upeu.lp2_gp2.util.Texto.nz;
-
 public record ReservaDTO(
         Long reservaId,
         Long clienteId,
@@ -24,6 +22,6 @@ public record ReservaDTO(
     public static ReservaDTO desde(Reserva r) {
         return new ReservaDTO(r.getReservaId(), r.getClienteId(), r.getSalidaId(), r.getFechaReserva(),
                 r.getNumeroViajeros(), r.getMontoTotal(), r.getMontoPagado() == null ? BigDecimal.ZERO : r.getMontoPagado(),
-                r.getEstadoReserva(), r.getEstadoPago(), nz(r.getObservaciones()), r.getFormaReembolso(), r.getUsuarioAnulaId());
+                r.getEstadoReserva(), r.getEstadoPago(), r.getObservaciones() == null ? "" : r.getObservaciones(), r.getFormaReembolso(), r.getUsuarioAnulaId());
     }
 }

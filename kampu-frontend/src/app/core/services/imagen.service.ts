@@ -2,7 +2,6 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API, IMAGENES } from '../utils/api';
-import { AuthService } from './auth.service';
 
 const MAX_MB = 10;
 const TIPOS = ['image/jpeg', 'image/png', 'image/webp'];
@@ -10,7 +9,6 @@ const TIPOS = ['image/jpeg', 'image/png', 'image/webp'];
 @Injectable({ providedIn: 'root' })
 export class ImagenService {
   private http = inject(HttpClient);
-  private auth = inject(AuthService);
 
   url(ref?: string | null): string | null {
     return ref ? `${IMAGENES}/${ref}` : null;
@@ -25,7 +23,6 @@ export class ImagenService {
   subir(file: File): Observable<{ imagen: string }> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post<{ imagen: string }>(`${API}/paquetes/imagen`, formData,
-      { headers: { Authorization: 'Bearer ' + this.auth.token() } });
+    return this.http.post<{ imagen: string }>(`${API}/paquetes/imagen`, formData);
   }
 }

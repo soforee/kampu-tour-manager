@@ -4,8 +4,6 @@ import pe.edu.upeu.lp2_gp2.entity.PasajeroReserva;
 
 import java.time.LocalDate;
 
-import static pe.edu.upeu.lp2_gp2.util.Texto.nz;
-
 public record PasajeroReservaDTO(
         Long pasajeroId,
         Long reservaId,
@@ -17,6 +15,6 @@ public record PasajeroReservaDTO(
 ) {
     public static PasajeroReservaDTO desde(PasajeroReserva p) {
         return new PasajeroReservaDTO(p.getPasajeroId(), p.getReservaId(), p.getNombreCompleto(), p.getTipoDocumento(),
-                p.getNumeroDocumento(), nz(p.getNacionalidad()), p.getFechaNacimiento());
+                p.getNumeroDocumento(), p.getNacionalidad() == null ? "" : p.getNacionalidad(), p.getFechaNacimiento());
     }
 }

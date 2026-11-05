@@ -5,8 +5,6 @@ import pe.edu.upeu.lp2_gp2.entity.Pago;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import static pe.edu.upeu.lp2_gp2.util.Texto.nz;
-
 public record PagoDTO(
         Long pagoId,
         Long reservaId,
@@ -18,7 +16,7 @@ public record PagoDTO(
         String estadoTransaccion
 ) {
     public static PagoDTO desde(Pago p) {
-        return new PagoDTO(p.getPagoId(), p.getReservaId(), p.getMonto(), p.getMoneda(), nz(p.getMetodoPago()),
-                nz(p.getCodigoTransaccion()), p.getFechaPago(), p.getEstadoTransaccion());
+        return new PagoDTO(p.getPagoId(), p.getReservaId(), p.getMonto(), p.getMoneda(), p.getMetodoPago() == null ? "" : p.getMetodoPago(),
+                p.getCodigoTransaccion() == null ? "" : p.getCodigoTransaccion(), p.getFechaPago(), p.getEstadoTransaccion());
     }
 }

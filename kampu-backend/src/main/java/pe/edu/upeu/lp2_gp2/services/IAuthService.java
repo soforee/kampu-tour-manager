@@ -1,12 +1,8 @@
 package pe.edu.upeu.lp2_gp2.services;
 
 import pe.edu.upeu.lp2_gp2.dto.LoginRequestDTO;
-import pe.edu.upeu.lp2_gp2.dto.LoginResponseDTO;
-
-import java.util.Optional;
+import pe.edu.upeu.lp2_gp2.dto.UsuarioDTO;
 
 public interface IAuthService {
-    LoginResponseDTO login(LoginRequestDTO dto);
-    void logout(String token);
-    Optional<Long> usuarioDeToken(String token);
+    UsuarioDTO login(LoginRequestDTO dto);
 }
