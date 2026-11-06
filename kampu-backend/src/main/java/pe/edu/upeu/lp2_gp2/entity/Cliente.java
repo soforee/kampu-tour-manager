@@ -19,10 +19,10 @@ public class Cliente {
     @Column(name = "numero_documento", nullable = false, unique = true, length = 20)
     private String numeroDocumento;
 
-    @Column(name = "email", length = 100)
+    @Column(name = "email", nullable = false, length = 100)
     private String email;
 
-    @Column(name = "telefono", length = 20)
+    @Column(name = "telefono", nullable = false, length = 20)
     private String telefono;
 
     public Cliente() {

@@ -13,12 +13,15 @@ public record ClienteRequestDTO(
         @NotBlank(message = "Nombre y documento son obligatorios.")
         @Size(max = 20, message = "El documento admite máximo 20 caracteres.")
         String numeroDocumento,
+        @NotBlank(message = "El correo es obligatorio.")
         @Email(message = "El email no es válido.")
         @Pattern(regexp = Reglas.EMAIL, message = "El email no es válido (ejemplo: nombre@dominio.com).")
         @Size(max = 100, message = "El email admite máximo 100 caracteres.")
         String email,
+        // Con código de país: "+51 987654321". La cantidad de dígitos se valida en el servicio.
+        @NotBlank(message = "El teléfono es obligatorio.")
         @Size(max = 20, message = "El teléfono admite máximo 20 caracteres.")
-        @Pattern(regexp = Reglas.TELEFONO, message = Reglas.MSG_TELEFONO)
+        @Pattern(regexp = Reglas.TELEFONO_PAIS, message = Reglas.MSG_TELEFONO_PAIS)
         String telefono
 ) {
 }

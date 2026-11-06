@@ -10,11 +10,13 @@ import { IconComponent } from '../../shared/icon.component';
 import { filtrarEscritura, filtrarPegado } from '../../core/utils/filtro';
 import { Errores, FormValidacion, V } from '../../core/utils/validacion';
 import { ClienteSelectorComponent } from './cliente-selector.component';
+import { TelefonoInputComponent } from '../../shared/telefono-input.component';
+import { errorTelefonoPais } from '../../core/utils/paises';
 
 @Component({
   selector: 'app-reserva-nueva',
   standalone: true,
-  imports: [FormsModule, RouterLink, CurrencyPipe, DatePipe, IconComponent, ClienteSelectorComponent],
+  imports: [FormsModule, RouterLink, CurrencyPipe, DatePipe, IconComponent, ClienteSelectorComponent, TelefonoInputComponent],
   templateUrl: './reserva-nueva.component.html',
   styleUrl: './reserva-nueva.component.css'
 })
@@ -38,8 +40,7 @@ export class ReservaNuevaComponent implements OnInit {
       cNombre: this.modo === 'invitado' ? V.nombrePersona(this.contacto.nombre, 'El nombre del contacto') : null,
       cEmail: this.modo === 'invitado'
         ? (this.contacto.email.trim() ? V.email(this.contacto.email) : 'El correo es obligatorio para enviarle la boleta.') : null,
-      cTelefono: this.modo === 'invitado'
-        ? (this.contacto.telefono.trim() ? V.telefono(this.contacto.telefono) : 'El teléfono es obligatorio.') : null,
+      cTelefono: this.modo === 'invitado' ? errorTelefonoPais(this.contacto.telefono) : null,
       salida: this.salidaId ? null : 'Selecciona una salida.',
       observaciones: this.observaciones.length > 200 ? 'Las observaciones admiten máximo 200 caracteres.' : null
     };

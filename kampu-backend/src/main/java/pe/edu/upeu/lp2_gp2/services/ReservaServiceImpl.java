@@ -194,8 +194,9 @@ public class ReservaServiceImpl implements IReservaService {
         if (dto.clienteId() != null && !clienteRepository.existsById(dto.clienteId())) {
             throw new BusinessException("El cliente seleccionado no existe.");
         }
-        if (dto.contacto() != null && !Reglas.telefonoValido(dto.contacto().telefono())) {
-            throw new BusinessException(Reglas.MSG_TELEFONO);
+        if (dto.contacto() != null) {
+            String errorTelefono = Reglas.errorTelefonoPais(dto.contacto().telefono());
+            if (errorTelefono != null) throw new BusinessException(errorTelefono);
         }
     }
 
