@@ -7,11 +7,13 @@ import { IconComponent } from '../../shared/icon.component';
 import { filtrarEscritura, filtrarPegado } from '../../core/utils/filtro';
 import { FormValidacion, V } from '../../core/utils/validacion';
 import { ModalComponent } from '../../shared/modal.component';
+import { TelefonoInputComponent } from '../../shared/telefono-input.component';
+import { errorTelefonoPais } from '../../core/utils/paises';
 
 @Component({
   selector: 'app-clientes',
   standalone: true,
-  imports: [FormsModule, IconComponent, ModalComponent],
+  imports: [FormsModule, IconComponent, ModalComponent, TelefonoInputComponent],
   templateUrl: './clientes.component.html',
   styleUrl: './clientes.component.css'
 })
@@ -27,8 +29,8 @@ export class ClientesComponent {
   v = new FormValidacion(() => ({
     nombre: V.nombrePersona(this.form.nombreCompleto),
     documento: V.documento(this.form.tipoDocumento, this.form.numeroDocumento),
-    email: V.email(this.form.email),
-    telefono: V.telefono(this.form.telefono)
+    email: this.form.email.trim() ? V.email(this.form.email) : 'El correo es obligatorio.',
+    telefono: errorTelefonoPais(this.form.telefono)
   }));
 
   private vacio(): ClienteForm {

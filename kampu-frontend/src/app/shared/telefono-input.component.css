@@ -1,0 +1,68 @@
+:host { display: block; }
+
+.grupo {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #E5DEC2;
+  background: #FFFEF8;
+  box-shadow: 0 1px 2px rgba(46, 56, 18, .04), 0 2px 8px -2px rgba(46, 56, 18, .06);
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+.grupo:hover { border-color: #D0C8A6; }
+.grupo:focus-within { border-color: #6B7E2B; box-shadow: 0 0 0 4px rgba(107, 125, 42, .18); }
+.grupo-invalido, .grupo-invalido:hover { border-color: #FB7185; background: rgba(255, 241, 242, .4); }
+.grupo-invalido:focus-within { border-color: #F43F5E; box-shadow: 0 0 0 4px rgba(225, 29, 72, .12); }
+
+/* El select queda invisible encima: se ve solo bandera + código */
+.pais {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  padding: 0 .55rem 0 .8rem;
+  border-right: 1px solid #E5DEC2;
+  font-size: 14px;
+  font-weight: 700;
+  color: #403F2C;
+  white-space: nowrap;
+  cursor: pointer;
+  border-radius: 8px 0 0 8px;
+  transition: background-color .2s ease;
+}
+.pais:hover { background: #FAF6E6; }
+.bandera { font-size: 17px; line-height: 1; }
+.flecha { width: 14px; height: 14px; color: #A49D7B; }
+.pais select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.numero {
+  flex: 1;
+  min-width: 0;
+  padding: .625rem .5rem .625rem .8rem;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  color: #2C3610;
+  letter-spacing: .02em;
+}
+.numero::placeholder { color: #A49D7B; }
+
+.contador {
+  align-self: center;
+  padding-right: .8rem;
+  font-size: 11px;
+  font-weight: 700;
+  color: #A49D7B;
+  font-variant-numeric: tabular-nums;
+}
+.contador.completo { color: #446825; }
+
+.ayuda { margin-top: .375rem; font-size: 12px; line-height: 1.5; color: #78735A; }

@@ -16,7 +16,7 @@ public record ContactoReservaDTO(
         String email,
         @NotBlank(message = "Ingresa el teléfono del contacto.")
         @Size(max = 20, message = "El teléfono admite máximo 20 caracteres.")
-        @Pattern(regexp = Reglas.TELEFONO, message = Reglas.MSG_TELEFONO)
+        @Pattern(regexp = Reglas.TELEFONO_PAIS, message = Reglas.MSG_TELEFONO_PAIS)
         String telefono
 ) {
 }

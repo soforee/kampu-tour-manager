@@ -11,8 +11,8 @@ CREATE TABLE CLIENTES (
     nombre_completo VARCHAR2(150) NOT NULL,
     tipo_documento VARCHAR2(20) NOT NULL,
     numero_documento VARCHAR2(20) NOT NULL UNIQUE,
-    email VARCHAR2(100),
-    telefono VARCHAR2(20)
+    email VARCHAR2(100) NOT NULL,
+    telefono VARCHAR2(20) NOT NULL  -- con código de país: '+51 987654321'
 );
 
 CREATE TABLE GUIAS (

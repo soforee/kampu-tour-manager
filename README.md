@@ -6,7 +6,8 @@ proyecto/
 │   └── src/main/resources/db/
 │       ├── 01_schema.sql   Script de tablas (el original; un solo ajuste, ver "Hallazgos")
 │       ├── 02_data.sql     Datos de demostración (los mismos que tenía el frontend en seed.ts)
-│       └── 03_migracion_choferes_invitados.sql  Solo para una BD ya creada: choferes, invitados y boleta
+│       ├── 03_migracion_choferes_invitados.sql  Solo para una BD ya creada: choferes, invitados y boleta
+│       └── 04_migracion_telefono_pais.sql       Solo para una BD ya creada: teléfono con código de país
 └── kampu-frontend/     Frontend Angular 18 (el diseño y las pantallas no cambian)
 ```
 
@@ -66,6 +67,10 @@ Las mismas reglas se aplican en ambos lados: `kampu-frontend/src/app/core/utils/
 **¿Ya tenías la base creada?** Ejecuta solo `03_migracion_choferes_invitados.sql`: crea `CHOFERES`, agrega
 `chofer_id` a las salidas, permite reservas sin cliente (`contacto_nombre/email/telefono`) y la columna
 `boleta_enviada_en`. Si instalas desde cero no hace falta: `01` y `02` ya incluyen esos cambios.
+
+Después ejecuta `04_migracion_telefono_pais.sql`: pasa los teléfonos al formato con código de país
+(`+51 987654321`; los que no tienen código se toman como Perú) y vuelve obligatorios el correo y el teléfono
+de `CLIENTES`. Antes del `ALTER` final, revisa que la consulta del script no devuelva filas.
 
 ### Correo (boleta informativa)
 

@@ -83,7 +83,8 @@ public class ClienteServiceImpl implements IClienteService {
         if (!Reglas.documentoValido(dto.tipoDocumento(), dto.numeroDocumento())) {
             throw new BusinessException(Reglas.MSG_DOCUMENTO);
         }
-        if (!Reglas.telefonoValido(dto.telefono())) throw new BusinessException(Reglas.MSG_TELEFONO);
+        String errorTelefono = Reglas.errorTelefonoPais(dto.telefono());
+        if (errorTelefono != null) throw new BusinessException(errorTelefono);
         String documento = dto.numeroDocumento().trim();
         Optional<Cliente> existente = clienteRepository.findByNumeroDocumento(documento);
         if (existente.isPresent() && !existente.get().getClienteId().equals(id)) {
@@ -92,7 +93,7 @@ public class ClienteServiceImpl implements IClienteService {
         c.setNombreCompleto(dto.nombreCompleto().trim());
         c.setTipoDocumento(dto.tipoDocumento());
         c.setNumeroDocumento(documento);
-        c.setEmail(dto.email() == null || dto.email().isBlank() ? null : dto.email().trim());
-        c.setTelefono(dto.telefono() == null || dto.telefono().isBlank() ? null : dto.telefono().trim());
+        c.setEmail(dto.email().trim().toLowerCase());
+        c.setTelefono(dto.telefono().trim());
     }
 }

@@ -1,0 +1,20 @@
+<div class="grupo" [class.grupo-invalido]="invalido">
+  <label class="pais" [title]="pais.nombre + ' (+' + pais.codigo + ')'">
+    <span class="bandera" aria-hidden="true">{{ bandera(pais) }}</span>
+    <span class="codigo">+{{ pais.codigo }}</span>
+    <svg viewBox="0 0 24 24" class="flecha" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <select [value]="pais.iso" (change)="cambiarPais($any($event.target).value)" (blur)="tocado.emit()" aria-label="Código de país">
+      @for (p of paises; track p.iso) {
+        <option [value]="p.iso">{{ bandera(p) }} {{ p.nombre }} (+{{ p.codigo }})</option>
+      }
+    </select>
+  </label>
+  <input [id]="idCampo || null" type="tel" inputmode="numeric" autocomplete="tel-national" class="numero"
+         [maxLength]="pais.max" [placeholder]="pais.ejemplo" [value]="numero"
+         (input)="escribir($any($event.target))" (blur)="tocado.emit()"
+         [attr.aria-invalid]="invalido" [attr.aria-describedby]="idCampo ? idCampo + '-ayuda' : null">
+  <span class="contador" [class.completo]="digitos >= pais.min">{{ digitos }}/{{ pais.max }}</span>
+</div>
+@if (!invalido) {
+  <p class="ayuda" [id]="idCampo ? idCampo + '-ayuda' : null">{{ pais.nombre }}: {{ ayuda }}, sin el código de país.</p>
+}

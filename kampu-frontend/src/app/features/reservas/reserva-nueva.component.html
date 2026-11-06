@@ -27,8 +27,8 @@
       } @else {
         <div class="form-section animate-fade-in">
           <p class="text-xs text-zinc-500 -mt-1">Solo se guardan en esta reserva; no se crea un cliente. El correo se usa para enviarle la boleta.</p>
-          <div class="grid sm:grid-cols-3 gap-3">
-            <div>
+          <div class="grid sm:grid-cols-2 gap-3">
+            <div class="sm:col-span-2">
               <label class="label req">Nombre</label>
               <input class="field" maxlength="150" [(ngModel)]="contacto.nombre" placeholder="Nombre y apellido" autocomplete="name" (blur)="v.tocar('cNombre')" [class.field-invalid]="v.error('cNombre')" (beforeinput)="filtrar($event, 'nombre')" (paste)="pegar($event, 'nombre')">@if (v.error('cNombre'); as e) { <p class="field-error">{{ e }}</p> }
             </div>
@@ -37,8 +37,8 @@
               <input type="email" class="field" maxlength="100" [(ngModel)]="contacto.email" placeholder="nombre@correo.com" autocomplete="email" (blur)="v.tocar('cEmail')" [class.field-invalid]="v.error('cEmail')">@if (v.error('cEmail'); as e) { <p class="field-error">{{ e }}</p> }
             </div>
             <div>
-              <label class="label req">Teléfono</label>
-              <input type="tel" class="field" maxlength="20" [(ngModel)]="contacto.telefono" placeholder="+51 9xx xxx xxx" autocomplete="tel" inputmode="tel" (blur)="v.tocar('cTelefono')" [class.field-invalid]="v.error('cTelefono')" (beforeinput)="filtrar($event, 'telefono')" (paste)="pegar($event, 'telefono')">@if (v.error('cTelefono'); as e) { <p class="field-error">{{ e }}</p> }
+              <label class="label req" for="invitado-telefono">Teléfono</label>
+              <app-telefono-input idCampo="invitado-telefono" [(valor)]="contacto.telefono" [invalido]="!!v.error('cTelefono')" (tocado)="v.tocar('cTelefono')" />@if (v.error('cTelefono'); as e) { <p class="field-error">{{ e }}</p> }
             </div>
           </div>
         </div>
