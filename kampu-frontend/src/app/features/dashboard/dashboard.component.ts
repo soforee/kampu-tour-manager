@@ -90,7 +90,8 @@ export class DashboardComponent {
 
   // Actualizar el estado de ejecución (ACTUALIZAR_EJECUCION: Admin, Ventas y Operador)
   // Confirmar: PROGRAMADA -> CONFIRMADA (exige transporte) · Terminar: EN_CURSO -> COMPLETADA
-  puedeIniciar(r: ResumenPaquete) { return this.ejecuta() && r.estadoSalida === 'PROGRAMADA' && r.estadoEjecucion !== 'TERMINADO'; }
+  // Solo se ofrece confirmar si hay pasajeros (el backend además exige guía y transporte)
+  puedeIniciar(r: ResumenPaquete) { return this.ejecuta() && r.estadoSalida === 'PROGRAMADA' && r.estadoEjecucion !== 'TERMINADO' && r.pasajeros > 0; }
   puedeTerminar(r: ResumenPaquete) { return this.ejecuta() && r.estadoEjecucion === 'EN_CURSO' && r.estadoSalida !== 'COMPLETADA'; }
 
   async cambiar(r: ResumenPaquete, estado: 'CONFIRMADA' | 'COMPLETADA') {

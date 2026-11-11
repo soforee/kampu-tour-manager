@@ -36,7 +36,7 @@
           <span class="chip !font-sans"><app-icon name="calendar" size="w-3.5 h-3.5" /> {{ f.proximas }} salidas próximas</span>
         </div>
         <div class="mt-auto pt-5"><div class="flex items-center justify-between gap-2 border-t border-zinc-100 pt-4">
-          <div><span class="text-xl font-extrabold font-wide tracking-tight text-zinc-900">{{ f.paquete.precioBase | currency:'S/ ':'symbol':'1.0-0' }}</span><span class="text-xs text-zinc-400"> / persona</span></div>
+          <div><span class="text-xl font-extrabold font-wide tracking-tight text-zinc-900">{{ f.paquete.precioBase | currency:'S/':'symbol':'1.0-0' }}</span><span class="text-xs text-zinc-400"> / persona</span></div>
           <div class="flex items-center gap-1">
             @if (f.paquete.estado === 'ACTIVO' && f.proximas > 0) {
               <a [routerLink]="['/reservas/nueva']" [queryParams]="{ paquete: f.paquete.paqueteId }" class="btn-brand btn-sm mr-1"><app-icon name="ticket" size="w-3.5 h-3.5" /> Reservar</a>

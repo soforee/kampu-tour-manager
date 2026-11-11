@@ -13,8 +13,7 @@ import { IconComponent } from '../../shared/icon.component';
   selector: 'app-pagos',
   standalone: true,
   imports: [RouterLink, CurrencyPipe, DatePipe, BadgeComponent, IconComponent],
-  templateUrl: './pagos.component.html',
-  styleUrl: './pagos.component.css'
+  templateUrl: './pagos.component.html'
 })
 export class PagosComponent {
   private store = inject(TourStore);

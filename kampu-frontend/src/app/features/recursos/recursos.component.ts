@@ -28,8 +28,7 @@ type Tab = 'proveedores' | 'personal' | 'vehiculos' | 'lugares';
   selector: 'app-recursos',
   standalone: true,
   imports: [FormsModule, DatePipe, IconComponent, BadgeComponent, ModalComponent],
-  templateUrl: './recursos.component.html',
-  styleUrl: './recursos.component.css'
+  templateUrl: './recursos.component.html'
 })
 export class RecursosComponent {
   store = inject(TourStore);

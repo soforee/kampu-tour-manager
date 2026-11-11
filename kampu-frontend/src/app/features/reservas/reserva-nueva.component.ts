@@ -17,8 +17,7 @@ import { errorTelefonoPais } from '../../core/utils/paises';
   selector: 'app-reserva-nueva',
   standalone: true,
   imports: [FormsModule, RouterLink, CurrencyPipe, DatePipe, IconComponent, ClienteSelectorComponent, TelefonoInputComponent],
-  templateUrl: './reserva-nueva.component.html',
-  styleUrl: './reserva-nueva.component.css'
+  templateUrl: './reserva-nueva.component.html'
 })
 export class ReservaNuevaComponent implements OnInit {
   store = inject(TourStore);
@@ -79,7 +78,7 @@ export class ReservaNuevaComponent implements OnInit {
   }
   get salida() { return this.store.getSalida(this.salidaId); }
 
-  // El mismo DNI/CE/pasaporte no puede ir dos veces en la misma salida (trg_pasajeros_doc_salida)
+  // El mismo DNI/CE/pasaporte no puede ir dos veces en la misma salida
   private yaViaja(tipo: string, doc: string): boolean {
     if (!this.salidaId || !doc) return false;
     const reservas = new Set(this.store.reservas()

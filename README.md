@@ -37,6 +37,43 @@ Agencia de turismo: catálogo de paquetes, salidas programadas, reservas, pagos,
 Los demás clientes de la demo los creó Ventas y **no tienen cuenta web**: pueden activarla con *Registrarse* usando
 su **mismo documento y correo** (el procedimiento "reclama" el cliente existente y sus reservas aparecen solas).
 
+## Versión 4.2 — lógica de tour manager y pulido
+
+**Reglas de negocio nuevas (backend, `SalidaProgramadaServiceImpl` y `ReservaServiceImpl`):**
+
+| Regla | Antes | Ahora |
+|---|---|---|
+| Estados de una salida | Se podía pasar de cualquier estado a cualquiera (revivir una cancelada, editar una terminada) | `PROGRAMADA → CONFIRMADA → COMPLETADA`, con `CANCELADA` desde las dos primeras y *reabrir* (`CONFIRMADA → PROGRAMADA`). `COMPLETADA` y `CANCELADA` son finales. |
+| Crear una salida | Se podía crear ya confirmada, en una fecha pasada o de un paquete inactivo | Nace `PROGRAMADA`, desde hoy y solo de paquetes activos. |
+| Confirmar una salida | Solo revisaba el transporte | Además exige **guía** y **al menos un pasajero**. |
+| Terminar una salida | Bastaba con que hubiera empezado | Tampoco puede quedar ninguna **reserva pendiente** ni ningún **traslado abierto**. |
+| Cancelar una salida | Sus traslados seguían ocupando vehículos y conductores | Los traslados que no han salido se cancelan solos (queda en su historial). |
+| Editar una salida con reservas | Se podía cambiar el paquete que compraron los clientes | Bloqueado. Tampoco se reprograma a una fecha pasada. |
+| Confirmar una reserva | Sin condiciones | Exige un **pago aprobado** (adelanto). |
+| Completar una reserva | En cualquier momento | Solo cuando el viaje ya empezó. |
+| Vender un paquete inactivo | Permitido | Bloqueado. |
+
+**Pantallas nuevas o mejoradas (frontend):**
+
+- **Ficha de salida** (`/salidas/:id`): lista de verificación *"Lista para salir"* (guía, pasajeros, transporte,
+  reservas confirmadas y pagos), **manifiesto de pasajeros** imprimible con firma, notas para el guía, traslados del
+  día, ocupación y saldo por cobrar. Botones para confirmar, terminar, reabrir o cancelar según el estado y el rol.
+  API: `GET /salidas/{id}/manifiesto` (los datos de pago solo llegan a quien tiene `VER_MONTOS`).
+- **Panel → "Requiere atención"**: salidas de los próximos 7 días sin guía o sin transporte, reservas pendientes con
+  el viaje encima, pagos por validar, traslados sin vehículo, licencias por vencer y mantenimientos atrasados. Cada
+  aviso lleva a la pantalla donde se resuelve.
+- **Salidas**: las próximas primero, cuenta regresiva ("Sale mañana") y aviso de las que no tienen guía; el estado
+  solo ofrece las transiciones válidas.
+- Fechas y números en **español de Perú**; marcadores de carga, animaciones escalonadas y vista de impresión.
+- Las pantallas se cargan bajo demanda: el paquete inicial bajó de 780 kB a 500 kB.
+
+**Limpieza:** 13 hojas de estilo vacías, etiquetas y comentarios de objetos de la v3 que ya no existen
+(`PKG_ASIGNACION`, `PKG_RUTAS`, `trg_*`, `DOMINIO_ESTADOS`) y dependencias de prueba comentadas en `pom.xml`.
+Los estados `SUSPENDIDO`, `MANTENIMIENTO` y `OCUPADO` ahora tienen color y texto propios.
+
+**Datos de demostración (`02_data.sql`):** la salida *Paracas e Ica* pasa a `PROGRAMADA` (no tenía transporte
+completo) y la reserva R-0008 tiene un adelanto aprobado (estaba confirmada sin pagos).
+
 ## Objetos críticos de backend (2 por categoría) y su justificación
 
 Todos están en `01_schema_v4.sql`, comentados.

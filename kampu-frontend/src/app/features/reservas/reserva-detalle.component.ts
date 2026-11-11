@@ -17,8 +17,7 @@ import { FormValidacion, V } from '../../core/utils/validacion';
   selector: 'app-reserva-detalle',
   standalone: true,
   imports: [FormsModule, RouterLink, CurrencyPipe, DatePipe, BadgeComponent, IconComponent],
-  templateUrl: './reserva-detalle.component.html',
-  styleUrl: './reserva-detalle.component.css'
+  templateUrl: './reserva-detalle.component.html'
 })
 export class ReservaDetalleComponent {
   store = inject(TourStore);

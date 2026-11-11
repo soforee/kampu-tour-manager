@@ -10,8 +10,7 @@ import { LogoComponent } from '../../shared/logo.component';
   selector: 'app-login',
   standalone: true,
   imports: [FormsModule, RouterLink, IconComponent, LogoComponent],
-  templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
+  templateUrl: './login.component.html'
 })
 export class LoginComponent {
   private auth = inject(AuthService);

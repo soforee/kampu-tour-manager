@@ -27,8 +27,8 @@
     </div>
   </div>
 
-  <div class="grid lg:grid-cols-3 gap-6 items-start">
-    <div class="lg:col-span-2 space-y-6">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+    <div class="lg:col-span-2 space-y-6 min-w-0">
       <section class="card p-6">
         <h2 class="card-title mb-5"><span class="ico"><app-icon name="map-pin" size="w-4 h-4" /></span>Viaje</h2>
         <dl class="grid sm:grid-cols-2 gap-3 text-sm">
@@ -159,8 +159,8 @@
             </div>
             <div class="flex flex-wrap items-center justify-between gap-3 mt-4">
               <div class="text-xs text-zinc-500 rounded-lg bg-white border border-zinc-100 px-3 py-2">
-                @if (monto && moneda !== 'PEN') { Equivale a <strong>{{ equivalente() | currency:'S/ ' }}</strong> (1 {{ moneda }} = S/ {{ tasa() }}) · }
-                Saldo: <strong>{{ saldo() | currency:'S/ ' }}</strong>
+                @if (monto && moneda !== 'PEN') { Equivale a <strong>{{ equivalente() | currency:'S/' }}</strong> (1 {{ moneda }} = S/ {{ tasa() }}) · }
+                Saldo: <strong>{{ saldo() | currency:'S/' }}</strong>
               </div>
               <div class="flex gap-2">
                 <button type="button" class="btn-light" (click)="usarSaldo()"><app-icon name="wallet" size="w-4 h-4" /> Usar saldo</button>
@@ -175,20 +175,20 @@
     <aside class="card overflow-hidden lg:sticky lg:top-8">
       <div class="bg-gradient-to-br from-zinc-800 to-zinc-950 px-6 py-5 text-white">
         <div class="text-[11px] font-extrabold uppercase tracking-[0.14em] text-leaf-300">Resumen financiero</div>
-        <div class="mt-1 text-2xl font-extrabold font-wide tracking-tight">{{ r.montoTotal | currency:'S/ ' }}</div>
+        <div class="mt-1 text-2xl font-extrabold font-wide tracking-tight">{{ r.montoTotal | currency:'S/' }}</div>
       </div>
       <div class="p-6">
       <dl class="space-y-3 text-sm">
         <div class="flex justify-between"><dt class="text-zinc-500">Viajeros</dt><dd class="font-medium">{{ r.numeroViajeros }}</dd></div>
-        <div class="flex justify-between"><dt class="text-zinc-500">Precio por persona</dt><dd class="font-medium">{{ r.precioUnitario | currency:'S/ ' }}</dd></div>
-        @if (r.descuento > 0) { <div class="flex justify-between"><dt class="text-zinc-500">Descuento</dt><dd class="font-medium text-emerald-700">-{{ r.descuento | currency:'S/ ' }}</dd></div> }
-        <div class="flex justify-between"><dt class="text-zinc-500">Monto total</dt><dd class="font-medium">{{ r.montoTotal | currency:'S/ ' }}</dd></div>
-        <div class="flex justify-between"><dt class="text-zinc-500">Monto pagado</dt><dd class="font-medium text-brand-700">{{ r.montoPagado | currency:'S/ ' }}</dd></div>
+        <div class="flex justify-between"><dt class="text-zinc-500">Precio por persona</dt><dd class="font-medium">{{ r.precioUnitario | currency:'S/' }}</dd></div>
+        @if (r.descuento > 0) { <div class="flex justify-between"><dt class="text-zinc-500">Descuento</dt><dd class="font-medium text-emerald-700">-{{ r.descuento | currency:'S/' }}</dd></div> }
+        <div class="flex justify-between"><dt class="text-zinc-500">Monto total</dt><dd class="font-medium">{{ r.montoTotal | currency:'S/' }}</dd></div>
+        <div class="flex justify-between"><dt class="text-zinc-500">Monto pagado</dt><dd class="font-medium text-brand-700">{{ r.montoPagado | currency:'S/' }}</dd></div>
       </dl>
       <div class="progress !h-2 mt-4"><div class="bg-gradient-to-r from-brand-400 to-brand-600" [style.width.%]="avance()"></div></div>
       <div class="mt-5 rounded-xl bg-sand-50 border border-zinc-100 px-4 py-3.5 flex items-baseline justify-between">
         <span class="text-zinc-500 text-sm font-medium">Saldo</span>
-        <span class="text-2xl font-extrabold font-wide tracking-tight" [class]="saldo() > 0 ? 'text-amber-600' : 'text-zinc-900'">{{ saldo() | currency:'S/ ' }}</span>
+        <span class="text-2xl font-extrabold font-wide tracking-tight" [class]="saldo() > 0 ? 'text-amber-600' : 'text-zinc-900'">{{ saldo() | currency:'S/' }}</span>
       </div>
       </div>
     </aside>

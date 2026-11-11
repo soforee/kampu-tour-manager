@@ -1,5 +1,5 @@
 <div class="min-h-screen lg:pl-20">
-  <header class="lg:hidden sticky top-0 z-30 h-16 px-4 flex items-center justify-between bg-white/80 backdrop-blur-md border-b border-zinc-200/70 shadow-soft">
+  <header class="no-print lg:hidden sticky top-0 z-30 h-16 px-4 flex items-center justify-between bg-white/80 backdrop-blur-md border-b border-zinc-200/70 shadow-soft">
     <button type="button" class="icon-btn -ml-1 text-zinc-600" aria-label="Abrir menú" (click)="abierto.set(true)"><app-icon name="menu" /></button>
     <app-logo variante="horizontal" [alto]="22" />
     <!-- Volver al inicio (móvil): no cierra la sesión -->
@@ -76,7 +76,7 @@
 
   <main class="px-4 py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-10 max-w-7xl mx-auto">
     <!-- Barra superior (escritorio): siempre a la vista en todas las pantallas del panel -->
-    <div class="hidden lg:flex items-center justify-end gap-2 -mt-4 mb-4">
+    <div class="no-print hidden lg:flex items-center justify-end gap-2 -mt-4 mb-4">
       <span class="text-xs text-zinc-500">{{ auth.usuario()?.username }} · {{ rolTexto() }}</span>
       <a routerLink="/" class="btn-light btn-sm" title="Ir a la página principal sin cerrar sesión">
         <app-icon name="home" size="w-4 h-4" /> Volver al inicio

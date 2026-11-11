@@ -41,8 +41,8 @@
     </div>
   </div>
 
-  <div class="grid lg:grid-cols-3 gap-6 items-start">
-    <div class="lg:col-span-2 space-y-6">
+  <div class="detalle grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+    <div class="lg:col-span-2 space-y-6 min-w-0">
 
       <!-- Manifiesto -->
       <section class="card overflow-hidden manifiesto">
@@ -78,8 +78,7 @@
           <div class="overflow-x-auto">
             <table class="tbl">
               <thead><tr>
-                <th class="th w-10">#</th><th class="th">Pasajero</th><th class="th">Documento</th><th class="th">Nacionalidad</th>
-                <th class="th text-center">Edad</th><th class="th">Reserva</th>
+                <th class="th w-10">#</th><th class="th">Pasajero</th><th class="th">Documento</th><th class="th">Reserva</th>
                 @if (conMontos()) { <th class="th no-print">Pago</th> }
                 <th class="th solo-impresion-celda">Firma</th>
               </tr></thead>
@@ -90,11 +89,12 @@
                     <td class="td">
                       <div class="font-semibold text-zinc-900">{{ p.nombreCompleto }}</div>
                       @if (p.titular && p.titular !== p.nombreCompleto) { <div class="text-xs text-zinc-400">Titular: {{ p.titular }}</div> }
-                      @if (p.titularTelefono) { <div class="text-xs text-zinc-400 inline-flex items-center gap-1"><app-icon name="phone" size="w-3 h-3" />{{ p.titularTelefono }}</div> }
+                      @if (p.titularTelefono) { <div class="text-xs text-zinc-400 flex items-center gap-1 whitespace-nowrap"><app-icon name="phone" size="w-3 h-3" />{{ p.titularTelefono }}</div> }
                     </td>
-                    <td class="td font-mono text-xs text-zinc-600 whitespace-nowrap">{{ p.tipoDocumento }} {{ p.numeroDocumento }}</td>
-                    <td class="td text-zinc-600">{{ p.nacionalidad || '—' }}</td>
-                    <td class="td text-center text-zinc-600">{{ p.edad ?? '—' }}</td>
+                    <td class="td whitespace-nowrap">
+                      <div class="font-mono text-xs text-zinc-700">{{ p.tipoDocumento }} {{ p.numeroDocumento }}</div>
+                      <div class="text-xs text-zinc-400 mt-0.5">{{ p.nacionalidad || 'Nacionalidad sin registrar' }}@if (p.edad !== null) { · {{ p.edad }} años }</div>
+                    </td>
                     <td class="td whitespace-nowrap">
                       @if (veReservas) {
                         <a [routerLink]="['/reservas', p.reservaId]" class="font-mono text-[13px] font-semibold text-zinc-900 hover:text-brand-700 transition-colors">{{ store.codigoReserva(p.reservaId) }}</a>
@@ -106,13 +106,13 @@
                     @if (conMontos()) {
                       <td class="td no-print whitespace-nowrap">
                         @if (p.estadoPago) { <app-badge [estado]="p.estadoPago" /> }
-                        @if ((p.saldo ?? 0) > 0) { <div class="text-xs text-amber-600 font-semibold mt-1">Debe {{ p.saldo | currency:'S/ ' }}</div> }
+                        @if ((p.saldo ?? 0) > 0) { <div class="text-xs text-amber-600 font-semibold mt-1">Debe {{ p.saldo | currency:'S/' }}</div> }
                       </td>
                     }
                     <td class="td solo-impresion-celda"></td>
                   </tr>
                 } @empty {
-                  <tr><td [attr.colspan]="conMontos() ? 8 : 7"><div class="empty"><span class="ico"><app-icon name="users" size="w-6 h-6" /></span>
+                  <tr><td [attr.colspan]="conMontos() ? 6 : 5"><div class="empty"><span class="ico"><app-icon name="users" size="w-6 h-6" /></span>
                     Esta salida aún no tiene pasajeros.
                     @if (puedeVender()) { <a class="link" routerLink="/reservas/nueva" [queryParams]="{ salida: s.salidaId }">Crear la primera reserva</a> }
                   </div></td></tr>
@@ -169,7 +169,7 @@
     </div>
 
     <!-- Columna derecha -->
-    <aside class="space-y-6 no-print lg:sticky lg:top-8">
+    <aside class="space-y-6 no-print lg:sticky lg:top-8 min-w-0">
       <section class="card overflow-hidden">
         <div class="bg-gradient-to-br from-zinc-800 to-zinc-950 px-6 py-5 text-white">
           <div class="text-[11px] font-extrabold uppercase tracking-[0.14em] text-leaf-300">Lista para salir</div>
@@ -211,7 +211,7 @@
         @if (conMontos() && porCobrar() > 0) {
           <div class="mt-4 rounded-xl bg-amber-50 border border-amber-100 px-4 py-3 flex items-baseline justify-between">
             <span class="text-sm font-medium text-amber-800">Por cobrar</span>
-            <span class="text-lg font-extrabold text-amber-700">{{ porCobrar() | currency:'S/ ' }}</span>
+            <span class="text-lg font-extrabold text-amber-700">{{ porCobrar() | currency:'S/' }}</span>
           </div>
         }
       </section>

@@ -183,7 +183,7 @@ export interface SalidaProgramada {
   cuposDisponibles: number;
   guiaId?: number | null;
   estado: EstadoSalida;
-  // Operaciones de transporte vigentes y PKG_ASIGNACION.faltante_transporte (null = alcanza)
+  // Operaciones de transporte vigentes y tramo sin transporte suficiente (null = alcanza)
   operaciones: number;
   faltanteTransporte: string | null;
 }
@@ -413,7 +413,7 @@ export interface ClienteForm {
   telefono: string;
 }
 
-// La fecha fin la calcula la base de datos (trg_salida_biu) con los días del paquete
+// La fecha fin la calcula el backend con los días del paquete
 export interface SalidaForm {
   paqueteId: number;
   fechaInicio: string;

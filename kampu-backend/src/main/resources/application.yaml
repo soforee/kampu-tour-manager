@@ -53,7 +53,7 @@ storage:
   location: "images"
 
 # Duración de las rutas con datos reales: OSRM (red vial de OpenStreetMap).
-# Sin internet se usa PKG_RUTAS (coordenadas de los lugares). Para tu propio
+# Sin internet se estima con las coordenadas de los lugares. Para tu propio
 # servidor OSRM cambia la URL; para no consultarlo, pon OSRM_HABILITADO=false.
 kampu:
   rutas:

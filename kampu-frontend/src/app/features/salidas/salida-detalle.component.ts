@@ -110,7 +110,7 @@ export class SalidaDetalleComponent {
       pasos.push({
         ok: this.porCobrar() <= 0.005 && this.vendidos() > 0, titulo: 'Pagos al día',
         detalle: this.vendidos() === 0 ? 'Sin reservas.' : this.porCobrar() <= 0.005 ? 'No queda saldo por cobrar.'
-          : `Queda por cobrar S/ ${this.porCobrar().toFixed(2)}.`
+          : `Queda por cobrar S/ ${this.porCobrar().toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.`
       });
     }
     return pasos;

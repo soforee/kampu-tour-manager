@@ -10,8 +10,7 @@ import { IconComponent } from '../../shared/icon.component';
   selector: 'app-reservas',
   standalone: true,
   imports: [RouterLink, CurrencyPipe, DatePipe, BadgeComponent, IconComponent],
-  templateUrl: './reservas.component.html',
-  styleUrl: './reservas.component.css'
+  templateUrl: './reservas.component.html'
 })
 export class ReservasComponent {
   private store = inject(TourStore);

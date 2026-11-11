@@ -15,8 +15,7 @@ import { errorTelefonoPais } from '../../core/utils/paises';
   selector: 'app-clientes',
   standalone: true,
   imports: [FormsModule, IconComponent, ModalComponent, TelefonoInputComponent],
-  templateUrl: './clientes.component.html',
-  styleUrl: './clientes.component.css'
+  templateUrl: './clientes.component.html'
 })
 export class ClientesComponent {
   store = inject(TourStore);

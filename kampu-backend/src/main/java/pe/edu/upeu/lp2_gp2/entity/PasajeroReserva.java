@@ -3,7 +3,7 @@ package pe.edu.upeu.lp2_gp2.entity;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
-// trg_pasajeros_cupo: no más pasajeros que la cantidad del detalle
+// Pasajeros de un detalle de reserva (cantidad = número de pasajeros, lo controla ReservaServiceImpl)
 @Entity
 @Table(name = "PASAJEROS_RESERVA")
 public class PasajeroReserva {

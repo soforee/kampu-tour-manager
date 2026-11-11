@@ -18,8 +18,7 @@ import { ModalComponent } from '../../shared/modal.component';
   selector: 'app-paquetes',
   standalone: true,
   imports: [FormsModule, RouterLink, CurrencyPipe, BadgeComponent, IconComponent, LogoComponent, ModalComponent],
-  templateUrl: './paquetes.component.html',
-  styleUrl: './paquetes.component.css'
+  templateUrl: './paquetes.component.html'
 })
 export class PaquetesComponent {
   store = inject(TourStore);

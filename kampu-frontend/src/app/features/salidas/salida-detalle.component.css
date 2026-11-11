@@ -2,6 +2,7 @@
 .solo-impresion, .solo-impresion-celda { display: none; }
 
 @media print {
+  .detalle { display: block; }
   .solo-impresion { display: block; }
   .solo-impresion-celda { display: table-cell; min-width: 110px; }
   .manifiesto { border: 0 !important; box-shadow: none !important; background: #fff !important; }

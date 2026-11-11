@@ -138,7 +138,7 @@ public class GlobalExceptionHandler {
         return responder(HttpStatus.PAYLOAD_TOO_LARGE, "La imagen supera el tamaño máximo permitido.");
     }
 
-    // Errores de la base de datos: reglas de los triggers / PKG_ASIGNACION (ORA-20xxx)
+    // Errores de la base de datos: reglas de los triggers y paquetes PL/SQL (ORA-20xxx)
     // y restricciones UNIQUE, CHECK y FK (ver ErroresOracle)
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorDTO> integridad(DataIntegrityViolationException e) {
