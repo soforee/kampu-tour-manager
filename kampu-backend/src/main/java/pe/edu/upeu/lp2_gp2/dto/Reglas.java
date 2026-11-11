@@ -19,11 +19,26 @@ public final class Reglas {
 
     public static final String EMAIL = "^$|^\\s*[^@\\s]+@[^@\\s]+\\.[A-Za-z]{2,}\\s*$";
 
-    public static final String PLACA = "^\\s*([A-Za-z0-9-]{3,15})?\\s*$";
+    // VEHICULO.placa es VARCHAR2(10)
+    public static final String PLACA = "^\\s*([A-Za-z0-9-]{3,10})?\\s*$";
+
+    // EMPRESA_TRANSPORTE.ruc: chk_emp_ruc = '^(10|15|17|20)[0-9]{9}$'
+    public static final String RUC = "^(10|15|17|20)[0-9]{9}$";
+    public static final String MSG_RUC = "El RUC tiene 11 dígitos y empieza con 10, 15, 17 o 20.";
 
     public static final String CODIGO = "^$|^[A-Za-z0-9 ._/#-]*$";
 
     public static final LocalDate FECHA_MINIMA = LocalDate.of(1900, 1, 1);
+
+    // Solo los dígitos del teléfono: así se compara si está repetido
+    // (igual que TRANSLATE(telefono, '0+-() ', '0') de los índices únicos)
+    public static String digitos(String telefono) {
+        return telefono == null ? "" : telefono.replaceAll("\\D", "");
+    }
+
+    public static long idOMenosUno(Long id) {
+        return id == null ? -1L : id;
+    }
 
     public static boolean documentoValido(String tipo, String numero) {
         if (tipo == null || numero == null || numero.isBlank()) return true;
@@ -31,11 +46,12 @@ public final class Reglas {
         if ("DNI".equals(tipo)) return n.matches("\\d{8}");
         if ("CE".equals(tipo)) return n.matches("[A-Za-z0-9]{8,12}");
         if ("PASAPORTE".equals(tipo)) return n.matches("[A-Za-z0-9]{6,12}");
+        if ("RUC".equals(tipo)) return n.matches(RUC);
         return true;
     }
 
     public static final String MSG_DOCUMENTO =
-            "Número de documento no válido: el DNI tiene 8 dígitos; el CE, de 8 a 12 letras o números; el pasaporte, de 6 a 12 letras o números.";
+            "Número de documento no válido: el DNI tiene 8 dígitos; el CE, de 8 a 12 letras o números; el pasaporte, de 6 a 12 letras o números; el RUC, 11 dígitos.";
 
     public static boolean telefonoValido(String telefono) {
         if (telefono == null || telefono.isBlank()) return true;

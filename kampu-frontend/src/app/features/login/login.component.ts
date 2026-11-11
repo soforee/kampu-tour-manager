@@ -10,8 +10,7 @@ import { LogoComponent } from '../../shared/logo.component';
   selector: 'app-login',
   standalone: true,
   imports: [FormsModule, RouterLink, IconComponent, LogoComponent],
-  templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
+  templateUrl: './login.component.html'
 })
 export class LoginComponent {
   private auth = inject(AuthService);
@@ -23,26 +22,21 @@ export class LoginComponent {
   error = signal('');
   cargando = signal(false);
 
-  rellenar(username: string, password: string) {
-    this.username = username;
-    this.password = password;
-    this.error.set('');
-  }
-
   constructor() {
-    if (this.auth.autenticado()) this.router.navigate(['/dashboard']);
+    if (this.auth.autenticado()) this.router.navigateByUrl(this.auth.inicio());
   }
 
   entrar() {
     if (!this.username.trim() || !this.password) {
-      this.error.set('Ingresa tu usuario y contraseña.');
+      this.error.set('Ingresa tu usuario (o correo) y contraseña.');
       return;
     }
     this.cargando.set(true);
     this.auth.login(this.username, this.password).subscribe({
       next: (sesion) => {
         this.auth.guardarSesion(sesion);
-        this.router.navigate(['/dashboard']);
+        // Personal interno -> panel · Cliente -> "Mis paquetes"
+        this.router.navigateByUrl(this.auth.inicio());
       },
       error: (err) => {
         this.error.set(mensajeError(err));

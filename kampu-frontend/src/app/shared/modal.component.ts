@@ -5,8 +5,7 @@ import { IconComponent } from './icon.component';
   selector: 'app-modal',
   standalone: true,
   imports: [IconComponent],
-  templateUrl: './modal.component.html',
-  styleUrl: './modal.component.css'
+  templateUrl: './modal.component.html'
 })
 export class ModalComponent {
   @Input({ required: true }) titulo = '';

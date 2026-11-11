@@ -1,4 +1,6 @@
+import { AuthService } from '../../core/services/auth.service';
 import { CurrencyPipe, DatePipe } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TourStore } from '../../core/services/tour-store.service';
@@ -11,15 +13,17 @@ import { IconComponent } from '../../shared/icon.component';
   selector: 'app-pagos',
   standalone: true,
   imports: [RouterLink, CurrencyPipe, DatePipe, BadgeComponent, IconComponent],
-  templateUrl: './pagos.component.html',
-  styleUrl: './pagos.component.css'
+  templateUrl: './pagos.component.html'
 })
 export class PagosComponent {
   private store = inject(TourStore);
   private alerts = inject(AlertService);
+  // REGISTRAR_PAGO: registrar y validar pagos (Admin y Ventas)
+  gestiona = inject(AuthService).puede('REGISTRAR_PAGO');
 
   texto = signal('');
-  estado = signal('');
+  // ?estado=PENDIENTE: llega desde el aviso "pagos por validar" del panel
+  estado = signal(inject(ActivatedRoute).snapshot.queryParamMap.get('estado') ?? '');
   estados = [{ valor: '', texto: 'Todos' }, { valor: 'APROBADO', texto: 'Aprobados' }, { valor: 'PENDIENTE', texto: 'Pendientes' },
              { valor: 'RECHAZADO', texto: 'Rechazados' }, { valor: 'REEMBOLSADO', texto: 'Reembolsados' }];
 
@@ -31,7 +35,7 @@ export class PagosComponent {
         pago: p,
         codigo: this.store.codigoReserva(p.reservaId),
         cliente: this.store.nombreCliente(this.store.getReserva(p.reservaId)) || '—',
-        pen: aPEN(p.monto, p.moneda)
+        pen: p.montoPen ?? aPEN(p.monto, p.moneda)   // PAGOS.monto_pen (columna virtual)
       }))
       .filter(f => !e || f.pago.estadoTransaccion === e)
       .filter(f => !t || f.codigo.toLowerCase().includes(t) || f.cliente.toLowerCase().includes(t)

@@ -65,7 +65,7 @@
               <div class="mt-auto flex items-end justify-between gap-3 pt-6">
                 <div>
                   <span class="text-xs" style="color: var(--kp-muted)">Desde</span>
-                  <div class="text-xl font-black tracking-tight">{{ t.paquete.precioBase | currency:'S/ ':'symbol':'1.0-0' }}</div>
+                  <div class="text-xl font-black tracking-tight">{{ t.paquete.precioBase | currency:'S/':'symbol':'1.0-0' }}</div>
                 </div>
                 <a [href]="cotizar(t)" class="tour-btn" [attr.aria-label]="'Cotizar ' + t.paquete.nombre">
                   Cotizar <app-icon name="arrow-right" size="w-4 h-4" />

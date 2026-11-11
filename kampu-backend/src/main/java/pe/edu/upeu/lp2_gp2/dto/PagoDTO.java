@@ -10,13 +10,19 @@ public record PagoDTO(
         Long reservaId,
         BigDecimal monto,
         String moneda,
+        BigDecimal tipoCambio,
+        BigDecimal montoPen,
         String metodoPago,
         String codigoTransaccion,
         LocalDateTime fechaPago,
-        String estadoTransaccion
+        String estadoTransaccion,
+        // ADMIN / VENDEDOR / CLIENTE (informado desde el portal)
+        String registradoPor
 ) {
     public static PagoDTO desde(Pago p) {
-        return new PagoDTO(p.getPagoId(), p.getReservaId(), p.getMonto(), p.getMoneda(), p.getMetodoPago() == null ? "" : p.getMetodoPago(),
-                p.getCodigoTransaccion() == null ? "" : p.getCodigoTransaccion(), p.getFechaPago(), p.getEstadoTransaccion());
+        return new PagoDTO(p.getPagoId(), p.getReservaId(), p.getMonto(), p.getMoneda(), p.getTipoCambio(), p.getMontoPen(),
+                p.getMetodoPago() == null ? "" : p.getMetodoPago(),
+                p.getCodigoTransaccion() == null ? "" : p.getCodigoTransaccion(), p.getFechaPago(), p.getEstadoTransaccion(),
+                p.getRegistradoPor());
     }
 }

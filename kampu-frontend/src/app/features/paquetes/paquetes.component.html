@@ -36,7 +36,7 @@
           <span class="chip !font-sans"><app-icon name="calendar" size="w-3.5 h-3.5" /> {{ f.proximas }} salidas próximas</span>
         </div>
         <div class="mt-auto pt-5"><div class="flex items-center justify-between gap-2 border-t border-zinc-100 pt-4">
-          <div><span class="text-xl font-extrabold font-wide tracking-tight text-zinc-900">{{ f.paquete.precioBase | currency:'S/ ':'symbol':'1.0-0' }}</span><span class="text-xs text-zinc-400"> / persona</span></div>
+          <div><span class="text-xl font-extrabold font-wide tracking-tight text-zinc-900">{{ f.paquete.precioBase | currency:'S/':'symbol':'1.0-0' }}</span><span class="text-xs text-zinc-400"> / persona</span></div>
           <div class="flex items-center gap-1">
             @if (f.paquete.estado === 'ACTIVO' && f.proximas > 0) {
               <a [routerLink]="['/reservas/nueva']" [queryParams]="{ paquete: f.paquete.paqueteId }" class="btn-brand btn-sm mr-1"><app-icon name="ticket" size="w-3.5 h-3.5" /> Reservar</a>
@@ -63,6 +63,14 @@
         <div>
           <label class="label">Descripción <span class="opt">Opcional · {{ form.descripcion.length }}/1000</span></label>
           <textarea class="field" rows="3" maxlength="1000" [(ngModel)]="form.descripcion" placeholder="Qué incluye, puntos destacados, nivel de dificultad…" (blur)="v.tocar('descripcion')" [class.field-invalid]="v.error('descripcion')"></textarea>@if (v.error('descripcion'); as e) { <p class="field-error">{{ e }}</p> }
+        </div>
+        <div>
+          <label class="label">Lugar de destino <span class="opt">Opcional</span></label>
+          <select class="field" [(ngModel)]="form.lugarDestinoId">
+            <option [ngValue]="null">Sin definir</option>
+            @for (l of store.lugares(); track l.lugarId) { <option [ngValue]="l.lugarId">{{ l.nombre }} ({{ l.ciudad }})</option> }
+          </select>
+          <p class="hint">Adonde llega el transporte del paquete. Se usa al crear rutas hacia el paquete (Logística → Rutas).</p>
         </div>
       </div>
 

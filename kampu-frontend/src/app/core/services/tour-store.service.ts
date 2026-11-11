@@ -1,29 +1,60 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal, WritableSignal } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
-  Chofer, ChoferForm, Cliente, ClienteForm, ContactoReserva, EstadoTransaccion, Guia, GuiaForm, Moneda, PaqueteForm, PaqueteTour, Pago, PasajeroDraft,
-  PasajeroReserva, Reserva, SalidaForm, SalidaProgramada, Sesion, Transporte, TransporteForm
+  Cliente, ClienteForm, ContactoReserva, EstadoOperacion, EstadoOperacionInfo, EstadoTransaccion, EstimacionDuracion,
+  HistorialOperacion, Lugar, LugarForm, Manifiesto, Moneda, Operacion, OperacionForm, PaqueteForm, PaqueteTour, Pago, PasajeroDraft,
+  PasajeroReserva, Permiso, Personal, PersonalForm, Proveedor, ProveedorForm, RecursoCandidato, Reserva, ResumenPaquete, Rol,
+  SalidaForm, SalidaProgramada, Sesion, Vehiculo, VehiculoForm
 } from '../models';
 import { redondear } from '../utils/moneda';
 import { API, mensajeError } from '../utils/api';
 import { AuthService } from './auth.service';
+
+// Permiso que exige cada lista (mismo mapeo que SeguridadInterceptor en el backend).
+// null = catálogo público. Los permisos de la sesión vienen de PKG_SEGURIDAD_ROLES.permisos.
+const LISTAS: { [lista: string]: Permiso | null } = {
+  paquetes: null,
+  salidas: null,
+  proveedores: 'VER_LOGISTICA',
+  personal: 'VER_LOGISTICA',
+  vehiculos: 'VER_LOGISTICA',
+  lugares: 'VER_LOGISTICA',
+  operaciones: 'VER_OPERACIONES',
+  'operaciones/estados': 'VER_OPERACIONES',
+  'resumen-paquetes': 'VER_RESUMEN',
+  clientes: 'VER_CLIENTES',
+  reservas: 'VER_RESERVAS',
+  pasajeros: 'VER_RESERVAS',
+  pagos: 'VER_MONTOS'
+};
 
 @Injectable({ providedIn: 'root' })
 export class TourStore {
   private http = inject(HttpClient);
   private auth = inject(AuthService);
 
-  usuarios = signal<Sesion[]>([]);
   paquetes = signal<PaqueteTour[]>([]);
-  guias = signal<Guia[]>([]);
-  transportes = signal<Transporte[]>([]);
-  choferes = signal<Chofer[]>([]);
+  // Proveedores (Kampu Tours propio + terceros), su personal y su flota
+  proveedores = signal<Proveedor[]>([]);
+  personal = signal<Personal[]>([]);
+  vehiculos = signal<Vehiculo[]>([]);
+  lugares = signal<Lugar[]>([]);
+  // Tráfico
+  operaciones = signal<Operacion[]>([]);
+  estadosOperacion = signal<EstadoOperacionInfo[]>([]);
+  // Comercial
   clientes = signal<Cliente[]>([]);
   salidas = signal<SalidaProgramada[]>([]);
   reservas = signal<Reserva[]>([]);
   pasajeros = signal<PasajeroReserva[]>([]);
   pagos = signal<Pago[]>([]);
+  // Vista VW_RESUMEN_PAQUETES_POR_ROL
+  resumen = signal<ResumenPaquete[]>([]);
+
+  // Personal que puede guiar o conducir
+  guias = computed(() => this.personal().filter(p => p.rol !== 'CONDUCTOR'));
+  conductores = computed(() => this.personal().filter(p => p.rol !== 'GUIA'));
 
   ocupado = signal(false);
   cargado = signal(false);
@@ -37,6 +68,13 @@ export class TourStore {
     return mensajeError(e);
   }
 
+  // ¿La sesión puede leer esta lista?
+  puede(lista: string): boolean {
+    if (!(lista in LISTAS)) return false;
+    const permiso = LISTAS[lista];
+    return this.auth.autenticado() && (permiso === null || this.auth.puede(permiso));
+  }
+
   cargar(forzar = false, alTerminar?: (error: string) => void) {
     if (alTerminar) this.avisos.push(alTerminar);
     if (this.cargado() && !forzar) {
@@ -44,19 +82,19 @@ export class TourStore {
       return;
     }
     if (this.cargando) return;
+    const tareas: [string, WritableSignal<any[]>][] = [
+      ['paquetes', this.paquetes], ['salidas', this.salidas],
+      ['proveedores', this.proveedores], ['personal', this.personal], ['vehiculos', this.vehiculos],
+      ['lugares', this.lugares], ['operaciones', this.operaciones], ['operaciones/estados', this.estadosOperacion],
+      ['resumen-paquetes', this.resumen], ['clientes', this.clientes], ['reservas', this.reservas],
+      ['pasajeros', this.pasajeros], ['pagos', this.pagos]
+    ];
+    const permitidas = tareas.filter(([url]) => this.puede(url));
     this.cargando = true;
     this.errorCarga = '';
-    this.pendientes = 10;
-    this.cargarUsuarios(true);
-    this.cargarPaquetes(true);
-    this.cargarGuias(true);
-    this.cargarTransportes(true);
-    this.cargarChoferes(true);
-    this.cargarClientes(true);
-    this.cargarSalidas(true);
-    this.cargarReservas(true);
-    this.cargarPasajeros(true);
-    this.cargarPagos(true);
+    this.pendientes = permitidas.length;
+    if (this.pendientes === 0) { this.terminoTabla(); return; }
+    for (const [url, destino] of permitidas) this.cargarLista(url, destino, true);
   }
 
   private terminoTabla(e?: unknown) {
@@ -77,171 +115,127 @@ export class TourStore {
   limpiar() {
     this.cargado.set(false);
     this.cargando = false;
-    this.usuarios.set([]);
-    this.paquetes.set([]);
-    this.guias.set([]);
-    this.transportes.set([]);
-    this.choferes.set([]);
-    this.clientes.set([]);
-    this.salidas.set([]);
-    this.reservas.set([]);
-    this.pasajeros.set([]);
-    this.pagos.set([]);
+    for (const s of [this.paquetes, this.proveedores, this.personal, this.vehiculos, this.lugares,
+      this.operaciones, this.estadosOperacion, this.clientes, this.salidas, this.reservas, this.pasajeros, this.pagos,
+      this.resumen] as WritableSignal<unknown[]>[]) {
+      s.set([]);
+    }
   }
 
-  cargarUsuarios(contar = false) {
-    this.http.get<Sesion[]>(`${API}/usuarios`).subscribe({
-      next: data => { this.usuarios.set(data); if (contar) this.terminoTabla(); },
+  private cargarLista<T>(url: string, destino: WritableSignal<T[]>, contar: boolean) {
+    if (!this.puede(url)) { if (contar) this.terminoTabla(); return; }
+    this.http.get<T[]>(`${API}/${url}`).subscribe({
+      next: data => { destino.set(data); if (contar) this.terminoTabla(); },
       error: e => { if (contar) this.terminoTabla(e); else this.error(e); }
     });
   }
-  cargarPaquetes(contar = false) {
-    this.http.get<PaqueteTour[]>(`${API}/paquetes`).subscribe({
-      next: data => { this.paquetes.set(data); if (contar) this.terminoTabla(); },
-      error: e => { if (contar) this.terminoTabla(e); else this.error(e); }
-    });
-  }
-  cargarGuias(contar = false) {
-    this.http.get<Guia[]>(`${API}/guias`).subscribe({
-      next: data => { this.guias.set(data); if (contar) this.terminoTabla(); },
-      error: e => { if (contar) this.terminoTabla(e); else this.error(e); }
-    });
-  }
-  cargarTransportes(contar = false) {
-    this.http.get<Transporte[]>(`${API}/transportes`).subscribe({
-      next: data => { this.transportes.set(data); if (contar) this.terminoTabla(); },
-      error: e => { if (contar) this.terminoTabla(e); else this.error(e); }
-    });
-  }
-  cargarChoferes(contar = false) {
-    this.http.get<Chofer[]>(`${API}/choferes`).subscribe({
-      next: data => { this.choferes.set(data); if (contar) this.terminoTabla(); },
-      error: e => { if (contar) this.terminoTabla(e); else this.error(e); }
-    });
-  }
-  cargarClientes(contar = false) {
-    this.http.get<Cliente[]>(`${API}/clientes`).subscribe({
-      next: data => { this.clientes.set(data); if (contar) this.terminoTabla(); },
-      error: e => { if (contar) this.terminoTabla(e); else this.error(e); }
-    });
-  }
-  cargarSalidas(contar = false) {
-    this.http.get<SalidaProgramada[]>(`${API}/salidas`).subscribe({
-      next: data => { this.salidas.set(data); if (contar) this.terminoTabla(); },
-      error: e => { if (contar) this.terminoTabla(e); else this.error(e); }
-    });
-  }
-  cargarReservas(contar = false) {
-    this.http.get<Reserva[]>(`${API}/reservas`).subscribe({
-      next: data => { this.reservas.set(data); if (contar) this.terminoTabla(); },
-      error: e => { if (contar) this.terminoTabla(e); else this.error(e); }
-    });
-  }
-  cargarPasajeros(contar = false) {
-    this.http.get<PasajeroReserva[]>(`${API}/pasajeros`).subscribe({
-      next: data => { this.pasajeros.set(data); if (contar) this.terminoTabla(); },
-      error: e => { if (contar) this.terminoTabla(e); else this.error(e); }
-    });
-  }
-  cargarPagos(contar = false) {
-    this.http.get<Pago[]>(`${API}/pagos`).subscribe({
-      next: data => { this.pagos.set(data); if (contar) this.terminoTabla(); },
-      error: e => { if (contar) this.terminoTabla(e); else this.error(e); }
-    });
-  }
+  cargarPaquetes() { this.cargarLista('paquetes', this.paquetes, false); }
+  cargarProveedores() { this.cargarLista('proveedores', this.proveedores, false); }
+  cargarPersonal() { this.cargarLista('personal', this.personal, false); }
+  cargarVehiculos() { this.cargarLista('vehiculos', this.vehiculos, false); }
+  cargarLugares() { this.cargarLista('lugares', this.lugares, false); }
+  cargarOperaciones() { this.cargarLista('operaciones', this.operaciones, false); }
+  cargarResumen() { this.cargarLista('resumen-paquetes', this.resumen, false); }
+  cargarClientes() { this.cargarLista('clientes', this.clientes, false); }
+  cargarSalidas() { this.cargarLista('salidas', this.salidas, false); this.cargarResumen(); }
+  cargarReservas() { this.cargarLista('reservas', this.reservas, false); }
+  cargarPasajeros() { this.cargarLista('pasajeros', this.pasajeros, false); }
+  cargarPagos() { this.cargarLista('pagos', this.pagos, false); }
 
   getPaquete(id?: number | null) { return this.paquetes().find(p => p.paqueteId === id); }
-  getGuia(id?: number | null) { return this.guias().find(g => g.guiaId === id); }
-  getTransporte(id?: number | null) { return this.transportes().find(t => t.transporteId === id); }
-  getChofer(id?: number | null) { return this.choferes().find(c => c.choferId === id); }
+  getGuia(id?: number | null) { return this.personal().find(p => p.personalId === id); }
+  getPersonal(id?: number | null) { return this.personal().find(p => p.personalId === id); }
+  getProveedor(id?: number | null) { return this.proveedores().find(p => p.proveedorId === id); }
+  getLugar(id?: number | null) { return this.lugares().find(l => l.lugarId === id); }
+  getVehiculo(id?: number | null) { return this.vehiculos().find(v => v.vehiculoId === id); }
+  getOperacion(id?: number | null) { return this.operaciones().find(o => o.operacionId === id); }
+  getEstadoOperacion(codigo?: string | null) { return this.estadosOperacion().find(e => e.codigo === codigo); }
   getCliente(id?: number | null) { return this.clientes().find(c => c.clienteId === id); }
-
-  // Nombre a mostrar: el cliente registrado o el contacto del invitado
-  nombreCliente(r?: Reserva | null): string {
-    if (!r) return '';
-    if (r.clienteId) return this.getCliente(r.clienteId)?.nombreCompleto ?? '';
-    return r.contactoNombre ?? '';
-  }
-  esInvitado(r?: Reserva | null): boolean { return !!r && !r.clienteId; }
   getSalida(id?: number | null) { return this.salidas().find(s => s.salidaId === id); }
   getReserva(id?: number | null) { return this.reservas().find(r => r.reservaId === id); }
+  operacionesDe(salidaId: number) { return this.operaciones().filter(o => o.salidaId === salidaId); }
+  nombreLugar(id?: number | null): string {
+    const l = this.getLugar(id);
+    return l ? `${l.nombre} (${l.ciudad})` : '';
+  }
+  nombreProveedor(id?: number | null): string { return this.getProveedor(id)?.nombreComercial ?? '—'; }
 
+  nombreCliente(r?: Reserva | null): string {
+    return r ? this.getCliente(r.clienteId)?.nombreCompleto ?? '' : '';
+  }
   pasajerosDe(reservaId: number) { return this.pasajeros().filter(p => p.reservaId === reservaId); }
   pagosDe(reservaId: number) { return this.pagos().filter(p => p.reservaId === reservaId); }
   salidasDe(paqueteId: number) { return this.salidas().filter(s => s.paqueteId === paqueteId); }
-  usernameDe(id?: number | null): string {
-    const u = this.usuarios().find(x => x.usuarioId === id);
-    return u ? u.username : 'usuario #' + id;
-  }
 
   codigoReserva(id: number) { return 'R-' + String(id).padStart(4, '0'); }
   saldo(r: Reserva): number {
     return r.estadoReserva === 'ANULADA' ? 0 : Math.max(redondear(r.montoTotal - r.montoPagado), 0);
   }
   cuposOcupados(salidaId: number): number {
-    return this.reservas()
-      .filter(r => r.salidaId === salidaId && r.estadoReserva !== 'ANULADA')
-      .reduce((a, r) => a + r.numeroViajeros, 0);
+    const s = this.getSalida(salidaId);
+    return s ? s.cuposMaximos - s.cuposDisponibles : 0;
   }
 
-  guardarPaquete(d: PaqueteForm, id: number | null): Observable<PaqueteTour> {
-    return id
-      ? this.http.put<PaqueteTour>(`${API}/paquetes/${id}`, d)
-      : this.http.post<PaqueteTour>(`${API}/paquetes`, d);
-  }
-  eliminarPaquete(id: number): Observable<void> {
-    return this.http.delete<void>(`${API}/paquetes/${id}`);
+  private guardarEn<T>(url: string, d: unknown, id: number | null): Observable<T> {
+    return id ? this.http.put<T>(`${API}/${url}/${id}`, d) : this.http.post<T>(`${API}/${url}`, d);
   }
 
-  guardarGuia(d: GuiaForm, id: number | null): Observable<Guia> {
-    return id
-      ? this.http.put<Guia>(`${API}/guias/${id}`, d)
-      : this.http.post<Guia>(`${API}/guias`, d);
+  guardarPaquete(d: PaqueteForm, id: number | null) { return this.guardarEn<PaqueteTour>('paquetes', d, id); }
+  eliminarPaquete(id: number) { return this.http.delete<void>(`${API}/paquetes/${id}`); }
+
+  // ---------- Proveedores, personal, flota y lugares ----------
+  guardarProveedor(d: ProveedorForm, id: number | null) { return this.guardarEn<Proveedor>('proveedores', d, id); }
+  eliminarProveedor(id: number) { return this.http.delete<void>(`${API}/proveedores/${id}`); }
+  guardarPersonal(d: PersonalForm, id: number | null) { return this.guardarEn<Personal>('personal', d, id); }
+  eliminarPersonal(id: number) { return this.http.delete<void>(`${API}/personal/${id}`); }
+  guardarVehiculo(d: VehiculoForm, id: number | null) { return this.guardarEn<Vehiculo>('vehiculos', d, id); }
+  eliminarVehiculo(id: number) { return this.http.delete<void>(`${API}/vehiculos/${id}`); }
+  guardarLugar(d: LugarForm, id: number | null) { return this.guardarEn<Lugar>('lugares', d, id); }
+  eliminarLugar(id: number) { return this.http.delete<void>(`${API}/lugares/${id}`); }
+
+  // ---------- Tráfico ----------
+  guardarOperacion(d: OperacionForm, id: number | null) { return this.guardarEn<Operacion>('operaciones', d, id); }
+  cambiarEstadoOperacion(id: number, estado: EstadoOperacion, observacion: string): Observable<Operacion> {
+    return this.http.patch<Operacion>(`${API}/operaciones/${id}/estado`, { estado: estado, observacion: observacion });
   }
-  eliminarGuia(id: number): Observable<void> {
-    return this.http.delete<void>(`${API}/guias/${id}`);
+  asignarAutomatico(id: number): Observable<Operacion> {
+    return this.http.post<Operacion>(`${API}/operaciones/${id}/asignar-automatico`, {});
   }
-  guardarTransporte(d: TransporteForm, id: number | null): Observable<Transporte> {
-    return id
-      ? this.http.put<Transporte>(`${API}/transportes/${id}`, d)
-      : this.http.post<Transporte>(`${API}/transportes`, d);
+  asignarRecursos(id: number, vehiculoId: number, conductorId: number): Observable<Operacion> {
+    return this.http.patch<Operacion>(`${API}/operaciones/${id}/asignar`, { vehiculoId: vehiculoId, conductorId: conductorId });
   }
-  eliminarTransporte(id: number): Observable<void> {
-    return this.http.delete<void>(`${API}/transportes/${id}`);
+  candidatos(id: number): Observable<RecursoCandidato[]> {
+    return this.http.get<RecursoCandidato[]>(`${API}/operaciones/${id}/candidatos`);
   }
-  guardarChofer(d: ChoferForm, id: number | null): Observable<Chofer> {
-    return id
-      ? this.http.put<Chofer>(`${API}/choferes/${id}`, d)
-      : this.http.post<Chofer>(`${API}/choferes`, d);
+  historialOperacion(id: number): Observable<HistorialOperacion[]> {
+    return this.http.get<HistorialOperacion[]>(`${API}/operaciones/${id}/historial`);
   }
-  eliminarChofer(id: number): Observable<void> {
-    return this.http.delete<void>(`${API}/choferes/${id}`);
+  // Duración con datos reales (OSRM / coordenadas de los lugares)
+  estimarDuracion(origenId: number, destinoId: number): Observable<EstimacionDuracion> {
+    return this.http.get<EstimacionDuracion>(`${API}/operaciones/estimar-duracion`,
+      { params: { origenId: origenId, destinoId: destinoId } });
   }
 
   // Autocompletado: busca por nombre, DNI/pasaporte o correo (mínimo 2 caracteres)
   buscarClientes(texto: string): Observable<Cliente[]> {
     return this.http.get<Cliente[]>(`${API}/clientes/buscar`, { params: { q: texto } });
   }
+  guardarCliente(d: ClienteForm, id: number | null) { return this.guardarEn<Cliente>('clientes', d, id); }
+  eliminarCliente(id: number) { return this.http.delete<void>(`${API}/clientes/${id}`); }
 
-  guardarCliente(d: ClienteForm, id: number | null): Observable<Cliente> {
-    return id
-      ? this.http.put<Cliente>(`${API}/clientes/${id}`, d)
-      : this.http.post<Cliente>(`${API}/clientes`, d);
-  }
-  eliminarCliente(id: number): Observable<void> {
-    return this.http.delete<void>(`${API}/clientes/${id}`);
-  }
-
-  guardarSalida(d: SalidaForm, id: number | null): Observable<SalidaProgramada> {
-    return id
-      ? this.http.put<SalidaProgramada>(`${API}/salidas/${id}`, d)
-      : this.http.post<SalidaProgramada>(`${API}/salidas`, d);
-  }
-  eliminarSalida(id: number): Observable<void> {
-    return this.http.delete<void>(`${API}/salidas/${id}`);
+  guardarSalida(d: SalidaForm, id: number | null) { return this.guardarEn<SalidaProgramada>('salidas', d, id); }
+  eliminarSalida(id: number) { return this.http.delete<void>(`${API}/salidas/${id}`); }
+  // Operador / Ventas: salida en ejecución (CONFIRMADA) o terminada (COMPLETADA)
+  marcarEjecucion(id: number, estado: 'CONFIRMADA' | 'COMPLETADA'): Observable<SalidaProgramada> {
+    return this.http.patch<SalidaProgramada>(`${API}/salidas/${id}/ejecucion`, { estado: estado });
   }
 
-  // Se envía clienteId (cliente registrado) o contacto (invitado), nunca ambos
+  // Lista de pasajeros de la salida (para el guía y el conductor)
+  manifiesto(salidaId: number): Observable<Manifiesto> {
+    return this.http.get<Manifiesto>(`${API}/salidas/${salidaId}/manifiesto`);
+  }
+
+  // Se envía clienteId (cliente registrado) o contacto (cliente nuevo), nunca ambos
   crearReserva(clienteId: number | null, contacto: ContactoReserva | null, salidaId: number, observaciones: string,
                pasajeros: PasajeroDraft[]): Observable<Reserva> {
     const lista = pasajeros.map(p => ({
@@ -253,18 +247,18 @@ export class TourStore {
   }
 
   urlBoleta(id: number): string { return `${API}/reservas/${id}/boleta`; }
+  verBoleta(id: number): Observable<string> {
+    return this.http.get(`${API}/reservas/${id}/boleta`, { responseType: 'text' });
+  }
   enviarBoleta(id: number): Observable<{ destinatario: string; enviadaEn: string }> {
     return this.http.post<{ destinatario: string; enviadaEn: string }>(`${API}/reservas/${id}/boleta`, {});
   }
-
   confirmarReserva(id: number): Observable<Reserva> {
     return this.http.patch<Reserva>(`${API}/reservas/${id}/confirmar`, {});
   }
-
   completarReserva(id: number): Observable<Reserva> {
     return this.http.patch<Reserva>(`${API}/reservas/${id}/completar`, {});
   }
-
   anularReserva(id: number, formaReembolso: string | null): Observable<Reserva> {
     return this.http.patch<Reserva>(`${API}/reservas/${id}/anular`, { formaReembolso: formaReembolso, usuarioId: this.auth.usuario()?.usuarioId ?? null });
   }
@@ -277,7 +271,6 @@ export class TourStore {
     };
     return this.http.post<Pago>(`${API}/pagos`, cuerpo);
   }
-
   resolverPago(pagoId: number, estado: 'APROBADO' | 'RECHAZADO'): Observable<Pago> {
     return this.http.patch<Pago>(`${API}/pagos/${pagoId}/resolver`, { estado: estado });
   }

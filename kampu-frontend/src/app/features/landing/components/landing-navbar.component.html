@@ -12,10 +12,11 @@
     </ul>
 
     <div class="hidden items-center gap-2.5 md:flex">
-      <a href="#contacto" class="nav-btn nav-btn-secundario">Contacto</a>
-      <a [routerLink]="auth.autenticado() ? '/dashboard' : '/login'" class="nav-btn nav-btn-primario">
+      @if (!auth.autenticado()) { <a routerLink="/registro" class="nav-btn nav-btn-secundario">Registrarse</a> }
+      @else { <a href="#contacto" class="nav-btn nav-btn-secundario">Contacto</a> }
+      <a [routerLink]="auth.autenticado() ? auth.inicio() : '/login'" class="nav-btn nav-btn-primario">
         <app-icon name="lock" size="w-4 h-4" [trazo]="1.6" />
-        {{ auth.autenticado() ? 'Ir al panel' : 'Acceso Admin' }}
+        {{ auth.autenticado() ? (auth.esCliente() ? 'Mis paquetes' : 'Ir al panel') : 'Iniciar sesión' }}
       </a>
     </div>
 
@@ -31,9 +32,10 @@
         <a [href]="l.href" (click)="cerrarMenu()" class="block rounded-xl px-4 py-3 text-[15px] font-bold text-zinc-800 hover:bg-zinc-50">{{ l.texto }}</a>
       }
       <a href="#contacto" (click)="cerrarMenu()" class="block rounded-xl px-4 py-3 text-[15px] font-bold text-zinc-800 hover:bg-zinc-50">Contacto</a>
-      <a [routerLink]="auth.autenticado() ? '/dashboard' : '/login'" class="nav-btn nav-btn-primario mt-3 w-full">
+      @if (!auth.autenticado()) { <a routerLink="/registro" class="block rounded-xl px-4 py-3 text-[15px] font-bold text-brand-700 hover:bg-zinc-50">Registrarse</a> }
+      <a [routerLink]="auth.autenticado() ? auth.inicio() : '/login'" class="nav-btn nav-btn-primario mt-3 w-full">
         <app-icon name="lock" size="w-4 h-4" [trazo]="1.6" />
-        {{ auth.autenticado() ? 'Ir al panel' : 'Acceso Admin' }}
+        {{ auth.autenticado() ? (auth.esCliente() ? 'Mis paquetes' : 'Ir al panel') : 'Iniciar sesión' }}
       </a>
     </div>
   </div>

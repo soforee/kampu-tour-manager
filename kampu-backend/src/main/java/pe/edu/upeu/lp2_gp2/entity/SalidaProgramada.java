@@ -1,10 +1,12 @@
 package pe.edu.upeu.lp2_gp2.entity;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDate;
+import org.hibernate.annotations.DynamicUpdate;
 
+// fecha_fin = inicio + días del paquete - 1 y cupos_disponibles: los calcula el backend
 @Entity
+@DynamicUpdate
 @Table(name = "SALIDAS_PROGRAMADAS")
 public class SalidaProgramada {
     @Id
@@ -14,6 +16,10 @@ public class SalidaProgramada {
 
     @Column(name = "paquete_id", nullable = false)
     private Long paqueteId;
+
+    // PERSONAL con rol GUIA o AMBOS
+    @Column(name = "guia_id")
+    private Long guiaId;
 
     @Column(name = "fecha_inicio", nullable = false)
     private LocalDate fechaInicio;
@@ -26,15 +32,6 @@ public class SalidaProgramada {
 
     @Column(name = "cupos_disponibles", nullable = false)
     private Integer cuposDisponibles;
-
-    @Column(name = "guia_id")
-    private Long guiaId;
-
-    @Column(name = "transporte_id")
-    private Long transporteId;
-
-    @Column(name = "chofer_id")
-    private Long choferId;
 
     @Column(name = "estado", length = 20)
     private String estado;
@@ -56,6 +53,14 @@ public class SalidaProgramada {
 
     public void setPaqueteId(Long paqueteId) {
         this.paqueteId = paqueteId;
+    }
+
+    public Long getGuiaId() {
+        return guiaId;
+    }
+
+    public void setGuiaId(Long guiaId) {
+        this.guiaId = guiaId;
     }
 
     public LocalDate getFechaInicio() {
@@ -88,30 +93,6 @@ public class SalidaProgramada {
 
     public void setCuposDisponibles(Integer cuposDisponibles) {
         this.cuposDisponibles = cuposDisponibles;
-    }
-
-    public Long getGuiaId() {
-        return guiaId;
-    }
-
-    public void setGuiaId(Long guiaId) {
-        this.guiaId = guiaId;
-    }
-
-    public Long getTransporteId() {
-        return transporteId;
-    }
-
-    public void setTransporteId(Long transporteId) {
-        this.transporteId = transporteId;
-    }
-
-    public Long getChoferId() {
-        return choferId;
-    }
-
-    public void setChoferId(Long choferId) {
-        this.choferId = choferId;
     }
 
     public String getEstado() {

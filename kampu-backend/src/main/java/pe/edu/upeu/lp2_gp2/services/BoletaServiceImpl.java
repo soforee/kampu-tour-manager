@@ -48,8 +48,9 @@ public class BoletaServiceImpl implements IBoletaService {
     private final ClienteRepository clienteRepository;
     private final SalidaProgramadaRepository salidaRepository;
     private final PaqueteTourRepository paqueteRepository;
-    private final GuiaRepository guiaRepository;
+    private final PersonalRepository guiaRepository;
     private final PasajeroReservaRepository pasajeroRepository;
+    private final DetalleReservaRepository detalleRepository;
     private final PagoRepository pagoRepository;
 
     private String logoBase64;
@@ -59,8 +60,8 @@ public class BoletaServiceImpl implements IBoletaService {
 
     public BoletaServiceImpl(JavaMailSender mailSender, ReservaRepository reservaRepository, ClienteRepository clienteRepository,
                              SalidaProgramadaRepository salidaRepository, PaqueteTourRepository paqueteRepository,
-                             GuiaRepository guiaRepository, PasajeroReservaRepository pasajeroRepository,
-                             PagoRepository pagoRepository) {
+                             PersonalRepository guiaRepository, PasajeroReservaRepository pasajeroRepository,
+                             DetalleReservaRepository detalleRepository, PagoRepository pagoRepository) {
         this.mailSender = mailSender;
         this.reservaRepository = reservaRepository;
         this.clienteRepository = clienteRepository;
@@ -68,6 +69,7 @@ public class BoletaServiceImpl implements IBoletaService {
         this.paqueteRepository = paqueteRepository;
         this.guiaRepository = guiaRepository;
         this.pasajeroRepository = pasajeroRepository;
+        this.detalleRepository = detalleRepository;
         this.pagoRepository = pagoRepository;
     }
 
@@ -107,7 +109,7 @@ public class BoletaServiceImpl implements IBoletaService {
             throw new MailSendException("No se pudo armar el correo: " + e.getMessage(), e);
         }
         d.reserva.setBoletaEnviadaEn(LocalDateTime.now());
-        reservaRepository.save(d.reserva);
+        reservaRepository.saveAndFlush(d.reserva);
         return d.email;
     }
 
@@ -130,10 +132,11 @@ public class BoletaServiceImpl implements IBoletaService {
         String documento;
         String email;
         String telefono;
-        boolean invitado;
+        DetalleReserva detalle;
+        int viajeros;
         SalidaProgramada salida;
         PaqueteTour paquete;
-        Guia guia;
+        Personal guia;
         List<PasajeroReserva> pasajeros;
         List<Pago> pagos;
     }
@@ -142,25 +145,25 @@ public class BoletaServiceImpl implements IBoletaService {
         Datos d = new Datos();
         d.reserva = reservaRepository.findById(reservaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Reserva no encontrada con Id: " + reservaId));
-        if (d.reserva.getClienteId() != null) {
-            Cliente c = clienteRepository.findById(d.reserva.getClienteId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado."));
-            d.nombre = c.getNombreCompleto();
-            d.documento = c.getTipoDocumento() + " " + c.getNumeroDocumento();
-            d.email = c.getEmail();
-            d.telefono = c.getTelefono();
-        } else {
-            d.invitado = true;
-            d.nombre = d.reserva.getContactoNombre();
-            d.email = d.reserva.getContactoEmail();
-            d.telefono = d.reserva.getContactoTelefono();
-        }
-        d.salida = salidaRepository.findById(d.reserva.getSalidaId())
+        // v4: toda reserva tiene cliente
+        Cliente c = clienteRepository.findById(d.reserva.getClienteId())
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado."));
+        d.nombre = c.getNombreCompleto();
+        d.documento = c.getTipoDocumento() + " " + c.getNumeroDocumento();
+        d.email = c.getEmail();
+        d.telefono = c.getTelefono();
+        // La aplicación registra una salida por reserva (un DETALLE_RESERVA); se toma el primero
+        List<DetalleReserva> detalles = detalleRepository.findByReservaIdOrderByDetalleIdAsc(reservaId);
+        if (detalles.isEmpty()) throw new ResourceNotFoundException("La reserva no tiene salidas reservadas.");
+        d.detalle = detalles.get(0);
+        d.viajeros = detalles.stream().mapToInt(DetalleReserva::getCantidad).sum();
+        d.salida = salidaRepository.findById(d.detalle.getSalidaId())
                 .orElseThrow(() -> new ResourceNotFoundException("Salida no encontrada."));
         d.paquete = paqueteRepository.findById(d.salida.getPaqueteId())
                 .orElseThrow(() -> new ResourceNotFoundException("Paquete no encontrado."));
         d.guia = d.salida.getGuiaId() == null ? null : guiaRepository.findById(d.salida.getGuiaId()).orElse(null);
-        d.pasajeros = pasajeroRepository.findByReservaIdOrderByPasajeroId(reservaId);
+        d.pasajeros = pasajeroRepository.findByDetalleIdInOrderByPasajeroIdAsc(
+                detalles.stream().map(DetalleReserva::getDetalleId).toList());
         d.pagos = pagoRepository.findByReservaIdAndEstadoTransaccion(reservaId, "APROBADO");
         return d;
     }
@@ -205,7 +208,7 @@ public class BoletaServiceImpl implements IBoletaService {
                 + "Tour: " + d.paquete.getNombre() + "\n"
                 + "Salida: " + fechaLarga(d.salida.getFechaInicio()) + "\n"
                 + "Retorno: " + fechaLarga(d.salida.getFechaFin()) + "\n"
-                + "Viajeros: " + d.reserva.getNumeroViajeros() + "\n"
+                + "Viajeros: " + d.viajeros + "\n"
                 + "Total: " + soles(d.reserva.getMontoTotal()) + "\n"
                 + "Pagado: " + soles(pagado) + "\n"
                 + "Saldo: " + soles(d.reserva.getMontoTotal().subtract(pagado).max(BigDecimal.ZERO)) + "\n\n"
@@ -412,14 +415,14 @@ public class BoletaServiceImpl implements IBoletaService {
                 codigo(r), LocalDateTime.now().format(FECHA_HORA),
                 esc(d.nombre),
                 pillReserva, pillPago,
-                titulo(d.invitado ? "Cliente (invitado)" : "Cliente"),
+                titulo("Cliente"),
                 dato("Nombre", esc(d.nombre)),
-                d.invitado ? "" : dato("Documento", esc(d.documento)),
+                dato("Documento", esc(d.documento)),
                 dato("Contacto", esc(d.email) + "<br>" + esc(d.telefono)),
                 titulo("Reserva"),
                 dato("Código", codigo(r)),
                 dato("Fecha de reserva", r.getFechaReserva() == null ? "—" : r.getFechaReserva().format(FECHA_HORA)),
-                dato("Viajeros", String.valueOf(r.getNumeroViajeros())),
+                dato("Viajeros", String.valueOf(d.viajeros)),
                 esc(d.paquete.getNombre()),
                 d.paquete.getDias(), d.paquete.getNoches(), d.guia == null ? "por asignar" : esc(d.guia.getNombreCompleto()),
                 fechaLarga(d.salida.getFechaInicio()), diaSemana(d.salida.getFechaInicio()),
@@ -428,7 +431,7 @@ public class BoletaServiceImpl implements IBoletaService {
                 encabezado("#", ""), encabezado("Nombre", ""), encabezado("Documento", ""), encabezado("Nacionalidad", "text-align:right;"),
                 filasPasajeros,
                 d.pagos.isEmpty() ? "" : bloquePagos(filasPagos.toString()),
-                r.getNumeroViajeros(), soles(d.paquete.getPrecioBase()), soles(r.getMontoTotal()),
+                d.viajeros, soles(d.detalle.getPrecioUnitario()), soles(r.getMontoTotal()),
                 soles(pagado),
                 barraAvance, avance,
                 pagadoTotal ? "Pagado por completo" : "Saldo pendiente",

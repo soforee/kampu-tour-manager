@@ -16,8 +16,6 @@ import java.util.Optional;
 public interface SalidaProgramadaRepository extends JpaRepository<SalidaProgramada, Long> {
     boolean existsByPaqueteId(Long paqueteId);
     boolean existsByGuiaId(Long guiaId);
-    boolean existsByTransporteId(Long transporteId);
-    boolean existsByChoferId(Long choferId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select s from SalidaProgramada s where s.salidaId = :id")
@@ -25,12 +23,6 @@ public interface SalidaProgramadaRepository extends JpaRepository<SalidaPrograma
 
     List<SalidaProgramada> findByGuiaIdAndEstadoInAndFechaInicioLessThanEqualAndFechaFinGreaterThanEqual(
             Long guiaId, List<String> estados, LocalDate fin, LocalDate inicio);
-
-    List<SalidaProgramada> findByTransporteIdAndEstadoInAndFechaInicioLessThanEqualAndFechaFinGreaterThanEqual(
-            Long transporteId, List<String> estados, LocalDate fin, LocalDate inicio);
-
-    List<SalidaProgramada> findByChoferIdAndEstadoInAndFechaInicioLessThanEqualAndFechaFinGreaterThanEqual(
-            Long choferId, List<String> estados, LocalDate fin, LocalDate inicio);
 
     List<SalidaProgramada> findAllByOrderBySalidaIdAsc();
 }

@@ -1,10 +1,11 @@
 package pe.edu.upeu.lp2_gp2.entity;
 
 import jakarta.persistence.*;
-
 import java.math.BigDecimal;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Entity
+@DynamicUpdate
 @Table(name = "PAQUETES_TOUR")
 public class PaqueteTour {
     @Id

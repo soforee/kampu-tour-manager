@@ -17,8 +17,7 @@ import { errorTelefonoPais } from '../../core/utils/paises';
   selector: 'app-reserva-nueva',
   standalone: true,
   imports: [FormsModule, RouterLink, CurrencyPipe, DatePipe, IconComponent, ClienteSelectorComponent, TelefonoInputComponent],
-  templateUrl: './reserva-nueva.component.html',
-  styleUrl: './reserva-nueva.component.css'
+  templateUrl: './reserva-nueva.component.html'
 })
 export class ReservaNuevaComponent implements OnInit {
   store = inject(TourStore);
@@ -27,17 +26,22 @@ export class ReservaNuevaComponent implements OnInit {
   private route = inject(ActivatedRoute);
 
   tipos: TipoDocumento[] = ['DNI', 'CE', 'PASAPORTE'];
-  // 'registrado': cliente existente (buscador) · 'invitado': solo nombre, correo y teléfono
+  // 'registrado': cliente existente (buscador) · 'invitado': cliente nuevo (se crea al guardar la reserva)
   modo: 'registrado' | 'invitado' = 'registrado';
   cliente: Cliente | null = null;
-  contacto: ContactoReserva = { nombre: '', email: '', telefono: '' };
+  contacto: ContactoReserva = { nombre: '', tipoDocumento: 'DNI', numeroDocumento: '', email: '', telefono: '' };
   salidaId: number | null = null;
   observaciones = '';
   pasajeros: PasajeroDraft[] = [this.vacio()];
   v = new FormValidacion(() => {
     const e: Errores = {
       cliente: this.modo === 'registrado' && !this.cliente ? 'Busca y selecciona un cliente.' : null,
-      cNombre: this.modo === 'invitado' ? V.nombrePersona(this.contacto.nombre, 'El nombre del contacto') : null,
+      cNombre: this.modo === 'invitado' ? V.nombrePersona(this.contacto.nombre, 'El nombre del cliente') : null,
+      cDocumento: this.modo === 'invitado'
+        ? V.documento(this.contacto.tipoDocumento, this.contacto.numeroDocumento)
+          ?? (this.store.clientes().some(c => c.numeroDocumento.toUpperCase() === this.contacto.numeroDocumento.trim().toUpperCase())
+            ? 'Ya existe un cliente con ese documento: búscalo como registrado.' : null)
+        : null,
       cEmail: this.modo === 'invitado'
         ? (this.contacto.email.trim() ? V.email(this.contacto.email) : 'El correo es obligatorio para enviarle la boleta.') : null,
       cTelefono: this.modo === 'invitado' ? errorTelefonoPais(this.contacto.telefono) : null,
@@ -49,7 +53,8 @@ export class ReservaNuevaComponent implements OnInit {
       const doc = p.numeroDocumento.trim().toUpperCase();
       e['p' + i + 'nombre'] = V.nombrePersona(p.nombreCompleto, 'El nombre del pasajero');
       e['p' + i + 'documento'] = V.documento(p.tipoDocumento, p.numeroDocumento)
-        ?? (docs.has(doc) ? 'Este documento ya está en otro pasajero de la reserva.' : null);
+        ?? (docs.has(doc) ? 'Este documento ya está en otro pasajero de la reserva.' : null)
+        ?? (this.yaViaja(p.tipoDocumento, doc) ? 'Este pasajero ya tiene una reserva activa en esta salida.' : null);
       if (doc) docs.add(doc);
       e['p' + i + 'nacionalidad'] = V.nacionalidad(p.nacionalidad);
       e['p' + i + 'nacimiento'] = V.fecha(p.fechaNacimiento, 'La fecha de nacimiento', false)
@@ -72,6 +77,15 @@ export class ReservaNuevaComponent implements OnInit {
       .sort((a, b) => a.fechaInicio.localeCompare(b.fechaInicio));
   }
   get salida() { return this.store.getSalida(this.salidaId); }
+
+  // El mismo DNI/CE/pasaporte no puede ir dos veces en la misma salida
+  private yaViaja(tipo: string, doc: string): boolean {
+    if (!this.salidaId || !doc) return false;
+    const reservas = new Set(this.store.reservas()
+      .filter(r => r.salidaId === this.salidaId && r.estadoReserva !== 'ANULADA').map(r => r.reservaId));
+    return this.store.pasajeros().some(x => reservas.has(x.reservaId) && x.tipoDocumento === tipo
+      && x.numeroDocumento.toUpperCase() === doc);
+  }
   get paquete() { return this.store.getPaquete(this.salida?.paqueteId); }
   get total() { return (this.paquete?.precioBase ?? 0) * this.pasajeros.length; }
   get excede() { return !!this.salida && this.pasajeros.length > this.salida.cuposDisponibles; }
@@ -125,11 +139,14 @@ export class ReservaNuevaComponent implements OnInit {
     if (this.modo === 'registrado') {
       const c = this.cliente;
       if (!c) return;
+      // Un cliente con RUC es una empresa: no viaja como pasajero
+      if (c.tipoDocumento === 'RUC') { this.alerts.toast('El cliente es una empresa (RUC): agrega a los pasajeros uno por uno', 'info'); return; }
       dato = { nombreCompleto: c.nombreCompleto, tipoDocumento: c.tipoDocumento, numeroDocumento: c.numeroDocumento,
                nacionalidad: 'Peruana', fechaNacimiento: '' };
     } else {
       if (!this.contacto.nombre.trim()) return;
-      dato = { nombreCompleto: this.contacto.nombre.trim(), tipoDocumento: 'DNI', numeroDocumento: '', nacionalidad: 'Peruana', fechaNacimiento: '' };
+      dato = { nombreCompleto: this.contacto.nombre.trim(), tipoDocumento: this.contacto.tipoDocumento,
+               numeroDocumento: this.contacto.numeroDocumento.trim(), nacionalidad: 'Peruana', fechaNacimiento: '' };
     }
     if (this.primeroVacio()) this.pasajeros[0] = dato;
     else this.pasajeros.push(dato);
@@ -145,7 +162,8 @@ export class ReservaNuevaComponent implements OnInit {
     this.store.ocupado.set(true);
     const clienteId = this.modo === 'registrado' ? this.cliente!.clienteId : null;
     const contacto: ContactoReserva | null = this.modo === 'invitado'
-      ? { nombre: this.contacto.nombre.trim(), email: this.contacto.email.trim(), telefono: this.contacto.telefono.trim() }
+      ? { nombre: this.contacto.nombre.trim(), tipoDocumento: this.contacto.tipoDocumento, numeroDocumento: this.contacto.numeroDocumento.trim(),
+          email: this.contacto.email.trim().toLowerCase(), telefono: this.contacto.telefono.trim() }
       : null;
     this.store.crearReserva(clienteId, contacto, this.salidaId!, this.observaciones.trim(), lista).subscribe({
       next: (reserva) => {

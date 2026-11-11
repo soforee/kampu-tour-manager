@@ -1,8 +1,9 @@
 <div class="min-h-screen lg:pl-20">
-  <header class="lg:hidden sticky top-0 z-30 h-16 px-4 flex items-center justify-between bg-white/80 backdrop-blur-md border-b border-zinc-200/70 shadow-soft">
+  <header class="no-print lg:hidden sticky top-0 z-30 h-16 px-4 flex items-center justify-between bg-white/80 backdrop-blur-md border-b border-zinc-200/70 shadow-soft">
     <button type="button" class="icon-btn -ml-1 text-zinc-600" aria-label="Abrir menú" (click)="abierto.set(true)"><app-icon name="menu" /></button>
     <app-logo variante="horizontal" [alto]="22" />
-    <div class="avatar w-9 h-9 text-xs bg-brand-100 text-brand-800 ring-2 ring-white">{{ iniciales() }}</div>
+    <!-- Volver al inicio (móvil): no cierra la sesión -->
+    <a routerLink="/" class="icon-btn text-zinc-600" title="Volver al inicio" aria-label="Volver al inicio"><app-icon name="home" /></a>
   </header>
 
   @if (abierto()) {
@@ -30,7 +31,7 @@
 
     <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto overflow-x-hidden">
       <div class="px-[18px] pb-2 eyebrow !text-[10px] whitespace-nowrap transition-opacity duration-200 lg:opacity-0 lg:group-hover/side:opacity-100 lg:group-focus-within/side:opacity-100">Menú</div>
-      @for (item of menu; track item.ruta) {
+      @for (item of menu(); track item.ruta) {
         <a [routerLink]="item.ruta" (click)="abierto.set(false)" [attr.aria-label]="item.texto"
            routerLinkActive="nav-active" [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
            class="nav-item group/item relative flex h-11 items-center gap-3.5 rounded-xl px-[18px] text-sm font-medium text-zinc-500 outline-none
@@ -49,12 +50,22 @@
       }
     </nav>
 
+    <!-- Volver al inicio: página principal sin cerrar la sesión -->
+    <div class="shrink-0 px-3 pb-2">
+      <a routerLink="/" (click)="abierto.set(false)" aria-label="Volver al inicio" data-testid="volver-inicio-panel"
+         class="group/item flex h-11 items-center gap-3.5 rounded-xl px-[18px] text-sm font-medium text-zinc-500 outline-none transition-all duration-200
+                hover:bg-brand-50 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500/40">
+        <span class="shrink-0 transition-transform duration-200 group-hover/item:scale-110"><app-icon name="home" size="w-5 h-5" /></span>
+        <span class="whitespace-nowrap transition-all duration-200 lg:opacity-0 lg:group-hover/side:opacity-100 lg:group-focus-within/side:opacity-100">Volver al inicio</span>
+      </a>
+    </div>
+
     <div class="shrink-0 p-3 border-t border-zinc-100">
       <div class="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors lg:group-hover/side:bg-sand-50">
         <div class="avatar w-10 h-10 text-sm bg-gradient-to-br from-brand-100 to-brand-200 text-brand-800 ring-2 ring-white shadow-soft">{{ iniciales() }}</div>
         <div class="min-w-0 flex-1 whitespace-nowrap transition-opacity duration-200 lg:opacity-0 lg:group-hover/side:opacity-100 lg:group-focus-within/side:opacity-100">
           <div class="text-sm font-semibold text-zinc-900 truncate">{{ auth.usuario()?.username }}</div>
-          <div class="eyebrow !text-[10px]">{{ auth.usuario()?.rol }}</div>
+          <div class="eyebrow !text-[10px]">{{ rolTexto() }}</div>
         </div>
         <button type="button" class="icon-btn-danger shrink-0 transition-opacity duration-200 lg:opacity-0 lg:group-hover/side:opacity-100 lg:focus-visible:opacity-100" title="Cerrar sesión" aria-label="Cerrar sesión" (click)="salir()">
           <app-icon name="logout" size="w-[18px] h-[18px]" />
@@ -64,6 +75,13 @@
   </aside>
 
   <main class="px-4 py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-10 max-w-7xl mx-auto">
+    <!-- Barra superior (escritorio): siempre a la vista en todas las pantallas del panel -->
+    <div class="no-print hidden lg:flex items-center justify-end gap-2 -mt-4 mb-4">
+      <span class="text-xs text-zinc-500">{{ auth.usuario()?.username }} · {{ rolTexto() }}</span>
+      <a routerLink="/" class="btn-light btn-sm" title="Ir a la página principal sin cerrar sesión">
+        <app-icon name="home" size="w-4 h-4" /> Volver al inicio
+      </a>
+    </div>
     @if (auth.autenticado()) { <router-outlet /> }
   </main>
 </div>

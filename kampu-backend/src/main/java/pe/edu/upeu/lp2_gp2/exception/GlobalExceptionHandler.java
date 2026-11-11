@@ -3,11 +3,14 @@ package pe.edu.upeu.lp2_gp2.exception;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 
 import org.springframework.context.MessageSourceResolvable;
+import jakarta.persistence.PersistenceException;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.mail.MailException;
+import org.springframework.transaction.TransactionSystemException;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -32,6 +35,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorDTO> noEncontrado(ResourceNotFoundException e) {
         return responder(HttpStatus.NOT_FOUND, e.getMessage());
+    }
+
+    @ExceptionHandler(NoAutenticadoException.class)
+    public ResponseEntity<ErrorDTO> noAutenticado(NoAutenticadoException e) {
+        return responder(HttpStatus.UNAUTHORIZED, e.getMessage());
+    }
+
+    @ExceptionHandler(AccesoDenegadoException.class)
+    public ResponseEntity<ErrorDTO> accesoDenegado(AccesoDenegadoException e) {
+        return responder(HttpStatus.FORBIDDEN, e.getMessage());
     }
 
     @ExceptionHandler(BusinessException.class)
@@ -90,7 +103,18 @@ public class GlobalExceptionHandler {
         if (campo.equals("clienteId")) return "cliente";
         if (campo.equals("salidaId")) return "salida";
         if (campo.equals("guiaId")) return "guía";
-        if (campo.equals("transporteId")) return "transporte";
+        if (campo.equals("empresaId")) return "empresa";
+        if (campo.equals("vehiculoId")) return "vehículo";
+        if (campo.equals("conductorId")) return "conductor";
+        if (campo.equals("origenId")) return "origen";
+        if (campo.equals("destinoId")) return "destino";
+        if (campo.equals("paxProgramados")) return "pasajeros programados";
+        if (campo.equals("horaProgramadaSalida")) return "hora de salida";
+        if (campo.equals("horaEstimadaLlegada")) return "llegada estimada";
+        if (campo.equals("capacidadPax")) return "capacidad";
+        if (campo.equals("duracionEstimadaMin")) return "duración estimada";
+        if (campo.equals("fechaProxMantenimiento")) return "próximo mantenimiento";
+        if (campo.equals("fechaVencLicencia")) return "vencimiento de licencia";
         if (campo.equals("reservaId")) return "reserva";
         return campo;
     }
@@ -100,6 +124,7 @@ public class GlobalExceptionHandler {
         if (tipo == Integer.class || tipo == int.class || tipo == Long.class || tipo == long.class) return "un número entero";
         if (tipo == BigDecimal.class || tipo == Double.class || tipo == double.class) return "un número";
         if (tipo == LocalDate.class) return "una fecha válida (AAAA-MM-DD)";
+        if (tipo == java.time.LocalDateTime.class) return "una fecha y hora válidas (AAAA-MM-DDTHH:MM)";
         return "un valor válido";
     }
 
@@ -113,10 +138,21 @@ public class GlobalExceptionHandler {
         return responder(HttpStatus.PAYLOAD_TOO_LARGE, "La imagen supera el tamaño máximo permitido.");
     }
 
+    // Errores de la base de datos: reglas de los triggers y paquetes PL/SQL (ORA-20xxx)
+    // y restricciones UNIQUE, CHECK y FK (ver ErroresOracle)
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorDTO> integridad(DataIntegrityViolationException e) {
+        String mensaje = ErroresOracle.mensaje(e);
+        if (mensaje != null) return responder(HttpStatus.BAD_REQUEST, mensaje);
         System.err.println("Violación de integridad: " + e.getMostSpecificCause().getMessage());
         return responder(HttpStatus.CONFLICT, "La operación viola una restricción de la base de datos (registro duplicado o en uso).");
+    }
+
+    @ExceptionHandler({DataAccessException.class, PersistenceException.class, TransactionSystemException.class})
+    public ResponseEntity<ErrorDTO> baseDeDatos(Exception e) {
+        String mensaje = ErroresOracle.mensaje(e);
+        if (mensaje != null) return responder(HttpStatus.BAD_REQUEST, mensaje);
+        return general(e);
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
@@ -131,6 +167,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorDTO> general(Exception e) {
+        String mensajeOracle = ErroresOracle.mensaje(e);
+        if (mensajeOracle != null) return responder(HttpStatus.BAD_REQUEST, mensajeOracle);
         System.err.println("Error no controlado: " + e.getMessage());
         e.printStackTrace();
         return responder(HttpStatus.INTERNAL_SERVER_ERROR, "Ocurrió un error inesperado en el servidor.");

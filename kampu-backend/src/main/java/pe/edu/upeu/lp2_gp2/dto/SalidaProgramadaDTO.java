@@ -12,12 +12,15 @@ public record SalidaProgramadaDTO(
         Integer cuposMaximos,
         Integer cuposDisponibles,
         Long guiaId,
-        Long transporteId,
-        Long choferId,
-        String estado
+        String estado,
+        // Operaciones de transporte vigentes de la salida
+        Integer operaciones,
+        // null si el transporte asignado alcanza para los pasajeros vendidos (CapacidadTransporte)
+        String faltanteTransporte
 ) {
-    public static SalidaProgramadaDTO desde(SalidaProgramada s) {
+    public static SalidaProgramadaDTO desde(SalidaProgramada s, Integer operaciones, String faltante) {
         return new SalidaProgramadaDTO(s.getSalidaId(), s.getPaqueteId(), s.getFechaInicio(), s.getFechaFin(),
-                s.getCuposMaximos(), s.getCuposDisponibles(), s.getGuiaId(), s.getTransporteId(), s.getChoferId(), s.getEstado());
+                s.getCuposMaximos(), s.getCuposDisponibles(), s.getGuiaId(), s.getEstado(),
+                operaciones == null ? 0 : operaciones, faltante);
     }
 }

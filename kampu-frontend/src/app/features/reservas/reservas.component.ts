@@ -1,3 +1,4 @@
+import { AuthService } from '../../core/services/auth.service';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -9,12 +10,12 @@ import { IconComponent } from '../../shared/icon.component';
   selector: 'app-reservas',
   standalone: true,
   imports: [RouterLink, CurrencyPipe, DatePipe, BadgeComponent, IconComponent],
-  templateUrl: './reservas.component.html',
-  styleUrl: './reservas.component.css'
+  templateUrl: './reservas.component.html'
 })
 export class ReservasComponent {
   private store = inject(TourStore);
   private route = inject(ActivatedRoute);
+  gestiona = inject(AuthService).puede('GESTIONAR_RESERVAS');
 
   texto = signal('');
   estado = signal('');
@@ -38,7 +39,7 @@ export class ReservasComponent {
           reserva: r, salida,
           codigo: this.store.codigoReserva(r.reservaId),
           cliente: this.store.nombreCliente(r),
-          invitado: this.store.esInvitado(r),
+          cuentaWeb: !!this.store.getCliente(r.clienteId)?.cuentaWeb,
           paquete: this.store.getPaquete(salida?.paqueteId),
           saldo: this.store.saldo(r)
         };

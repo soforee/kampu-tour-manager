@@ -1,3 +1,4 @@
+import { AuthService } from '../../core/services/auth.service';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -16,12 +17,15 @@ import { FormValidacion, V } from '../../core/utils/validacion';
   selector: 'app-reserva-detalle',
   standalone: true,
   imports: [FormsModule, RouterLink, CurrencyPipe, DatePipe, BadgeComponent, IconComponent],
-  templateUrl: './reserva-detalle.component.html',
-  styleUrl: './reserva-detalle.component.css'
+  templateUrl: './reserva-detalle.component.html'
 })
 export class ReservaDetalleComponent {
   store = inject(TourStore);
   private alerts = inject(AlertService);
+  private auth = inject(AuthService);
+  // GESTIONAR_RESERVAS (confirmar, completar, anular, boleta) y REGISTRAR_PAGO (registrar/validar pagos)
+  gestiona = this.auth.puede('GESTIONAR_RESERVAS');
+  cobra = this.auth.puede('REGISTRAR_PAGO');
   private router = inject(Router);
   private id = Number(inject(ActivatedRoute).snapshot.paramMap.get('id'));
 
@@ -46,23 +50,26 @@ export class ReservaDetalleComponent {
   salida = computed(() => this.store.getSalida(this.reserva()?.salidaId));
   paquete = computed(() => this.store.getPaquete(this.salida()?.paqueteId));
   guia = computed(() => this.store.getGuia(this.salida()?.guiaId));
-  transporte = computed(() => this.store.getTransporte(this.salida()?.transporteId));
-  chofer = computed(() => this.store.getChofer(this.salida()?.choferId));
+  // Transporte de la salida: sus operaciones (tramos) vigentes
+  operaciones = computed(() => {
+    const s = this.salida();
+    return s ? this.store.operacionesDe(s.salidaId).filter(o => o.estadoActual !== 'CANCELADO') : [];
+  });
   cliente = computed(() => this.store.getCliente(this.reserva()?.clienteId));
-  invitado = computed(() => this.store.esInvitado(this.reserva()));
   nombreCliente = computed(() => this.store.nombreCliente(this.reserva()));
-  emailCliente = computed(() => this.invitado() ? this.reserva()?.contactoEmail ?? '' : this.cliente()?.email ?? '');
-  telefonoCliente = computed(() => this.invitado() ? this.reserva()?.contactoTelefono ?? '' : this.cliente()?.telefono ?? '');
+  emailCliente = computed(() => this.cliente()?.email ?? '');
+  telefonoCliente = computed(() => this.cliente()?.telefono ?? '');
   enviandoBoleta = false;
   pasajeros = computed(() => this.store.pasajerosDe(this.id));
   pagos = computed(() => this.store.pagosDe(this.id));
   saldo = computed(() => { const r = this.reserva(); return r ? this.store.saldo(r) : 0; });
   avance = computed(() => { const r = this.reserva(); return r && r.montoTotal ? Math.min(100, r.montoPagado * 100 / r.montoTotal) : 0; });
   puedePagar = computed(() => {
+    if (!this.cobra) return false;
     const r = this.reserva();
     return !!r && (r.estadoReserva === 'PENDIENTE' || r.estadoReserva === 'CONFIRMADA') && this.saldo() > 0;
   });
-  usuarioAnula = computed(() => this.store.usernameDe(this.reserva()?.usuarioAnulaId));
+  usuarioAnula = computed(() => this.reserva()?.usuarioAnula ?? 'usuario #' + this.reserva()?.usuarioAnulaId);
 
   constructor() {
     this.store.cargar(false, error => {
@@ -120,8 +127,18 @@ export class ReservaDetalleComponent {
     this.ejecutar(this.store.anularReserva(this.id, forma), 'Reserva anulada');
   }
 
+  // La boleta se pide con el token de la sesión y se abre en una pestaña nueva
   verBoleta() {
-    window.open(this.store.urlBoleta(this.id), '_blank', 'noopener');
+    const ventana = window.open('', '_blank');
+    this.store.verBoleta(this.id).subscribe({
+      next: html => {
+        if (!ventana) return;
+        ventana.document.open();
+        ventana.document.write(html);
+        ventana.document.close();
+      },
+      error: err => { ventana?.close(); this.alerts.error(this.store.error(err)); }
+    });
   }
 
   async enviarBoleta() {

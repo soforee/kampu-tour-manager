@@ -17,8 +17,10 @@ public class UsuarioInicialConfig {
     public void crearUsuariosIniciales() {
         if (repo.count() > 0) return;
         repo.save(nuevo("admin", "admin123", "ADMIN"));
-        repo.save(nuevo("ventas", "ventas123", "VENTAS"));
-        System.out.println("USUARIOS_SISTEMA vacía: se crearon los usuarios admin y ventas.");
+        // Roles permitidos por chk_usu_rol: ADMIN, VENDEDOR, OPERADOR
+        repo.save(nuevo("ventas", "ventas123", "VENDEDOR"));
+        repo.save(nuevo("operador", "operador123", "OPERADOR"));
+        System.out.println("USUARIOS_SISTEMA vacía: se crearon los usuarios admin, ventas y operador.");
     }
 
     private UsuarioSistema nuevo(String username, String password, String rol) {
