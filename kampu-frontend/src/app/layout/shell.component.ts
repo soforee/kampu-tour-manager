@@ -24,8 +24,8 @@ export class ShellComponent {
   abierto = signal(false);
 
   // Menú según los permisos de la sesión (mismos que exigen app.routes.ts y el backend)
-  private todo: { ruta: string; texto: string; icono: string; permiso?: Permiso; exact?: boolean }[] = [
-    { ruta: '/dashboard', texto: 'Panel', icono: 'chart' },
+  private todo: { ruta: string; texto: string; icono: string; permiso?: Permiso; exact?: boolean; soloKampu?: boolean }[] = [
+    { ruta: '/dashboard', texto: 'Panel', icono: 'chart', soloKampu: true },
     { ruta: '/reservas', texto: 'Reservas', icono: 'ticket', permiso: 'VER_RESERVAS' },
     { ruta: '/salidas', texto: 'Salidas', icono: 'calendar', permiso: 'VER_RESUMEN' },
     { ruta: '/paquetes', texto: 'Paquetes', icono: 'package', permiso: 'GESTIONAR_CATALOGO' },
@@ -35,7 +35,12 @@ export class ShellComponent {
     { ruta: '/recursos', texto: 'Logística', icono: 'map-pin', permiso: 'VER_LOGISTICA' },
     { ruta: '/auditoria', texto: 'Auditoría', icono: 'file-text', permiso: 'VER_AUDITORIA' }
   ];
-  menu = computed(() => this.todo.filter(m => !m.permiso || this.auth.puede(m.permiso)));
+  // La empresa proveedora ve sus servicios y su flota con nombres propios
+  private textoProveedor: { [ruta: string]: string } = { '/operaciones': 'Mis servicios', '/recursos': 'Mi flota' };
+  menu = computed(() => this.todo
+    .filter(m => !(m.soloKampu && this.auth.esProveedor()))
+    .filter(m => !m.permiso || this.auth.puede(m.permiso))
+    .map(m => this.auth.esProveedor() && this.textoProveedor[m.ruta] ? { ...m, texto: this.textoProveedor[m.ruta] } : m));
   rolTexto = computed(() => etiqueta(this.auth.rol()));
 
   pendientes = computed(() => this.store.reservas().filter(r => r.estadoReserva === 'PENDIENTE').length);

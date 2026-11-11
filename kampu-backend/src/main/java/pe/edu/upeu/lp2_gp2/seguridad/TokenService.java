@@ -20,11 +20,11 @@ public class TokenService {
     private final SecureRandom aleatorio = new SecureRandom();
     private final Map<String, SesionUsuario> sesiones = new ConcurrentHashMap<>();
 
-    public SesionUsuario crear(Long usuarioId, Long clienteId, String username, String nombre, String rol) {
+    public SesionUsuario crear(Long usuarioId, Long clienteId, String username, String nombre, String rol, Long proveedorId) {
         byte[] bytes = new byte[32];
         aleatorio.nextBytes(bytes);
         String token = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-        SesionUsuario s = new SesionUsuario(token, usuarioId, clienteId, username, nombre, rol, Instant.now().plus(DURACION));
+        SesionUsuario s = new SesionUsuario(token, usuarioId, clienteId, username, nombre, rol, proveedorId, Instant.now().plus(DURACION));
         sesiones.put(token, s);
         return s;
     }

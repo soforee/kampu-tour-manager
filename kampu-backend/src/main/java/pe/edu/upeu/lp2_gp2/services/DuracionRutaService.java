@@ -36,6 +36,8 @@ public class DuracionRutaService {
     private final HttpClient http;
     private final String osrmUrl;
     private final boolean osrmHabilitado;
+    // La asignación consulta muchas veces los mismos tramos: se guardan en memoria (origen-destino-tipo)
+    private final java.util.Map<String, EstimacionDuracionDTO> cache = new java.util.concurrent.ConcurrentHashMap<>();
 
     public DuracionRutaService(LugarRepository lugarRepository,
                                @Value("${kampu.rutas.osrm-url:https://router.project-osrm.org}") String osrmUrl,
@@ -91,7 +93,18 @@ public class DuracionRutaService {
     /** Minutos del trayecto, o null si faltan coordenadas. */
     public Integer minutos(Long origenId, Long destinoId, String tipoServicio) {
         if (origenId == null || destinoId == null || origenId.equals(destinoId)) return null;
-        return estimar(origenId, destinoId, tipoServicio).minutos();
+        String clave = origenId + "-" + destinoId + "-" + (tipoServicio == null ? "TRASLADO" : tipoServicio);
+        EstimacionDuracionDTO e = cache.get(clave);
+        if (e == null) {
+            e = estimar(origenId, destinoId, tipoServicio);
+            if (e.minutos() != null) cache.put(clave, e);
+        }
+        return e.minutos();
+    }
+
+    /** Al cambiar las coordenadas de un lugar se recalculan sus tramos */
+    public void olvidar() {
+        cache.clear();
     }
 
     // Embarque y desembarque que OSRM no considera

@@ -9,12 +9,16 @@ export const ETIQUETAS: { [codigo: string]: string } = {
   // Tipos de vehículo
   AUTO: 'Auto', CAMIONETA_4X4: 'Camioneta 4x4', VAN: 'Van', MINIBUS: 'Minibús', BUS: 'Bus',
   // Operaciones de transporte (EstadoOperacion del backend)
-  PROGRAMADO: 'Programado', ASIGNADO: 'Asignado', EMBARQUE: 'Embarque', EN_RUTA: 'En ruta', FINALIZADO: 'Finalizado', CANCELADO: 'Cancelado',
+  PROGRAMADO: 'Programado', ASIGNADO: 'Asignado', EMBARQUE: 'Embarque', EN_ESPERA_SALIDA: 'En espera de salida',
+  EN_RUTA: 'En ruta', LLEGADA_PROXIMA: 'Llegada próxima', FINALIZADO: 'Finalizado', RETRASADO: 'Retrasado', CANCELADO: 'Cancelado',
+  // Servicios y respuesta de la empresa proveedora
+  TRASLADO: 'Traslado', TOUR: 'Tour', INTERPROVINCIAL: 'Interprovincial', ACEPTADO: 'Aceptado', RECHAZADO: 'Rechazado',
+  PENDIENTE: 'Pendiente', ACTIVO: 'Activo',
   // Portal del cliente
   POR_EMPEZAR: 'Por empezar', EN_CURSO: 'En curso', TERMINADO: 'Terminado',
   PAGADO_COMPLETO: 'Pagado completo', FALTA_PAGAR: 'Falta pagar', PENDIENTE_PAGO: 'Pendiente de pago', ANULADO: 'Anulado',
   // Roles
-  ADMIN: 'Administrador', VENDEDOR: 'Ventas', OPERADOR: 'Operador', CLIENTE: 'Cliente'
+  ADMIN: 'Administrador', VENDEDOR: 'Ventas', OPERADOR: 'Operador', PROVEEDOR: 'Empresa de transporte', CLIENTE: 'Cliente'
 };
 
 export function etiqueta(codigo?: string | null): string {

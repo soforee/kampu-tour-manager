@@ -29,6 +29,25 @@ public record OperacionDTO(
         LocalDateTime horaRealSalida,
         LocalDateTime horaRealLlegada,
         Integer minRetrasoSalida,
-        Integer minRetrasoLlegada
+        Integer minRetrasoLlegada,
+        // Programación del servicio
+        String tipoServicio,
+        String ruta,
+        String tipoVehiculoReq,
+        Long proveedorPrefId,
+        String proveedorPref,
+        String tipoVehiculo,
+        Integer capacidadVehiculo,
+        String ciudadOrigen,
+        String ciudadDestino,
+        // Retraso: nueva hora de salida y minutos de demora frente a lo programado
+        LocalDateTime horaSalidaEstimada,
+        Integer minRetrasoEstimado,
+        // Respuesta de la empresa: PENDIENTE, ACEPTADO, RECHAZADO
+        String confirmacion,
+        String motivoRechazo,
+        // Control central: cruce de horario detectado con otra operación del mismo vehículo o conductor
+        String conflicto,
+        java.util.List<String> siguientes
 ) {
 }

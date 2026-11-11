@@ -14,6 +14,8 @@ import pe.edu.upeu.lp2_gp2.repository.PersonalRepository;
 import pe.edu.upeu.lp2_gp2.repository.ProveedorRepository;
 import pe.edu.upeu.lp2_gp2.repository.SalidaProgramadaRepository;
 
+import pe.edu.upeu.lp2_gp2.seguridad.SesionActual;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -36,13 +38,18 @@ public class PersonalServiceImpl implements IPersonalService {
     @Override
     @Transactional(readOnly = true)
     public List<PersonalDTO> listarTodo() {
-        return personalRepository.findAllByOrderByPersonalIdAsc().stream().map(PersonalDTO::desde).toList();
+        Long propio = SesionActual.proveedorId();   // una empresa proveedora solo ve su personal
+        return personalRepository.findAllByOrderByPersonalIdAsc().stream()
+                .filter(p -> propio == null || propio.equals(p.getProveedorId()))
+                .map(PersonalDTO::desde).toList();
     }
 
     @Override
     @Transactional(readOnly = true)
     public PersonalDTO buscarPorId(Long id) {
-        return PersonalDTO.desde(obtener(id));
+        Personal p = obtener(id);
+        SesionActual.verificarProveedor(p.getProveedorId());
+        return PersonalDTO.desde(p);
     }
 
     @Override
@@ -57,6 +64,7 @@ public class PersonalServiceImpl implements IPersonalService {
     @Transactional
     public PersonalDTO actualizar(Long id, PersonalRequestDTO dto) {
         Personal p = obtener(id);
+        SesionActual.verificarProveedor(p.getProveedorId());
         if ("CONDUCTOR".equals(dto.rol()) && salidaRepository.existsByGuiaId(id)) {
             throw new BusinessException("Es guía de salidas programadas: su rol debe incluir GUIA (GUIA o AMBOS).");
         }
@@ -71,6 +79,7 @@ public class PersonalServiceImpl implements IPersonalService {
     @Transactional
     public void eliminar(Long id) {
         Personal p = obtener(id);
+        SesionActual.verificarProveedor(p.getProveedorId());
         if (salidaRepository.existsByGuiaId(id) || operacionRepository.existsByConductorId(id)) {
             throw new BusinessException("Está asignado a salidas u operaciones. Puedes marcarlo como INACTIVO.");
         }
@@ -83,6 +92,7 @@ public class PersonalServiceImpl implements IPersonalService {
     }
 
     private void copiar(PersonalRequestDTO dto, Personal p, Long id) {
+        SesionActual.verificarProveedor(dto.proveedorId());
         if (!proveedorRepository.existsById(dto.proveedorId())) throw new BusinessException("El proveedor seleccionado no existe.");
         if (!Reglas.telefonoValido(dto.telefono())) throw new BusinessException(Reglas.MSG_TELEFONO);
         if (dto.telefono() != null && !dto.telefono().isBlank()

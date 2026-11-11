@@ -48,6 +48,10 @@ public class SeguridadInterceptor implements HandlerInterceptor {
             throw new AccesoDenegadoException("Tu rol (" + sesion.rol() + ") no tiene permiso para "
                     + accion.toLowerCase().replace('_', ' ') + ".");
         }
+        // Empresa proveedora: gestiona su flota y personal, pero los lugares los administra Kampu
+        if (sesion.esProveedor() && !"GET".equals(metodo) && ruta.startsWith("/lugares")) {
+            throw new AccesoDenegadoException("Los lugares los administra Kampu Tours.");
+        }
         return true;
     }
 
@@ -56,9 +60,9 @@ public class SeguridadInterceptor implements HandlerInterceptor {
         SesionActual.limpiar();
     }
 
-    // Catálogo público (página de inicio), login y registro
+    // Catálogo público (página de inicio), login, registro de clientes y afiliación de empresas
     private boolean esPublica(String metodo, String ruta) {
-        if (ruta.equals("/auth/login") || ruta.equals("/auth/registro")) return true;
+        if (ruta.equals("/auth/login") || ruta.equals("/auth/registro") || ruta.equals("/auth/afiliacion")) return true;
         boolean lectura = "GET".equals(metodo);
         return lectura && (ruta.equals("/paquetes") || ruta.matches("/paquetes/\\d+")
                 || ruta.equals("/salidas") || ruta.matches("/salidas/\\d+"));
@@ -83,6 +87,7 @@ public class SeguridadInterceptor implements HandlerInterceptor {
                 || ruta.startsWith("/lugares")) {
             return lectura ? "VER_LOGISTICA" : "GESTIONAR_LOGISTICA";
         }
+        if (ruta.matches("/operaciones/\\d+/respuesta")) return "RESPONDER_SERVICIO";   // la empresa acepta o rechaza
         if (ruta.startsWith("/operaciones")) return lectura ? "VER_OPERACIONES" : "GESTIONAR_OPERACIONES";
         if (ruta.startsWith("/resumen-paquetes")) return "VER_RESUMEN";
         return "SOLO_ADMIN";

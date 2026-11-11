@@ -12,6 +12,8 @@ public record RecursoCandidatoDTO(
         String descripcion,
         Integer capacidadPax,
         BigDecimal horasDia,
-        String motivo
+        // null = elegible. advertencia: regla flexible (zona, servicio, preferencia) que solo se puede pasar por alto a mano
+        String motivo,
+        String advertencia
 ) {
 }
