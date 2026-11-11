@@ -148,8 +148,11 @@ Además crea `ROL_ADMIN`, `ROL_VENTAS`, `ROL_OPERADOR` y `ROL_CLIENTE` con los m
 del portal) para cuentas que entren directo a Oracle (reportes, SQL Developer). La aplicación usa un único usuario
 de conexión y su nivel lo controla `PKG_SEGURIDAD_ROLES`.
 
-Requisitos: opción *Partitioning* (Enterprise, XE 18c+ o 23ai Free) y `CREATE ROLE`. Si el dueño no lo tiene, un DBA ejecuta antes
-`GRANT CREATE ROLE TO LP2;`. Las conversiones usan `ALTER TABLE ... MODIFY PARTITION BY ... ONLINE UPDATE INDEXES`, sin perder datos.
+Requisitos: opción *Partitioning* (XE 18c/21c, 23ai Free o Enterprise), conexión a la **PDB** (`XEPDB1` en XE,
+`FREEPDB1` en 23ai Free; no al contenedor raíz `XE`/`FREE`) y el privilegio `CREATE ROLE`
+(`GRANT CREATE ROLE TO LP2;` como DBA). Si falta algo, el script no se detiene con errores: particiona lo que puede
+y muestra en la salida qué no hizo y cómo resolverlo. Se puede volver a ejecutar las veces que haga falta
+(las tablas ya particionadas y los roles existentes se respetan).
 
 ## Especificación de cambios de interfaz
 
