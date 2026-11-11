@@ -1,6 +1,10 @@
 -- =====================================================================
--- KAMPU / TOUR MANAGER - SCRIPT v4 (Oracle 12.2+)
+-- KAMPU / TOUR MANAGER - SCRIPT DE TABLAS (Oracle 12.2+)
 -- Ejecutar en SQL Developer como script (F5) con el usuario dueño.
+-- Orden de instalación: 01_schema.sql -> 02_data.sql -> 03_particionamiento_roles.sql
+--
+-- ¡ATENCIÓN! La sección 0 borra el esquema anterior (tablas, vistas, paquetes y
+-- datos) para que el script se pueda ejecutar las veces que haga falta.
 --
 -- Base: las 14 tablas del modelo v4 + AUDITORIA (la exige el trigger de
 -- auditoría). Columnas marcadas "-- (+v4)" se agregaron al modelo v4 para
@@ -17,6 +21,49 @@
 --
 -- Particionamiento y roles de base de datos: 03_particionamiento_roles.sql
 -- =====================================================================
+
+-- =====================================================================
+-- 0. LIMPIEZA: borra lo que exista de una instalación anterior (cualquier versión)
+-- =====================================================================
+BEGIN
+    FOR o IN (SELECT 'VIEW' AS tipo, column_value AS nombre
+                FROM TABLE(sys.odcivarchar2list(
+                     'VW_PAQUETES_CLIENTE', 'VW_RESUMEN_PAQUETES_POR_ROL',            -- v4
+                     'VW_RECURSOS_DISPONIBLES', 'VW_TABLERO_OPERACIONES',             -- v3
+                     'VW_EMPRESA_CAPACIDAD', 'V_RESERVAS_RESUMEN', 'V_PORTAL_CLIENTE', 'V_TABLERO_FIDS'))
+              UNION ALL
+              SELECT 'PACKAGE', column_value
+                FROM TABLE(sys.odcivarchar2list(
+                     'PKG_SEGURIDAD_ROLES', 'PKG_GESTION_PAQUETES_CLIENTE',
+                     'PKG_ASIGNACION', 'PKG_RUTAS', 'PKG_TRANSACCIONES'))
+              UNION ALL
+              SELECT 'FUNCTION', 'FN_ESTADO_PAGO_PAQUETE' FROM dual
+              UNION ALL
+              SELECT 'PROCEDURE', 'SP_REGISTRAR_CLIENTE_EXTERNO' FROM dual
+              UNION ALL
+              SELECT 'TABLE', column_value
+                FROM TABLE(sys.odcivarchar2list(
+                     'AUDITORIA', 'HISTORIAL_OPERACIONES', 'OPERACIONES_TRANSPORTE',          -- v4
+                     'HISTORIAL_TRAFICO_OPERACION', 'OPERACION_TRANSPORTE',                   -- v3
+                     'PAGOS', 'PASAJEROS_RESERVA', 'DETALLE_RESERVA', 'RESERVAS', 'SALIDAS_PROGRAMADAS',
+                     'DOMINIO_TRANSICIONES', 'DOMINIO_ESTADOS', 'CONDUCTOR', 'VEHICULO', 'VEHICULOS',
+                     'PERSONAL', 'RUTAS_PROVEEDOR', 'LUGARES', 'EMPRESA_TRANSPORTE', 'PROVEEDORES',
+                     'CHOFERES', 'TRANSPORTE',
+                     'PAQUETES_TOUR', 'GUIAS', 'CLIENTES', 'USUARIOS_SISTEMA'))
+              UNION ALL
+              SELECT 'SEQUENCE', 'SEQ_CODIGO_OPERACION' FROM dual) LOOP
+        BEGIN
+            IF o.tipo = 'TABLE' THEN
+                EXECUTE IMMEDIATE 'DROP TABLE ' || o.nombre || ' CASCADE CONSTRAINTS PURGE';
+            ELSE
+                EXECUTE IMMEDIATE 'DROP ' || o.tipo || ' ' || o.nombre;
+            END IF;
+        EXCEPTION
+            WHEN OTHERS THEN NULL;
+        END;
+    END LOOP;
+END;
+/
 
 -- =====================================================================
 -- 1. TABLAS

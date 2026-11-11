@@ -1,6 +1,6 @@
 -- =====================================================================
 -- KAMPU / TOUR MANAGER v4 - Datos de demostración
--- Ejecutar DESPUÉS de 01_schema_v4.sql, como script (F5), con el usuario dueño.
+-- Ejecutar DESPUÉS de 01_schema.sql, como script (F5), con el usuario dueño.
 --
 -- Las fechas son relativas al día en que se ejecuta (TRUNC(SYSDATE) + n): así
 -- el portal del cliente siempre muestra paquetes "Por empezar", "En curso" y

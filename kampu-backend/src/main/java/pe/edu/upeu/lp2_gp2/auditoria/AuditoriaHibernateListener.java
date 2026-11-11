@@ -108,7 +108,7 @@ public class AuditoriaHibernateListener implements PostInsertEventListener, Post
             AuditoriaService.insertar(sesion.getJdbcCoordinator().getLogicalConnection().getPhysicalConnection(), r);
         } catch (SQLException ex) {
             // Sin bitácora no se confirma el cambio (falla la transacción completa)
-            throw new IllegalStateException("No se pudo registrar la auditoría (¿ejecutaste 01_schema_v4.sql actualizado?): "
+            throw new IllegalStateException("No se pudo registrar la auditoría (¿ejecutaste 01_schema.sql actualizado?): "
                     + ex.getMessage(), ex);
         }
     }

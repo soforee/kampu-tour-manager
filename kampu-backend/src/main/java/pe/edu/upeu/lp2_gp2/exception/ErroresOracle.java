@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 /**
  * Traduce los errores de Oracle a mensajes para el usuario:
  *  - ORA-20000..20999: RAISE_APPLICATION_ERROR de los triggers, paquetes y procedimientos
- *    de 01_schema_v4.sql; su texto ya está en español y se devuelve tal cual.
+ *    de 01_schema.sql; su texto ya está en español y se devuelve tal cual.
  *  - ORA-00001 / 02290 / 02291 / 02292: restricciones UNIQUE, CHECK y FK, con un
  *    mensaje por nombre de restricción.
  */
@@ -18,7 +18,7 @@ public final class ErroresOracle {
 
     private static final Pattern RESTRICCION = Pattern.compile("\\(([A-Za-z0-9_$#]+)\\.([A-Za-z0-9_$#]+)\\)");
 
-    // Nombres de restricciones e índices únicos de 01_schema_v4.sql
+    // Nombres de restricciones e índices únicos de 01_schema.sql
     private static final Map<String, String> MENSAJES = Map.ofEntries(
             // UNIQUE
             Map.entry("UQ_CLI_EMAIL", "Ese correo ya está registrado para otro cliente."),

@@ -44,7 +44,7 @@ public class SesionOracleDataSource extends DelegatingDataSource implements Clos
         } catch (SQLException e) {
             if (!avisado) {
                 avisado = true;
-                System.err.println("No se pudo llamar a PKG_SEGURIDAD_ROLES.iniciar_sesion (¿ejecutaste 01_schema_v4.sql?): "
+                System.err.println("No se pudo llamar a PKG_SEGURIDAD_ROLES.iniciar_sesion (¿ejecutaste 01_schema.sql?): "
                         + e.getMessage());
             }
         }

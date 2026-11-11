@@ -1,6 +1,6 @@
 -- =====================================================================
 -- KAMPU / TOUR MANAGER v4 - PARTICIONAMIENTO Y ROLES POR NIVEL DE USUARIO
--- Ejecutar DESPUÉS de 01_schema_v4.sql y 02_data.sql, con el usuario dueño.
+-- Ejecutar DESPUÉS de 01_schema.sql y 02_data.sql, con el usuario dueño.
 --
 -- Requisitos
 --   * Oracle 12.2+ con la opción Partitioning (Enterprise, XE 18c+ o 23ai Free).

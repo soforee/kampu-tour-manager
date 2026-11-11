@@ -76,7 +76,7 @@ completo) y la reserva R-0008 tiene un adelanto aprobado (estaba confirmada sin 
 
 ## Objetos críticos de backend (2 por categoría) y su justificación
 
-Todos están en `01_schema_v4.sql`, comentados.
+Todos están en `01_schema.sql`, comentados.
 
 | Categoría | Objeto | Qué hace | Por qué este y no otro |
 |---|---|---|---|
@@ -244,26 +244,24 @@ Las mismas reglas se aplican en ambos lados: `kampu-frontend/src/app/core/utils/
   (por ejemplo letras o la "e" en campos numéricos) y los mensajes aparecen debajo de cada campo.
 - En el backend, Bean Validation rechaza los datos con estado 400 y un mensaje claro; si llega un tipo incorrecto
   (letras o decimales en un campo entero, fechas mal escritas) se indica qué campo falló.
-- Los tipos y longitudes coinciden con `01_schema_v4.sql`; las reglas que dependen de otros datos (cupos, cruces de
+- Los tipos y longitudes coinciden con `01_schema.sql`; las reglas que dependen de otros datos (cupos, cruces de
   horario, transiciones, capacidad) las valida la base de datos con sus triggers.
 
 ## 1. Base de datos (Oracle 12.2 o superior)
 
 1. Usuario dueño del esquema (por defecto `LP2` / `admin123`) con permisos para crear tablas, vistas, secuencias,
-   procedimientos y triggers. Para el paso 4 también `CREATE ROLE` (`GRANT CREATE ROLE TO LP2;` como DBA).
-2. Conectado como ese usuario, ejecuta **en orden** (SQL Developer: "Ejecutar script" F5; SQL*Plus: `@archivo`):
-   1. `00_reset.sql` — solo si ya tenías una instalación anterior (v1, v3 o v4). **Borra todos los datos.**
-   2. `01_schema_v4.sql` — 14 tablas + `AUDITORIA`, índices únicos (documento, correo, teléfono), secuencia y los 8 objetos. Al final todos deben salir `VALID`.
-   3. `02_data.sql` — datos demo con **fechas relativas a hoy** (hay paquetes terminados, en curso y por empezar).
-   4. `03_particionamiento_roles.sql` — particiones y roles por nivel de usuario.
+   procedimientos y triggers. Para el paso 3 también `CREATE ROLE` (`GRANT CREATE ROLE TO LP2;` como DBA).
+2. Conectado como ese usuario, ejecuta **en orden** los tres scripts de `kampu-backend/src/main/resources/db/`
+   (SQL Developer: "Ejecutar script" F5; SQL*Plus: `@archivo`):
+   1. `01_schema.sql` — **primero borra lo que haya de una instalación anterior** (cualquier versión, con sus datos)
+      y luego crea las 14 tablas + `AUDITORIA`, índices únicos (documento, correo, teléfono), secuencia y los
+      8 objetos PL/SQL. Al final todos deben salir `VALID`.
+   2. `02_data.sql` — datos demo con **fechas relativas a hoy** (hay paquetes terminados, en curso y por empezar).
+   3. `03_particionamiento_roles.sql` — particiones y roles por nivel de usuario.
 3. En SQL*Plus, para las tildes: `set NLS_LANG=AMERICAN_AMERICA.AL32UTF8` antes de entrar.
 
-> **Si ya tenías la v4 instalada:** esta versión cambia la tabla `AUDITORIA` (acción, detalle, origen) y
-> `PKG_SEGURIDAD_ROLES` (catálogo y `permisos`). Vuelve a ejecutar los cuatro scripts en orden; si no, el backend
-> no podrá guardar cambios (la auditoría es obligatoria en cada escritura) y avisará de ello.
-
-> Desde la v3 se reinstala con `00_reset.sql` → `01_schema_v4.sql` → `02_data.sql` → `03_particionamiento_roles.sql`.
-> Si necesitas conservar datos reales, expórtalos antes.
+> Para reinstalar (o actualizar desde una versión anterior) se ejecutan los mismos tres scripts en el mismo orden.
+> Como `01_schema.sql` borra los datos, si necesitas conservar datos reales expórtalos antes.
 
 ### Correo (boleta informativa)
 
@@ -319,7 +317,7 @@ Abre http://localhost:4200. `npm start` usa `proxy.config.json`: `/api` → `htt
   lugares, el Operador no crea clientes ni ve pagos (403); la bitácora registra alta, modificación campo por campo,
   baja, login, logout e ingreso fallido; "Volver al inicio" conserva la sesión.
 
-- Oracle 23ai Free: los 4 scripts se ejecutan sin errores; los 8 objetos `VALID`; 12 particiones y 4 roles creados.
+- Oracle 23ai Free: los 3 scripts se ejecutan sin errores (también dos veces seguidas); los 8 objetos `VALID`; 12 particiones y 4 roles creados.
 - Backend con `ddl-auto=validate` (las entidades coinciden con el esquema) y pruebas de API por rol (200/401/403, errores de Oracle).
 - Navegador (Playwright): login sin botones demo; registro con contraseña corta, confirmación distinta y correo repetido
   (rechazados) y registro válido con ingreso automático; cliente redirigido fuera del panel; "Volver al inicio" en
