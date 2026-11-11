@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal, WritableSignal } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
-  Cliente, ClienteForm, ContactoReserva, EstadoOperacion, EstadoOperacionInfo, EstadoTransaccion, EstimacionDuracion,
+  AsignacionMasiva, Cliente, ClienteForm, ContactoReserva, EstadoOperacion, EstadoOperacionInfo, EstadoTransaccion, EstimacionDuracion,
   HistorialOperacion, Lugar, LugarForm, Manifiesto, Moneda, Operacion, OperacionForm, PaqueteForm, PaqueteTour, Pago, PasajeroDraft,
   PasajeroReserva, Permiso, Personal, PersonalForm, Proveedor, ProveedorForm, RecursoCandidato, Reserva, ResumenPaquete, Rol,
   SalidaForm, SalidaProgramada, Sesion, Vehiculo, VehiculoForm
@@ -195,8 +195,18 @@ export class TourStore {
 
   // ---------- Tráfico ----------
   guardarOperacion(d: OperacionForm, id: number | null) { return this.guardarEn<Operacion>('operaciones', d, id); }
-  cambiarEstadoOperacion(id: number, estado: EstadoOperacion, observacion: string): Observable<Operacion> {
-    return this.http.patch<Operacion>(`${API}/operaciones/${id}/estado`, { estado: estado, observacion: observacion });
+  // nuevaHoraSalida: obligatoria para RETRASADO ('YYYY-MM-DDTHH:mm')
+  cambiarEstadoOperacion(id: number, estado: EstadoOperacion, observacion: string, nuevaHoraSalida: string | null = null): Observable<Operacion> {
+    return this.http.patch<Operacion>(`${API}/operaciones/${id}/estado`,
+      { estado: estado, observacion: observacion, nuevaHoraSalida: nuevaHoraSalida });
+  }
+  // Todas las pendientes (fecha opcional 'YYYY-MM-DD')
+  asignarPendientes(fecha: string | null): Observable<AsignacionMasiva> {
+    return this.http.post<AsignacionMasiva>(`${API}/operaciones/asignar-automatico`, {}, { params: fecha ? { fecha: fecha } : {} });
+  }
+  // La empresa proveedora acepta o rechaza el servicio
+  responderServicio(id: number, aceptar: boolean, motivo: string): Observable<Operacion> {
+    return this.http.patch<Operacion>(`${API}/operaciones/${id}/respuesta`, { aceptar: aceptar, motivo: motivo });
   }
   asignarAutomatico(id: number): Observable<Operacion> {
     return this.http.post<Operacion>(`${API}/operaciones/${id}/asignar-automatico`, {});
@@ -211,9 +221,9 @@ export class TourStore {
     return this.http.get<HistorialOperacion[]>(`${API}/operaciones/${id}/historial`);
   }
   // Duración con datos reales (OSRM / coordenadas de los lugares)
-  estimarDuracion(origenId: number, destinoId: number): Observable<EstimacionDuracion> {
+  estimarDuracion(origenId: number, destinoId: number, tipoServicio = 'TRASLADO'): Observable<EstimacionDuracion> {
     return this.http.get<EstimacionDuracion>(`${API}/operaciones/estimar-duracion`,
-      { params: { origenId: origenId, destinoId: destinoId } });
+      { params: { origenId: origenId, destinoId: destinoId, tipoServicio: tipoServicio } });
   }
 
   // Autocompletado: busca por nombre, DNI/pasaporte o correo (mínimo 2 caracteres)

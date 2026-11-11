@@ -4,7 +4,8 @@ import java.time.Instant;
 
 /**
  * Sesión de la aplicación: usuario interno (usuarioId) o cliente del portal (clienteId).
- * rol: ADMIN, VENDEDOR, OPERADOR o CLIENTE.
+ * rol: ADMIN, VENDEDOR, OPERADOR, PROVEEDOR o CLIENTE.
+ * proveedorId: empresa de transporte del usuario PROVEEDOR (null para los demás roles).
  */
 public record SesionUsuario(
         String token,
@@ -13,9 +14,14 @@ public record SesionUsuario(
         String username,
         String nombre,
         String rol,
+        Long proveedorId,
         Instant expira
 ) {
     public boolean esCliente() {
         return "CLIENTE".equals(rol);
+    }
+
+    public boolean esProveedor() {
+        return "PROVEEDOR".equals(rol);
     }
 }

@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
-import { Permiso, RegistroForm, Sesion } from '../models';
+import { AfiliacionForm, Permiso, RegistroForm, Sesion } from '../models';
 import { API } from '../utils/api';
 
 const KEY = 'tm4_session';
@@ -13,6 +13,8 @@ export class AuthService {
   usuario = computed(() => this.sesion());
   autenticado = computed(() => this.sesion() !== null);
   esCliente = computed(() => this.sesion()?.rol === 'CLIENTE');
+  // Empresa de transporte afiliada: solo ve su flota y los servicios que se le asignan
+  esProveedor = computed(() => this.sesion()?.rol === 'PROVEEDOR');
   rol = computed(() => this.sesion()?.rol ?? null);
   // Permisos de la sesión (PKG_SEGURIDAD_ROLES.permisos): menú, rutas y botones dependen de esto
   permisos = computed(() => new Set<string>(this.sesion()?.permisos ?? []));
@@ -42,6 +44,11 @@ export class AuthService {
     return this.http.post<Sesion>(`${API}/auth/registro`, d);
   }
 
+  // Afiliación de una empresa de transporte (queda PENDIENTE hasta que Kampu la apruebe)
+  afiliar(d: AfiliacionForm): Observable<Sesion> {
+    return this.http.post<Sesion>(`${API}/auth/afiliacion`, d);
+  }
+
   guardarSesion(s: Sesion) {
     this.sesion.set(s);
     localStorage.setItem(KEY, JSON.stringify(s));
@@ -54,7 +61,8 @@ export class AuthService {
 
   // Ruta de inicio según el rol
   inicio(): string {
-    return this.esCliente() ? '/mi-cuenta' : '/dashboard';
+    if (this.esCliente()) return '/mi-cuenta';
+    return this.esProveedor() ? '/operaciones' : '/dashboard';
   }
 
   logout() {

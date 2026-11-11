@@ -1,10 +1,13 @@
 <div class="page-header">
   <div>
     <div class="eyebrow mb-1.5">Logística</div>
-    <h1 class="h1">Proveedores, personal y flota</h1>
-    <p class="page-sub">Kampu Tours (propio) y proveedores externos, con sus guías, conductores y vehículos.</p>
+    <h1 class="h1">{{ esProveedor ? 'Mi empresa, personal y flota' : 'Empresas, personal y flota' }}</h1>
+    <p class="page-sub">
+      @if (esProveedor) { Mantén al día tus vehículos y conductores: Kampu Tours asigna los servicios según su disponibilidad. }
+      @else { Kampu Tours (propio) y empresas de transporte afiliadas, con sus guías, conductores y vehículos. }
+    </p>
   </div>
-  @if (puedeEditar()) {
+  @if (puedeCrear()) {
     <button type="button" class="btn-dark" (click)="nuevo()"><app-icon name="plus" size="w-4 h-4" /> Nuevo {{ actual.singular }}</button>
   }
 </div>
@@ -15,7 +18,7 @@
       <button type="button" class="seg-btn inline-flex items-center gap-1.5" [class.on]="tab() === t.id" (click)="tab.set(t.id)"><app-icon [name]="t.icono" size="w-4 h-4" /> {{ t.texto }}</button>
     }
   </div>
-  @if (tab() === 'personal' || tab() === 'vehiculos') {
+  @if (!esProveedor && (tab() === 'personal' || tab() === 'vehiculos')) {
     <select class="field !w-auto min-w-[220px]" [ngModel]="filtroProveedor()" (ngModelChange)="filtroProveedor.set($event)" aria-label="Filtrar por proveedor">
       <option [ngValue]="null">Todos los proveedores</option>
       @for (p of store.proveedores(); track p.proveedorId) { <option [ngValue]="p.proveedorId">{{ p.nombreComercial }}{{ p.esPropio ? ' (propio)' : '' }}</option> }
@@ -32,6 +35,9 @@
 
 @switch (tab()) {
   @case ('proveedores') {
+    @if (!esProveedor && pendientes()) {
+      <div class="alert-warn mb-4"><app-icon name="alert" size="w-4 h-4" /><span><strong>{{ pendientes() }}</strong> empresa(s) esperan la aprobación de su afiliación.</span></div>
+    }
     <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
       @for (p of store.proveedores(); track p.proveedorId) {
         <div class="card card-hover p-5 flex flex-col gap-3" [class.ring-2]="p.esPropio" [class.ring-brand-300]="p.esPropio" [class.opacity-60]="p.estado === 'INACTIVO'">
@@ -46,13 +52,14 @@
             @if (puedeEditar()) {
               <div class="actions shrink-0">
                 <button type="button" class="icon-btn" title="Editar" (click)="editarProveedor(p.proveedorId)"><app-icon name="edit" size="w-[18px] h-[18px]" /></button>
-                <button type="button" class="icon-btn-danger" title="Eliminar" (click)="eliminar(p.proveedorId)"><app-icon name="trash" size="w-[18px] h-[18px]" /></button>
+                @if (!esProveedor) { <button type="button" class="icon-btn-danger" title="Eliminar" (click)="eliminar(p.proveedorId)"><app-icon name="trash" size="w-[18px] h-[18px]" /></button> }
               </div>
             }
           </div>
           <div class="flex flex-wrap gap-1.5">
-            @if (p.esPropio) { <span class="chip !font-sans !bg-brand-50 !text-brand-700">Kampu Tours · propio</span> } @else { <span class="chip !font-sans">Tercero</span> }
+            @if (p.esPropio) { <span class="chip !font-sans !bg-brand-50 !text-brand-700">Kampu Tours · propio</span> } @else { <span class="chip !font-sans">Afiliada</span> }
             <app-badge [estado]="p.estado" />
+            @for (sv of p.servicios; track sv) { <span class="chip !font-sans">{{ etiqueta(sv) }}</span> }
           </div>
           <div class="grid grid-cols-4 gap-2 text-center">
             <div class="rounded-xl bg-sand-50 border border-zinc-100 py-2"><div class="text-lg font-extrabold text-zinc-900">{{ p.vehiculos }}</div><div class="text-[11px] text-zinc-500">vehículos</div></div>
@@ -60,7 +67,25 @@
             <div class="rounded-xl bg-sand-50 border border-zinc-100 py-2"><div class="text-lg font-extrabold text-zinc-900">{{ p.conductores }}</div><div class="text-[11px] text-zinc-500">conductores</div></div>
             <div class="rounded-xl bg-sand-50 border border-zinc-100 py-2"><div class="text-lg font-extrabold text-zinc-900">{{ p.guias }}</div><div class="text-[11px] text-zinc-500">guías</div></div>
           </div>
-          @if (p.telefono) { <div class="text-sm text-zinc-500 flex items-center gap-1.5"><app-icon name="phone" size="w-3.5 h-3.5" />{{ p.telefono }}</div> }
+          <div class="grid grid-cols-3 gap-2 text-center text-[11px]">
+            <div class="rounded-lg bg-emerald-50 py-1.5"><span class="font-bold text-emerald-700">{{ p.vehiculosDisponibles }}</span> libres ahora</div>
+            <div class="rounded-lg bg-sky-50 py-1.5"><span class="font-bold text-sky-700">{{ p.serviciosHoy }}</span> servicios hoy</div>
+            <div class="rounded-lg py-1.5" [class]="p.serviciosPorConfirmar ? 'bg-amber-50' : 'bg-sand-50'"><span class="font-bold" [class]="p.serviciosPorConfirmar ? 'text-amber-700' : 'text-zinc-700'">{{ p.serviciosPorConfirmar }}</span> por confirmar</div>
+          </div>
+          <div class="space-y-1 text-sm text-zinc-500">
+            <div class="flex items-center gap-1.5"><app-icon name="map-pin" size="w-3.5 h-3.5" />Opera en: {{ p.zonas ? p.zonas.split(',').join(', ') : 'todo el país' }}</div>
+            @if (p.contacto) { <div class="flex items-center gap-1.5"><app-icon name="user" size="w-3.5 h-3.5" />{{ p.contacto }}</div> }
+            @if (p.telefono) { <div class="flex items-center gap-1.5"><app-icon name="phone" size="w-3.5 h-3.5" />{{ p.telefono }}</div> }
+            @if (p.email) { <div class="flex items-center gap-1.5 truncate"><app-icon name="mail" size="w-3.5 h-3.5" />{{ p.email }}</div> }
+            @if (p.direccion) { <div class="flex items-center gap-1.5 truncate" [title]="p.direccion"><app-icon name="home" size="w-3.5 h-3.5" />{{ p.direccion }}</div> }
+            @if (p.fechaAfiliacion && !p.esPropio) { <div class="text-xs text-zinc-400">Afiliada desde {{ p.fechaAfiliacion | date:'dd/MM/yyyy' }}</div> }
+          </div>
+          @if (p.estado === 'PENDIENTE' && puedeEditar() && !esProveedor) {
+            <div class="flex gap-2 mt-auto">
+              <button type="button" class="btn-brand flex-1 justify-center !h-9" (click)="resolverAfiliacion(p, true)"><app-icon name="check" size="w-4 h-4" /> Aprobar</button>
+              <button type="button" class="btn-light !h-9" (click)="resolverAfiliacion(p, false)">Rechazar</button>
+            </div>
+          }
         </div>
       } @empty {
         <div class="col-span-full card empty"><span class="ico"><app-icon name="flag" size="w-6 h-6" /></span>Registra primero a Kampu Tours como proveedor propio.</div>
@@ -184,12 +209,27 @@
               <div><label class="label">Teléfono <span class="opt">Opcional</span></label><input class="field" maxlength="20" type="tel" inputmode="tel" [(ngModel)]="proveedor.telefono" placeholder="+51 9xx xxx xxx" (blur)="v.tocar('pTelefono')" [class.field-invalid]="v.error('pTelefono')" (beforeinput)="filtrar($event, 'telefono')" (paste)="pegar($event, 'telefono')">@if (v.error('pTelefono'); as e) { <p class="field-error">{{ e }}</p> }</div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div><label class="label req">Estado</label><select class="field" [(ngModel)]="proveedor.estado">@for (s of estadosProveedor; track s) { <option [value]="s">{{ etiqueta(s) }}</option> }</select><p class="hint">Solo los ACTIVOS reciben operaciones.</p></div>
+              <div><label class="label">Correo <span class="opt">Opcional</span></label><input class="field" maxlength="100" type="email" [(ngModel)]="proveedor.email" (blur)="v.tocar('pEmail')" [class.field-invalid]="v.error('pEmail')">@if (v.error('pEmail'); as e) { <p class="field-error">{{ e }}</p> }</div>
+              <div><label class="label">Persona de contacto <span class="opt">Opcional</span></label><input class="field" maxlength="150" [(ngModel)]="proveedor.contacto" (blur)="v.tocar('pContacto')" [class.field-invalid]="v.error('pContacto')">@if (v.error('pContacto'); as e) { <p class="field-error">{{ e }}</p> }</div>
+            </div>
+            <div><label class="label">Dirección <span class="opt">Opcional</span></label><input class="field" maxlength="200" [(ngModel)]="proveedor.direccion" (blur)="v.tocar('pDireccion')" [class.field-invalid]="v.error('pDireccion')">@if (v.error('pDireccion'); as e) { <p class="field-error">{{ e }}</p> }</div>
+            <div><label class="label req">Servicios que ofrece</label>
+              <div class="flex flex-wrap gap-4 mt-1">
+                @for (sv of servicios; track sv) {
+                  <label class="inline-flex items-center gap-2 text-sm text-zinc-700"><input type="checkbox" [checked]="proveedor.servicios.includes(sv)" (change)="marcarServicio(sv, $any($event.target).checked)"> {{ etiqueta(sv) }}</label>
+                }
+              </div>@if (v.error('pServicios'); as e) { <p class="field-error">{{ e }}</p> }
+            </div>
+            <div><label class="label">Ciudades donde opera <span class="opt">Separadas por coma · vacío = todo el país</span></label><input class="field" maxlength="300" [(ngModel)]="proveedor.zonas" placeholder="Cusco, Ollantaytambo, Puno" (blur)="v.tocar('pZonas')" [class.field-invalid]="v.error('pZonas')">@if (v.error('pZonas'); as e) { <p class="field-error">{{ e }}</p> } @else { <p class="hint">La asignación automática solo le envía servicios que salen de estas ciudades.</p> }</div>
+            @if (!esProveedor) {
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div><label class="label req">Estado</label><select class="field" [(ngModel)]="proveedor.estado">@for (s of estadosProveedor; track s) { <option [value]="s">{{ etiqueta(s) }}</option> }</select><p class="hint">Solo las ACTIVAS reciben servicios. PENDIENTE: afiliación por revisar.</p></div>
               <div class="flex flex-col justify-center">
                 <label class="inline-flex items-center gap-2 text-sm font-medium text-zinc-700"><input type="checkbox" [(ngModel)]="proveedor.esPropio" (change)="v.tocar('pPropio')"> Es Kampu Tours (proveedor propio)</label>
                 @if (v.error('pPropio'); as e) { <p class="field-error">{{ e }}</p> } @else { <p class="hint">Solo puede haber uno: la flota y el personal de la agencia.</p> }
               </div>
             </div>
+            }
           }
           @case ('personal') {
             <div class="form-section-title"><app-icon name="id" size="w-4 h-4" /> Datos de la persona</div>

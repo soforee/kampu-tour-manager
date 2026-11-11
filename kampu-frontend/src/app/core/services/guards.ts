@@ -16,7 +16,7 @@ export const clienteGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
   if (!auth.autenticado()) return router.parseUrl('/login');
-  return auth.esCliente() ? true : router.parseUrl('/dashboard');
+  return auth.esCliente() ? true : router.parseUrl(auth.inicio());
 };
 
 // Pantalla que exige un permiso (data.permiso). Mismo permiso que pide el backend
@@ -24,5 +24,7 @@ export const clienteGuard: CanActivateFn = () => {
 export const permisoGuard: CanActivateFn = (ruta) => {
   const auth = inject(AuthService);
   const permiso = ruta.data?.['permiso'] as Permiso | undefined;
-  return !permiso || auth.puede(permiso) ? true : inject(Router).parseUrl('/dashboard');
+  // El panel general es de Kampu; la empresa proveedora trabaja desde Tráfico
+  const soloKampu = ruta.data?.['soloKampu'] === true && auth.esProveedor();
+  return soloKampu || (permiso && !auth.puede(permiso)) ? inject(Router).parseUrl(auth.inicio()) : true;
 };

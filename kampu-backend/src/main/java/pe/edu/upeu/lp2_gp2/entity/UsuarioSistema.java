@@ -22,6 +22,10 @@ public class UsuarioSistema {
     @Column(name = "estado", length = 20)
     private String estado;
 
+    // Solo para el rol PROVEEDOR: la empresa de transporte que administra
+    @Column(name = "proveedor_id")
+    private Long proveedorId;
+
     public UsuarioSistema() {
     }
 
@@ -63,5 +67,13 @@ public class UsuarioSistema {
 
     public void setEstado(String estado) {
         this.estado = estado;
+    }
+
+    public Long getProveedorId() {
+        return proveedorId;
+    }
+
+    public void setProveedorId(Long proveedorId) {
+        this.proveedorId = proveedorId;
     }
 }

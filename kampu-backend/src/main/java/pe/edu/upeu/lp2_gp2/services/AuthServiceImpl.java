@@ -11,9 +11,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pe.edu.upeu.lp2_gp2.dto.*;
 import pe.edu.upeu.lp2_gp2.entity.Cliente;
+import pe.edu.upeu.lp2_gp2.entity.Proveedor;
 import pe.edu.upeu.lp2_gp2.entity.UsuarioSistema;
 import pe.edu.upeu.lp2_gp2.exception.BusinessException;
 import pe.edu.upeu.lp2_gp2.repository.ClienteRepository;
+import pe.edu.upeu.lp2_gp2.repository.ProveedorRepository;
 import pe.edu.upeu.lp2_gp2.repository.UsuarioSistemaRepository;
 import pe.edu.upeu.lp2_gp2.seguridad.SesionUsuario;
 import pe.edu.upeu.lp2_gp2.seguridad.TokenService;
@@ -37,17 +39,22 @@ public class AuthServiceImpl implements IAuthService {
     private final JdbcTemplate jdbc;
     private final PkgSeguridadRepository seguridad;
     private final AuditoriaService auditoria;
+    private final ProveedorRepository proveedorRepository;
+    private final IProveedorService proveedorService;
     private final BCryptPasswordEncoder bcrypt = new BCryptPasswordEncoder();
 
     public AuthServiceImpl(UsuarioSistemaRepository usuarioRepository, ClienteRepository clienteRepository,
                            TokenService tokens, JdbcTemplate jdbc, PkgSeguridadRepository seguridad,
-                           AuditoriaService auditoria) {
+                           AuditoriaService auditoria, ProveedorRepository proveedorRepository,
+                           IProveedorService proveedorService) {
         this.usuarioRepository = usuarioRepository;
         this.clienteRepository = clienteRepository;
         this.tokens = tokens;
         this.jdbc = jdbc;
         this.seguridad = seguridad;
         this.auditoria = auditoria;
+        this.proveedorRepository = proveedorRepository;
+        this.proveedorService = proveedorService;
     }
 
     // Inicio de sesión auditado: LOGIN si entra, LOGIN_FALLIDO (con el motivo) si no.
@@ -77,7 +84,13 @@ public class AuthServiceImpl implements IAuthService {
             UsuarioSistema u = usuario.get();
             if (!coincide(dto.password(), u.getPasswordHash())) throw new BusinessException(CREDENCIALES);
             if (!"ACTIVO".equals(u.getEstado())) throw new BusinessException("Tu usuario está inactivo. Contacta al administrador.");
-            return dto(tokens.crear(u.getUsuarioId(), null, u.getUsername(), u.getUsername(), u.getRol()), u.getEstado());
+            String nombre = u.getUsername();
+            if (u.getProveedorId() != null) {   // empresa proveedora: entra salvo que Kampu la haya dado de baja
+                Proveedor p = proveedorRepository.findById(u.getProveedorId()).orElseThrow(() -> new BusinessException(CREDENCIALES));
+                if ("INACTIVO".equals(p.getEstado())) throw new BusinessException("Tu empresa está inactiva en Kampu Tours. Contacta al centro de operaciones.");
+                nombre = p.getNombreComercial();
+            }
+            return dto(tokens.crear(u.getUsuarioId(), null, u.getUsername(), nombre, u.getRol(), u.getProveedorId()), u.getEstado());
         }
         // 2) Cliente del portal (correo o número de documento)
         Optional<Cliente> cliente = id.contains("@")
@@ -90,7 +103,7 @@ public class AuthServiceImpl implements IAuthService {
         }
         if (!bcrypt.matches(dto.password(), c.getPasswordHash())) throw new BusinessException(CREDENCIALES);
         if (!"ACTIVO".equals(c.getEstadoCuenta())) throw new BusinessException("Tu cuenta está " + c.getEstadoCuenta().toLowerCase() + ". Contacta a la agencia.");
-        return dto(tokens.crear(null, c.getClienteId(), c.getEmail(), c.getNombreCompleto(), "CLIENTE"), c.getEstadoCuenta());
+        return dto(tokens.crear(null, c.getClienteId(), c.getEmail(), c.getNombreCompleto(), "CLIENTE", null), c.getEstadoCuenta());
     }
 
     @Override
@@ -122,7 +135,35 @@ public class AuthServiceImpl implements IAuthService {
         Cliente c = clienteRepository.findById(clienteId)
                 .orElseThrow(() -> new BusinessException("No se pudo completar el registro."));
         // Autenticación automática tras registrarse
-        return dto(tokens.crear(null, c.getClienteId(), c.getEmail(), c.getNombreCompleto(), "CLIENTE"), "ACTIVO");
+        return dto(tokens.crear(null, c.getClienteId(), c.getEmail(), c.getNombreCompleto(), "CLIENTE", null), "ACTIVO");
+    }
+
+    // Afiliación de una empresa de transporte: queda PENDIENTE hasta que Kampu la apruebe
+    @Override
+    @Transactional
+    public SesionDTO afiliar(AfiliacionRequestDTO dto) {
+        if (!dto.password().equals(dto.confirmacion())) throw new BusinessException("Las contraseñas no coinciden.");
+        if (dto.password().isBlank() || dto.password().trim().length() < 8) {
+            throw new BusinessException("La contraseña debe tener al menos 8 caracteres.");
+        }
+        String errorTelefono = Reglas.errorTelefonoPais(dto.telefono());
+        if (errorTelefono != null) throw new BusinessException(errorTelefono);
+        String username = dto.username().trim().toLowerCase();
+        if (usuarioRepository.findByUsernameIgnoreCase(username).isPresent()) {
+            throw new pe.edu.upeu.lp2_gp2.exception.DuplicateResourceException("El usuario " + username + " ya existe: elige otro.");
+        }
+        Proveedor p = proveedorService.afiliar(new ProveedorRequestDTO(dto.nombreComercial(), dto.ruc(), dto.telefono(), false,
+                "PENDIENTE", dto.direccion(), dto.email(), dto.contacto(), dto.servicios(), dto.zonas()));
+        UsuarioSistema u = new UsuarioSistema();
+        u.setUsername(username);
+        u.setPasswordHash(bcrypt.encode(dto.password()));
+        u.setRol("PROVEEDOR");
+        u.setEstado("ACTIVO");
+        u.setProveedorId(p.getProveedorId());
+        usuarioRepository.saveAndFlush(u);
+        auditoria.registrarIndependiente(new RegistroAuditoria("REGISTRO", "PROVEEDORES", p.getProveedorId(), null, null, null,
+                "Solicitud de afiliación de " + p.getNombreComercial() + " (RUC " + p.getRuc() + ")", username, "PROVEEDOR"));
+        return dto(tokens.crear(u.getUsuarioId(), null, username, p.getNombreComercial(), "PROVEEDOR", p.getProveedorId()), "ACTIVO");
     }
 
     @Override
@@ -150,7 +191,10 @@ public class AuthServiceImpl implements IAuthService {
     }
 
     private SesionDTO dto(SesionUsuario s, String estado) {
-        return new SesionDTO(s.usuarioId(), s.clienteId(), s.username(), s.nombre(), s.rol(), estado, s.token(),
+        Proveedor p = s.proveedorId() == null ? null : proveedorRepository.findById(s.proveedorId()).orElse(null);
+        return new SesionDTO(s.usuarioId(), s.clienteId(), s.username(), s.nombre(), s.rol(),
+                p == null ? null : p.getProveedorId(), p == null ? null : p.getNombreComercial(), p == null ? null : p.getEstado(),
+                estado, s.token(),
                 seguridad.permisos(s.rol()));
     }
 }

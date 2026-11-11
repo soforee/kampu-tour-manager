@@ -12,6 +12,8 @@ import pe.edu.upeu.lp2_gp2.repository.OperacionTransporteRepository;
 import pe.edu.upeu.lp2_gp2.repository.ProveedorRepository;
 import pe.edu.upeu.lp2_gp2.repository.VehiculoRepository;
 
+import pe.edu.upeu.lp2_gp2.seguridad.SesionActual;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -31,13 +33,18 @@ public class VehiculoServiceImpl implements IVehiculoService {
     @Override
     @Transactional(readOnly = true)
     public List<VehiculoDTO> listarTodo() {
-        return vehiculoRepository.findAllByOrderByVehiculoIdAsc().stream().map(VehiculoDTO::desde).toList();
+        Long propio = SesionActual.proveedorId();   // una empresa proveedora solo ve su flota
+        return vehiculoRepository.findAllByOrderByVehiculoIdAsc().stream()
+                .filter(v -> propio == null || propio.equals(v.getProveedorId()))
+                .map(VehiculoDTO::desde).toList();
     }
 
     @Override
     @Transactional(readOnly = true)
     public VehiculoDTO buscarPorId(Long id) {
-        return VehiculoDTO.desde(obtener(id));
+        Vehiculo v = obtener(id);
+        SesionActual.verificarProveedor(v.getProveedorId());
+        return VehiculoDTO.desde(v);
     }
 
     @Override
@@ -52,6 +59,7 @@ public class VehiculoServiceImpl implements IVehiculoService {
     @Transactional
     public VehiculoDTO actualizar(Long id, VehiculoRequestDTO dto) {
         Vehiculo v = obtener(id);
+        SesionActual.verificarProveedor(v.getProveedorId());
         if (!v.getProveedorId().equals(dto.proveedorId()) && operacionRepository.existsByVehiculoId(id)) {
             throw new BusinessException("El vehículo tiene operaciones registradas: no puede cambiar de proveedor.");
         }
@@ -63,6 +71,7 @@ public class VehiculoServiceImpl implements IVehiculoService {
     @Transactional
     public void eliminar(Long id) {
         Vehiculo v = obtener(id);
+        SesionActual.verificarProveedor(v.getProveedorId());
         if (operacionRepository.existsByVehiculoId(id)) {
             throw new BusinessException("El vehículo tiene operaciones registradas. Puedes marcarlo como INACTIVO.");
         }
@@ -75,6 +84,7 @@ public class VehiculoServiceImpl implements IVehiculoService {
     }
 
     private void copiar(VehiculoRequestDTO dto, Vehiculo v, Long id) {
+        SesionActual.verificarProveedor(dto.proveedorId());
         if (!proveedorRepository.existsById(dto.proveedorId())) throw new BusinessException("El proveedor seleccionado no existe.");
         String placa = dto.placa().trim().toUpperCase();
         Optional<Vehiculo> mismo = vehiculoRepository.findByPlacaIgnoreCase(placa);

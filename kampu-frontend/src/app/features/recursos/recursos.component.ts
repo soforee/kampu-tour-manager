@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Observable } from 'rxjs';
 import {
   CategoriaLicencia, EstadoPersonal, EstadoProveedor, EstadoVehiculo, Lugar, LugarForm, PersonalForm, ProveedorForm,
-  RolPersonal, TipoLugar, TipoVehiculo, VehiculoForm
+  Proveedor, RolPersonal, TipoLugar, TipoServicio, TipoVehiculo, VehiculoForm
 } from '../../core/models';
 import { TourStore } from '../../core/services/tour-store.service';
 import { AlertService } from '../../core/services/alert.service';
@@ -23,6 +23,8 @@ type Tab = 'proveedores' | 'personal' | 'vehiculos' | 'lugares';
 /**
  * Logística v4: PROVEEDORES (Kampu Tours propio + terceros), PERSONAL (guías y conductores),
  * VEHICULOS y LUGARES. La flota y el personal propios cuelgan de Kampu Tours.
+ * Las empresas afiliadas desde la web llegan PENDIENTES y Kampu las aprueba aquí.
+ * Una empresa proveedora (rol PROVEEDOR) ve y administra solo su empresa, su personal y su flota.
  */
 @Component({
   selector: 'app-recursos',
@@ -34,15 +36,18 @@ export class RecursosComponent {
   store = inject(TourStore);
   private alerts = inject(AlertService);
   private auth = inject(AuthService);
+  esProveedor = this.auth.esProveedor();
+  miEmpresa = this.auth.usuario()?.proveedorId ?? null;
 
   tabs: { id: Tab; texto: string; icono: string; singular: string }[] = [
-    { id: 'proveedores', texto: 'Proveedores', icono: 'flag', singular: 'proveedor' },
+    { id: 'proveedores', texto: this.esProveedor ? 'Mi empresa' : 'Empresas', icono: 'flag', singular: 'proveedor' },
     { id: 'personal', texto: 'Personal', icono: 'id', singular: 'guía o conductor' },
     { id: 'vehiculos', texto: 'Vehículos', icono: 'truck', singular: 'vehículo' },
     { id: 'lugares', texto: 'Lugares', icono: 'map-pin', singular: 'lugar' }
   ];
   categorias: CategoriaLicencia[] = ['A-I', 'A-IIa', 'A-IIb', 'A-IIIa', 'A-IIIb', 'A-IIIc'];
-  estadosProveedor: EstadoProveedor[] = ['ACTIVO', 'INACTIVO', 'SUSPENDIDO'];
+  estadosProveedor: EstadoProveedor[] = ['ACTIVO', 'PENDIENTE', 'INACTIVO', 'SUSPENDIDO'];
+  servicios: TipoServicio[] = ['TRASLADO', 'TOUR', 'INTERPROVINCIAL'];
   roles: RolPersonal[] = ['GUIA', 'CONDUCTOR', 'AMBOS'];
   estadosPersonal: EstadoPersonal[] = ['DISPONIBLE', 'OCUPADO', 'INACTIVO'];
   tiposVehiculo: TipoVehiculo[] = ['AUTO', 'CAMIONETA_4X4', 'VAN', 'MINIBUS', 'BUS'];
@@ -72,8 +77,12 @@ export class RecursosComponent {
   vehiculo: VehiculoForm = this.vehiculoVacio();
   lugar: LugarForm = this.lugarVacio();
 
-  // GESTIONAR_LOGISTICA (PKG_SEGURIDAD_ROLES): Admin y Operador; Ventas solo consulta (VER_LOGISTICA)
-  puedeEditar = computed(() => this.auth.puede('GESTIONAR_LOGISTICA'));
+  // GESTIONAR_LOGISTICA (PKG_SEGURIDAD_ROLES): Admin, Operador y la empresa proveedora (solo lo suyo);
+  // Ventas solo consulta (VER_LOGISTICA). Los lugares solo los edita Kampu.
+  puedeEditar = computed(() => this.auth.puede('GESTIONAR_LOGISTICA') && !(this.esProveedor && this.tab() === 'lugares'));
+  // Altas de empresas: solo Kampu (las empresas externas se afilian desde la web)
+  puedeCrear = computed(() => this.puedeEditar() && !(this.esProveedor && this.tab() === 'proveedores'));
+  pendientes = computed(() => this.store.proveedores().filter(p => p.estado === 'PENDIENTE').length);
 
   v = new FormValidacion(() => {
     switch (this.tab()) {
@@ -86,7 +95,12 @@ export class RecursosComponent {
             ?? (telefonoRepetido(p.telefono, this.store.proveedores(), x => x.telefono, x => x.proveedorId === this.editId)
               ? 'Ese teléfono ya está registrado para otro proveedor.' : null),
           pPropio: p.esPropio && this.store.proveedores().some(x => x.esPropio && x.proveedorId !== this.editId)
-            ? 'Ya existe el proveedor propio (Kampu Tours).' : null
+            ? 'Ya existe el proveedor propio (Kampu Tours).' : null,
+          pEmail: V.email(p.email),
+          pDireccion: V.texto(p.direccion, 'La dirección', 200),
+          pContacto: V.texto(p.contacto, 'El contacto', 150),
+          pServicios: p.servicios.length ? null : 'Elige al menos un servicio.',
+          pZonas: V.texto(p.zonas, 'Las zonas', 300)
         };
       }
       case 'personal': {
@@ -150,13 +164,17 @@ export class RecursosComponent {
   get actual() { return this.tabs.find(t => t.id === this.tab())!; }
 
   // ---------- Formularios ----------
-  private proveedorVacio(): ProveedorForm { return { nombreComercial: '', ruc: '', telefono: '', esPropio: false, estado: 'ACTIVO' }; }
+  private proveedorVacio(): ProveedorForm {
+    return { nombreComercial: '', ruc: '', telefono: '', esPropio: false, estado: 'ACTIVO', direccion: '', email: '', contacto: '',
+      servicios: ['TRASLADO', 'TOUR'], zonas: '' };
+  }
+  private empresaPorDefecto(): number | null { return this.filtroProveedor() ?? this.miEmpresa ?? this.propio()?.proveedorId ?? null; }
   private personaVacia(): PersonalForm {
-    return { proveedorId: this.filtroProveedor() ?? this.propio()?.proveedorId ?? null, nombreCompleto: '', rol: 'GUIA', telefono: '',
+    return { proveedorId: this.empresaPorDefecto(), nombreCompleto: '', rol: 'GUIA', telefono: '',
       numLicencia: '', catLicencia: '', vencLicencia: '', estado: 'DISPONIBLE' };
   }
   private vehiculoVacio(): VehiculoForm {
-    return { proveedorId: this.filtroProveedor() ?? this.propio()?.proveedorId ?? null, placa: '', tipoVehiculo: 'VAN', marcaModelo: '',
+    return { proveedorId: this.empresaPorDefecto(), placa: '', tipoVehiculo: 'VAN', marcaModelo: '',
       capacidadPax: 12, proxMantenimiento: addDays(hoy(), 180), estado: 'OPERATIVO' };
   }
   private lugarVacio(): LugarForm { return { nombre: '', tipoLugar: 'HOTEL', ciudad: '', latitud: null, longitud: null }; }
@@ -175,8 +193,29 @@ export class RecursosComponent {
   editarProveedor(id: number) {
     const p = this.store.getProveedor(id)!;
     this.editId = id;
-    this.proveedor = { nombreComercial: p.nombreComercial, ruc: p.ruc, telefono: p.telefono, esPropio: p.esPropio, estado: p.estado };
+    this.proveedor = this.formProveedor(p);
     this.abrir();
+  }
+  private formProveedor(p: Proveedor): ProveedorForm {
+    return { nombreComercial: p.nombreComercial, ruc: p.ruc, telefono: p.telefono, esPropio: p.esPropio, estado: p.estado,
+      direccion: p.direccion, email: p.email, contacto: p.contacto, servicios: [...p.servicios], zonas: p.zonas };
+  }
+  marcarServicio(s: TipoServicio, marcado: boolean) {
+    const lista = this.proveedor.servicios.filter(x => x !== s);
+    this.proveedor.servicios = marcado ? [...lista, s] : lista;
+    this.v.tocar('pServicios');
+  }
+
+  // Kampu aprueba (ACTIVO) o rechaza (INACTIVO) la afiliación de una empresa
+  async resolverAfiliacion(p: Proveedor, aprobar: boolean) {
+    const texto = aprobar
+      ? `${p.nombreComercial} podrá recibir servicios con su flota (${p.vehiculos} vehículo(s), ${p.conductores} conductor(es)).`
+      : `${p.nombreComercial} quedará INACTIVA y su usuario no podrá ingresar.`;
+    if (!await this.alerts.confirm(texto, aprobar ? 'Aprobar afiliación' : 'Rechazar afiliación', aprobar ? 'Aprobar' : 'Rechazar')) return;
+    this.store.guardarProveedor({ ...this.formProveedor(p), estado: aprobar ? 'ACTIVO' : 'INACTIVO' }, p.proveedorId).subscribe({
+      next: () => { this.store.cargarProveedores(); this.alerts.toast(aprobar ? 'Empresa aprobada' : 'Afiliación rechazada'); },
+      error: err => this.alerts.error(this.store.error(err))
+    });
   }
   editarPersona(id: number) {
     const p = this.store.getPersonal(id)!;
@@ -208,7 +247,8 @@ export class RecursosComponent {
     switch (this.tab()) {
       case 'proveedores': {
         const p = this.proveedor;
-        peticion = this.store.guardarProveedor({ ...p, nombreComercial: t(p.nombreComercial), ruc: t(p.ruc), telefono: t(p.telefono) }, this.editId);
+        peticion = this.store.guardarProveedor({ ...p, nombreComercial: t(p.nombreComercial), ruc: t(p.ruc), telefono: t(p.telefono),
+          direccion: t(p.direccion), email: t(p.email), contacto: t(p.contacto), zonas: t(p.zonas) }, this.editId);
         break;
       }
       case 'personal': {

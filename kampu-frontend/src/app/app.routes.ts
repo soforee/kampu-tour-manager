@@ -11,6 +11,7 @@ export const routes: Routes = [
   { path: '', component: LandingComponent, pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   // Módulo de clientes (v4)
+  { path: 'afiliacion', loadComponent: () => import('./features/afiliacion/afiliacion.component').then(m => m.AfiliacionComponent) },
   { path: 'registro', loadComponent: () => import('./features/portal/registro.component').then(m => m.RegistroComponent) },
   { path: 'mi-cuenta', loadComponent: () => import('./features/portal/mis-paquetes.component').then(m => m.MisPaquetesComponent), canActivate: [clienteGuard] },
   { path: 'mi-cuenta/paquetes/:id', loadComponent: () => import('./features/portal/paquete-cliente.component').then(m => m.PaqueteClienteComponent), canActivate: [clienteGuard] },
@@ -20,7 +21,7 @@ export const routes: Routes = [
     canActivate: [personalGuard],
     canActivateChild: [permisoGuard],
     children: [
-      { path: 'dashboard', loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent) },
+      { path: 'dashboard', loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent), data: { soloKampu: true } },
       { path: 'reservas', loadComponent: () => import('./features/reservas/reservas.component').then(m => m.ReservasComponent), data: permiso('VER_RESERVAS') },
       { path: 'reservas/nueva', loadComponent: () => import('./features/reservas/reserva-nueva.component').then(m => m.ReservaNuevaComponent), data: permiso('GESTIONAR_RESERVAS') },
       { path: 'reservas/:id', loadComponent: () => import('./features/reservas/reserva-detalle.component').then(m => m.ReservaDetalleComponent), data: permiso('VER_RESERVAS') },

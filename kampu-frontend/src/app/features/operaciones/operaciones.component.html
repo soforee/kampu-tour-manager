@@ -1,31 +1,100 @@
 <div class="page-header">
   <div>
-    <div class="eyebrow mb-1.5">Tráfico</div>
-    <h1 class="h1">Operaciones de transporte</h1>
-    <p class="page-sub">Cada tramo de una salida (aeropuerto → hotel, hotel → atractivo…) con su vehículo, conductor y estado.</p>
+    <div class="eyebrow mb-1.5">Tráfico · Centro de operaciones</div>
+    <h1 class="h1">{{ esProveedor ? 'Servicios de ' + (sesion?.proveedor ?? 'mi empresa') : 'Operaciones de transporte' }}</h1>
+    <p class="page-sub">
+      @if (esProveedor) { Servicios que Kampu Tours asignó a tu flota: confírmalos o recházalos a tiempo. }
+      @else { Salidas y llegadas de todas las empresas de transporte, con asignación automática y control central de conflictos. }
+    </p>
   </div>
   @if (gestiona) {
-  <button type="button" class="btn-dark" (click)="nueva()"><app-icon name="plus" size="w-4 h-4" /> Nueva operación</button>
+    <div class="flex flex-wrap gap-2">
+      <button type="button" class="btn-light" (click)="asignarPendientes()" [disabled]="store.ocupado()"><app-icon name="sparkles" size="w-4 h-4" /> Asignar pendientes</button>
+      <button type="button" class="btn-dark" (click)="nueva()"><app-icon name="plus" size="w-4 h-4" /> Programar servicio</button>
+    </div>
   }
 </div>
 
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
-  <div class="card p-4"><div class="text-xs font-medium text-zinc-500">Por asignar</div><div class="text-2xl font-extrabold text-zinc-900 mt-1">{{ resumen().porAsignar }}</div></div>
-  <div class="card p-4"><div class="text-xs font-medium text-zinc-500">En curso</div><div class="text-2xl font-extrabold text-zinc-900 mt-1">{{ resumen().enCurso }}</div></div>
-  <div class="card p-4"><div class="text-xs font-medium text-zinc-500">Retrasadas</div><div class="text-2xl font-extrabold mt-1" [class]="resumen().retrasadas ? 'text-amber-600' : 'text-zinc-900'">{{ resumen().retrasadas }}</div></div>
-  <div class="card p-4"><div class="text-xs font-medium text-zinc-500">Salen hoy</div><div class="text-2xl font-extrabold text-zinc-900 mt-1">{{ resumen().hoy }}</div></div>
+@if (esProveedor && sesion?.estadoProveedor !== 'ACTIVO') {
+  <div class="alert-warn mb-5"><app-icon name="alert" size="w-4 h-4" />
+    <span>Tu empresa está <strong>{{ etiqueta(sesion?.estadoProveedor) }}</strong>.
+      @if (sesion?.estadoProveedor === 'PENDIENTE') { Kampu Tours revisará tu afiliación; mientras tanto registra tus vehículos y conductores en <a routerLink="/recursos" class="link">Mi flota</a>. }
+      @else { No recibirás servicios nuevos hasta que Kampu Tours reactive tu empresa. }
+    </span>
+  </div>
+}
+
+<!-- Indicadores -->
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-5">
+  @for (k of [
+    { t: 'Servicios del día', v: resumen().total, c: 'text-zinc-900', i: 'ticket' },
+    { t: 'En ruta', v: resumen().enRuta, c: 'text-brand-700', i: 'truck' },
+    { t: 'Próximas salidas (2 h)', v: resumen().proximasSalidas, c: 'text-sky-700', i: 'arrow-right' },
+    { t: 'Próximas llegadas (2 h)', v: resumen().proximasLlegadas, c: 'text-teal-700', i: 'flag' },
+    { t: 'Retrasados', v: resumen().retrasadas, c: resumen().retrasadas ? 'text-orange-600' : 'text-zinc-900', i: 'hourglass' },
+    { t: 'Vehículos libres', v: resumen().vehiculosLibres, c: 'text-emerald-700', i: 'check-circle' },
+    { t: 'Vehículos ocupados', v: resumen().vehiculosOcupados, c: 'text-violet-700', i: 'clock' },
+    { t: 'Conductores disponibles', v: resumen().conductoresLibres, c: 'text-zinc-900', i: 'id' },
+    { t: esProveedor ? 'Mi empresa activa' : 'Empresas activas', v: resumen().empresasActivas, c: 'text-zinc-900', i: 'users' },
+    { t: 'Finalizados', v: resumen().finalizadas, c: 'text-emerald-700', i: 'check' }
+  ]; track k.t) {
+    <div class="card p-3.5">
+      <div class="flex items-center justify-between text-[11px] font-medium text-zinc-500">{{ k.t }}<app-icon [name]="k.i" size="w-3.5 h-3.5 text-zinc-300" /></div>
+      <div class="text-2xl font-extrabold mt-1" [class]="k.c">{{ k.v }}</div>
+    </div>
+  }
 </div>
 
-<div class="toolbar flex-wrap gap-3">
-  <div class="seg">
-    @for (g of grupos; track g.valor) {
-      <button type="button" class="seg-btn" [class.on]="grupo() === g.valor" (click)="grupo.set(g.valor)">{{ g.texto }}</button>
-    }
+@if (resumen().porAsignar || resumen().porConfirmar || resumen().conflictos) {
+  <div class="flex flex-wrap gap-2 mb-5">
+    @if (resumen().porAsignar && !esProveedor) { <button type="button" class="alert-warn !py-2 !text-xs" (click)="vista.set('panel'); grupo.set('PENDIENTES')"><app-icon name="alert" size="w-4 h-4" /> {{ resumen().porAsignar }} sin vehículo</button> }
+    @if (resumen().porConfirmar) { <button type="button" class="alert-info !py-2 !text-xs" (click)="vista.set('panel'); grupo.set('POR_CONFIRMAR')"><app-icon name="hourglass" size="w-4 h-4" /> {{ resumen().porConfirmar }} {{ esProveedor ? 'servicio(s) esperan tu confirmación' : 'esperan confirmación de la empresa' }}</button> }
+    @if (resumen().conflictos) { <button type="button" class="alert-warn !py-2 !text-xs !text-rose-700" (click)="vista.set('panel'); grupo.set('CONFLICTOS')"><app-icon name="x-circle" size="w-4 h-4" /> {{ resumen().conflictos }} con cruce de horario</button> }
   </div>
-  <select class="field !w-auto min-w-[240px]" [ngModel]="filtroSalida()" (ngModelChange)="filtroSalida.set($event)" aria-label="Filtrar por salida">
-    <option [ngValue]="null">Todas las salidas</option>
-    @for (s of store.salidas(); track s.salidaId) { <option [ngValue]="s.salidaId">{{ nombreSalida(s.salidaId) }}</option> }
-  </select>
+}
+
+<!-- Vistas -->
+<div class="seg mb-4 overflow-x-auto max-w-full">
+  @for (x of vistas; track x.valor) {
+    <button type="button" class="seg-btn inline-flex items-center gap-1.5" [class.on]="vista() === x.valor" (click)="cambiarVista(x.valor)"><app-icon [name]="x.icono" size="w-3.5 h-3.5" /> {{ x.texto }}</button>
+  }
+</div>
+
+<!-- Filtros -->
+<div class="card p-3 mb-4">
+  <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2">
+    <div><label class="label !text-[11px]">Fecha</label><input type="date" class="field !h-9" [ngModel]="fFecha()" (ngModelChange)="fFecha.set($event ?? '')"></div>
+    @if (!esProveedor) {
+      <div><label class="label !text-[11px]">Empresa</label>
+        <select class="field !h-9" [ngModel]="fProveedor()" (ngModelChange)="fProveedor.set($event); fVehiculo.set(null); fConductor.set(null)">
+          <option [ngValue]="null">Todas</option>
+          @for (p of store.proveedores(); track p.proveedorId) { <option [ngValue]="p.proveedorId">{{ p.nombreComercial }}</option> }
+        </select></div>
+    }
+    <div><label class="label !text-[11px]">Vehículo</label>
+      <select class="field !h-9" [ngModel]="fVehiculo()" (ngModelChange)="fVehiculo.set($event)">
+        <option [ngValue]="null">Todos</option>
+        @for (x of vehiculosFiltro(); track x.vehiculoId) { <option [ngValue]="x.vehiculoId">{{ x.placa }} · {{ etiqueta(x.tipoVehiculo) }}</option> }
+      </select></div>
+    <div><label class="label !text-[11px]">Conductor</label>
+      <select class="field !h-9" [ngModel]="fConductor()" (ngModelChange)="fConductor.set($event)">
+        <option [ngValue]="null">Todos</option>
+        @for (c of conductoresFiltro(); track c.personalId) { <option [ngValue]="c.personalId">{{ c.nombreCompleto }}</option> }
+      </select></div>
+    <div><label class="label !text-[11px]">Estado</label>
+      <select class="field !h-9" [ngModel]="fEstado()" (ngModelChange)="fEstado.set($event)">
+        <option value="">Todos</option>
+        @for (e of estadosLista; track e) { <option [value]="e">{{ etiqueta(e) }}</option> }
+      </select></div>
+    <div><label class="label !text-[11px]">Ruta o código</label><input class="field !h-9" placeholder="Lima, KMP-010…" [ngModel]="fRuta()" (ngModelChange)="fRuta.set($event)"></div>
+  </div>
+  <div class="flex flex-wrap items-center justify-between gap-2 mt-2">
+    <select class="field !h-9 !w-auto min-w-[240px]" [ngModel]="filtroSalida()" (ngModelChange)="filtroSalida.set($event)" aria-label="Filtrar por salida">
+      <option [ngValue]="null">Todas las salidas / tours</option>
+      @for (s of store.salidas(); track s.salidaId) { <option [ngValue]="s.salidaId">{{ nombreSalida(s.salidaId) }}</option> }
+    </select>
+    @if (hayFiltros() || filtroSalida()) { <button type="button" class="link text-xs" (click)="limpiarFiltros()"><app-icon name="refresh" size="w-3.5 h-3.5" /> Volver a hoy sin filtros</button> }
+  </div>
 </div>
 
 @if (filtroSalida(); as idSalida) {
@@ -40,44 +109,75 @@
   }
 }
 
+@switch (vista()) {
+@case ('tablero') {
+  <app-tablero-fids [operaciones]="delDia()" [contadores]="contadoresFids()" />
+}
+@case ('calendario') {
+  <app-calendario-operaciones [operaciones]="filtradas()" (elegir)="abrirDesdeVista($event)" />
+}
+@case ('flota') {
+  <app-flota-disponibilidad [fecha]="fFecha() || hoy()" [vehiculos]="vehiculosFiltro()" [proveedores]="proveedoresFiltro()"
+                            [operaciones]="filtradas()" (elegir)="abrirDesdeVista($event)" />
+}
+@default {
+<div class="toolbar flex-wrap gap-3">
+  <div class="seg overflow-x-auto max-w-full">
+    @for (g of grupos; track g.valor) {
+      <button type="button" class="seg-btn" [class.on]="grupo() === g.valor" (click)="grupo.set(g.valor)">{{ g.texto }}</button>
+    }
+  </div>
+  <span class="text-xs text-zinc-500">{{ filas().length }} servicio(s){{ fFecha() && !esCola() ? ' · ' + (fFecha() + 'T00:00' | date:'EEEE d MMM') : ' · todas las fechas' }}</span>
+</div>
+
 <div class="card overflow-hidden">
   <div class="overflow-x-auto">
     <table class="tbl">
       <thead><tr>
-        <th class="th">Código</th><th class="th">Horario</th><th class="th">Tramo</th><th class="th">Salida / tour</th>
-        <th class="th">Recursos</th><th class="th text-center">Pax</th><th class="th">Estado</th><th class="th text-right">Acciones</th>
+        <th class="th">Código</th><th class="th">Horario</th><th class="th">Tramo</th><th class="th">Servicio</th>
+        <th class="th">Empresa y recursos</th><th class="th text-center">Pax</th><th class="th">Estado</th><th class="th text-right">Acciones</th>
       </tr></thead>
       <tbody>
         @for (f of filas(); track f.op.operacionId) {
-          <tr class="border-t border-zinc-100 first:border-t-0" [class.opacity-60]="f.op.estadoActual === 'CANCELADO'">
-            <td class="td"><span class="font-mono text-xs font-bold text-zinc-800">{{ f.op.codigoOperacion }}</span></td>
+          <tr class="border-t border-zinc-100 first:border-t-0" [class.opacity-60]="f.op.estadoActual === 'CANCELADO'" [class.!bg-rose-50]="f.op.conflicto">
+            <td class="td">
+              <span class="font-mono text-xs font-bold text-zinc-800">{{ f.op.codigoOperacion }}</span>
+              <div class="text-[11px] text-zinc-400">{{ etiqueta(f.op.tipoServicio) }}</div>
+            </td>
             <td class="td whitespace-nowrap">
-              <div class="font-semibold text-zinc-900">{{ f.op.horaProgramadaSalida | date:'dd/MM HH:mm' }}</div>
+              <div class="font-semibold text-zinc-900" [class.line-through]="f.op.horaSalidaEstimada" [class.!text-zinc-400]="f.op.horaSalidaEstimada">{{ f.op.horaProgramadaSalida | date:'dd/MM HH:mm' }}</div>
+              @if (f.op.horaSalidaEstimada) { <div class="text-xs font-semibold text-orange-600">Nueva salida {{ f.op.horaSalidaEstimada | date:'HH:mm' }} (+{{ f.op.minRetrasoEstimado }} min)</div> }
               <div class="text-xs text-zinc-500">Llega {{ f.op.horaEstimadaLlegada | date:'HH:mm' }}</div>
               @if (f.op.horaRealSalida) {
                 <div class="text-xs" [class]="(f.op.minRetrasoSalida ?? 0) > 15 ? 'text-amber-600' : 'text-emerald-600'">
                   Salió {{ f.op.horaRealSalida | date:'HH:mm' }}@if (f.op.minRetrasoSalida) { ({{ f.op.minRetrasoSalida > 0 ? '+' : '' }}{{ f.op.minRetrasoSalida }} min) }
                 </div>
-              }
+              } @else if (f.retrasada && f.op.estadoActual !== 'RETRASADO') { <div class="text-xs font-semibold text-orange-600">Debió salir</div> }
             </td>
             <td class="td">
               <div class="text-sm text-zinc-900">{{ f.op.origen }}</div>
               <div class="text-xs text-zinc-500 flex items-center gap-1"><app-icon name="arrow-right" size="w-3 h-3" />{{ f.op.destino }}</div>
+              @if (f.op.ruta) { <div class="text-[11px] text-zinc-400">Vía {{ f.op.ruta }}</div> }
             </td>
             <td class="td">
               @if (f.salida) {
                 <div class="text-sm font-medium text-zinc-800">{{ f.paquete?.nombre }}</div>
                 <div class="text-xs text-zinc-500">{{ f.salida.fechaInicio | date:'dd/MM/yyyy' }}</div>
-              } @else { <span class="text-zinc-300">—</span> }
+              } @else { <div class="text-xs text-zinc-500">Servicio suelto</div> }
+              @if (f.op.tipoVehiculoReq) { <div class="text-[11px] text-zinc-400">Requiere {{ etiqueta(f.op.tipoVehiculoReq) }}</div> }
             </td>
             <td class="td">
               @if (f.op.placa) {
-                <div class="text-sm flex items-center gap-1.5"><app-icon name="truck" size="w-3.5 h-3.5 text-zinc-400" /><span class="font-mono text-xs font-semibold">{{ f.op.placa }}</span></div>
+                <div class="text-xs mb-0.5" [class]="f.op.proveedorPropio ? 'text-brand-700 font-semibold' : 'text-zinc-600 font-medium'">{{ f.op.proveedorPropio ? 'Flota propia · ' : '' }}{{ f.op.proveedor }}</div>
+                <div class="text-sm flex items-center gap-1.5 whitespace-nowrap"><app-icon name="truck" size="w-3.5 h-3.5 text-zinc-400" /><span class="font-mono text-xs font-semibold">{{ f.op.placa }}</span><span class="text-[11px] text-zinc-400">{{ etiqueta(f.op.tipoVehiculo) }} · {{ f.op.capacidadVehiculo }}</span></div>
                 <div class="text-xs text-zinc-500 flex items-center gap-1.5 mt-0.5"><app-icon name="id" size="w-3 h-3" />{{ f.op.conductor }}</div>
-                <div class="text-xs mt-0.5" [class]="f.op.proveedorPropio ? 'text-brand-700 font-semibold' : 'text-zinc-400'">{{ f.op.proveedorPropio ? 'Flota propia · ' : '' }}{{ f.op.proveedor }}</div>
+                @if (f.op.confirmacion === 'PENDIENTE') { <div class="mt-1 inline-flex items-center gap-1 rounded-md bg-amber-50 px-1.5 py-0.5 text-[11px] font-semibold text-amber-700"><app-icon name="hourglass" size="w-3 h-3" /> Por confirmar</div> }
               } @else {
                 <span class="text-xs text-amber-600 flex items-center gap-1"><app-icon name="alert" size="w-3 h-3" />Sin asignar</span>
+                @if (f.op.proveedorPref) { <div class="text-[11px] text-zinc-400">Preferida: {{ f.op.proveedorPref }}</div> }
+                @if (f.op.confirmacion === 'RECHAZADO') { <div class="text-[11px] text-rose-600 max-w-[200px] truncate" [title]="f.op.motivoRechazo ?? ''">Rechazado: {{ f.op.motivoRechazo }}</div> }
               }
+              @if (f.op.conflicto) { <div class="mt-1 text-[11px] font-semibold text-rose-600 flex items-center gap-1"><app-icon name="x-circle" size="w-3 h-3" />{{ f.op.conflicto }}</div> }
             </td>
             <td class="td text-center font-semibold">{{ f.op.paxProgramados }}</td>
             <td class="td">
@@ -86,7 +186,11 @@
             </td>
             <td class="td text-right whitespace-nowrap">
               <div class="actions">
-                @if (gestiona && f.op.estadoActual === 'PROGRAMADO') {
+                @if (responde && f.op.confirmacion === 'PENDIENTE' && f.op.vehiculoId) {
+                  <button type="button" class="btn-brand !h-8 !px-3 !text-xs" (click)="abrirResponder(f.op, true)"><app-icon name="check" size="w-3.5 h-3.5" /> Aceptar</button>
+                  <button type="button" class="btn-light !h-8 !px-3 !text-xs" (click)="abrirResponder(f.op, false)">Rechazar</button>
+                }
+                @if (gestiona && !f.op.vehiculoId && !esFinal(f.op)) {
                   <button type="button" class="btn-brand !h-8 !px-3 !text-xs" (click)="abrirAsignar(f.op)"><app-icon name="sparkles" size="w-3.5 h-3.5" /> Asignar</button>
                 }
                 @if (gestiona && !esFinal(f.op)) {
@@ -98,16 +202,19 @@
             </td>
           </tr>
         } @empty {
-          <tr><td colspan="8"><div class="empty"><span class="ico"><app-icon name="truck" size="w-6 h-6" /></span>No hay operaciones para mostrar.</div></td></tr>
+          <tr><td colspan="8"><div class="empty"><span class="ico"><app-icon name="truck" size="w-6 h-6" /></span>No hay servicios con estos filtros.</div></td></tr>
         }
       </tbody>
     </table>
   </div>
 </div>
 <p class="hint mt-4">
-  Cada cambio se valida: transiciones permitidas, cruces de horario (30 min de margen), máximo 10 h de conducción por día,
-  mantenimiento y licencia vigentes, y que el transporte alcance para los pasajeros de la salida.
+  Cada cambio se valida en el servidor: transiciones permitidas, cruces de horario (30 min de margen), tiempo para que el vehículo
+  llegue desde su servicio anterior, licencia según el tipo de vehículo, máximo 10 h de conducción por día, mantenimiento,
+  confirmación de la empresa antes del embarque y que el transporte alcance para los pasajeros de la salida.
 </p>
+}
+}
 
 @switch (ventana()) {
   @case ('form') {
@@ -137,6 +244,13 @@
               </select>@if (v.error('destino'); as e) { <p class="field-error">{{ e }}</p> }
             </div>
           </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div><label class="label req">Tipo de servicio</label>
+              <select class="field" [(ngModel)]="form.tipoServicio" (ngModelChange)="cambioRuta()">
+                @for (t of tiposServicio; track t) { <option [value]="t">{{ etiqueta(t) }}</option> }
+              </select></div>
+            <div><label class="label">Ruta / vía <span class="opt">Opcional</span></label><input class="field" maxlength="150" [(ngModel)]="form.ruta" placeholder="Ej.: Panamericana Sur"></div>
+          </div>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div class="sm:col-span-1"><label class="label req">Pasajeros</label><input type="number" min="1" max="999" class="field" [(ngModel)]="form.paxProgramados" (blur)="v.tocar('pax')" [class.field-invalid]="v.error('pax')" (beforeinput)="filtrar($event, 'entero')" (paste)="pegar($event, 'entero')" (wheel)="rueda($event)" inputmode="numeric">@if (v.error('pax'); as e) { <p class="field-error">{{ e }}</p> }</div>
             <div class="sm:col-span-2"><label class="label req">Hora de salida</label><input type="datetime-local" class="field" [(ngModel)]="form.horaProgramadaSalida" (blur)="v.tocar('salida')" [class.field-invalid]="v.error('salida')">@if (v.error('salida'); as e) { <p class="field-error">{{ e }}</p> }</div>
@@ -156,8 +270,23 @@
           </div>
         </div>
         <div class="form-section">
-          <div class="form-section-title"><app-icon name="truck" size="w-4 h-4" /> Recursos <span class="opt normal-case tracking-normal font-sans">Opcional</span></div>
-          <div><label class="label">Proveedor</label>
+          <div class="form-section-title"><app-icon name="truck" size="w-4 h-4" /> Requisitos para la asignación automática</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div><label class="label">Tipo de vehículo <span class="opt">Opcional</span></label>
+              <select class="field" [(ngModel)]="form.tipoVehiculoReq">
+                <option [ngValue]="null">Cualquiera con capacidad</option>
+                @for (t of tiposVehiculo; track t) { <option [ngValue]="t">{{ etiqueta(t) }}</option> }
+              </select></div>
+            <div><label class="label">Empresa preferida <span class="opt">Opcional</span></label>
+              <select class="field" [(ngModel)]="form.proveedorPrefId">
+                <option [ngValue]="null">La que convenga (flota propia primero)</option>
+                @for (p of store.proveedores(); track p.proveedorId) { <option [ngValue]="p.proveedorId" [disabled]="p.estado !== 'ACTIVO'">{{ p.nombreComercial }} · {{ etiqueta(p.estado) }}</option> }
+              </select></div>
+          </div>
+        </div>
+        <div class="form-section">
+          <div class="form-section-title"><app-icon name="id" size="w-4 h-4" /> Asignación manual <span class="opt normal-case tracking-normal font-sans">Opcional</span></div>
+          <div><label class="label">Empresa</label>
             <select class="field" [ngModel]="proveedorSel" (ngModelChange)="cambioProveedor($event)">
               <option [ngValue]="null">Sin asignar (se elige después)</option>
               @for (p of store.proveedores(); track p.proveedorId) { <option [ngValue]="p.proveedorId">{{ p.nombreComercial }}{{ p.esPropio ? ' (propio)' : '' }} · {{ etiqueta(p.estado) }}</option> }
@@ -178,7 +307,7 @@
             </div>
           </div>
           @if (v.error('recursos'); as e) { <p class="field-error">{{ e }}</p> }
-          @else { <p class="hint">Vehículo y conductor del mismo proveedor. Con ambos la operación queda ASIGNADA; sin ellos, PROGRAMADA (puedes usar la asignación automática, que prefiere la flota propia).</p> }
+          @else { <p class="hint">Vehículo y conductor de la misma empresa. Con ambos la operación queda ASIGNADA (una empresa externa debe confirmarla); sin ellos queda PROGRAMADA para la asignación automática.</p> }
         </div>
         <div><label class="label">Observaciones <span class="opt">Opcional</span></label><input class="field" maxlength="200" [(ngModel)]="form.observaciones" (blur)="v.tocar('observaciones')" [class.field-invalid]="v.error('observaciones')">@if (v.error('observaciones'); as e) { <p class="field-error">{{ e }}</p> }</div>
         <div class="form-actions">
@@ -195,14 +324,16 @@
         <div class="space-y-5">
           <div class="rounded-xl border border-zinc-100 bg-sand-50 px-4 py-3 text-sm">
             <div class="font-semibold text-zinc-900">{{ o.origen }} → {{ o.destino }}</div>
-            <div class="text-xs text-zinc-500 mt-0.5">{{ o.horaProgramadaSalida | date:'dd/MM/yyyy HH:mm' }} – {{ o.horaEstimadaLlegada | date:'HH:mm' }} · {{ o.paxProgramados }} pasajeros</div>
+            <div class="text-xs text-zinc-500 mt-0.5">{{ o.horaProgramadaSalida | date:'dd/MM/yyyy HH:mm' }} – {{ o.horaEstimadaLlegada | date:'HH:mm' }} · {{ o.paxProgramados }} pasajeros · {{ etiqueta(o.tipoServicio) }}@if (o.tipoVehiculoReq) { · requiere {{ etiqueta(o.tipoVehiculoReq) }} }</div>
+            @if (o.motivoRechazo) { <div class="text-xs text-rose-600 mt-1">Último rechazo: {{ o.motivoRechazo }}</div> }
           </div>
           <button type="button" class="btn-brand w-full justify-center" (click)="asignarAutomatico()">
             <app-icon name="sparkles" size="w-4 h-4" /> Asignación automática
           </button>
-          <p class="hint -mt-3 text-center">Prefiere la flota propia; luego el vehículo con menos asientos vacíos y el conductor con menos horas en el día, del mismo proveedor.</p>
+          <p class="hint -mt-3 text-center">Respeta la empresa preferida, servicios y zonas de cada empresa y las que rechazaron; prefiere la flota propia cercana, luego menos reposicionamiento, menos asientos vacíos y el conductor con menos horas.</p>
 
-          <div class="flex items-center gap-3 text-xs font-semibold text-zinc-400"><span class="h-px flex-1 bg-zinc-200"></span>o elige manualmente<span class="h-px flex-1 bg-zinc-200"></span></div>
+          <div class="flex items-center gap-3 text-xs font-semibold text-zinc-400"><span class="h-px flex-1 bg-zinc-200"></span>o elige manualmente (excepción)<span class="h-px flex-1 bg-zinc-200"></span></div>
+          <p class="hint -mt-3">En rojo, reglas obligatorias que impiden asignar. En ámbar, reglas de prioridad que puedes pasar por alto: quedará registrado en el historial.</p>
 
           @if (cargandoCandidatos()) {
             <p class="text-sm text-zinc-500 text-center">Consultando disponibilidad…</p>
@@ -217,7 +348,7 @@
                           [class]="vehiculoSel === c.recursoId ? 'border-brand-500 bg-brand-50' : c.motivo ? 'border-zinc-100 bg-zinc-50 cursor-not-allowed' : 'border-zinc-200 hover:border-brand-300'"
                           [disabled]="!!c.motivo" (click)="elegirVehiculo(c)">
                     <div class="flex items-center justify-between gap-2"><span class="font-medium" [class.text-zinc-400]="c.motivo">{{ c.descripcion }}</span><span class="text-xs text-zinc-500">{{ c.capacidadPax }} pax</span></div>
-                    <div class="text-xs" [class]="c.motivo ? 'text-rose-500' : 'text-zinc-500'">{{ c.proveedor }}{{ c.proveedorPropio ? ' (propio)' : '' }}@if (c.motivo) { · {{ c.motivo }} }</div>
+                    <div class="text-xs" [class]="c.motivo ? 'text-rose-500' : c.advertencia ? 'text-amber-600' : 'text-zinc-500'">{{ c.proveedor }}{{ c.proveedorPropio ? ' (propio)' : '' }}@if (c.motivo) { · {{ c.motivo }} } @else if (c.advertencia) { · {{ c.advertencia }} }</div>
                   </button>
                 }
               </div>
@@ -230,7 +361,7 @@
                           [class]="conductorSel === c.recursoId ? 'border-brand-500 bg-brand-50' : c.motivo ? 'border-zinc-100 bg-zinc-50 cursor-not-allowed' : 'border-zinc-200 hover:border-brand-300'"
                           [disabled]="!!c.motivo" (click)="elegirConductor(c)">
                     <div class="flex items-center justify-between gap-2"><span class="font-medium" [class.text-zinc-400]="c.motivo">{{ c.descripcion }}</span><span class="text-xs text-zinc-500">{{ c.horasDia ?? 0 }} h hoy</span></div>
-                    <div class="text-xs" [class]="c.motivo ? 'text-rose-500' : 'text-zinc-500'">{{ c.proveedor }}{{ c.proveedorPropio ? ' (propio)' : '' }}@if (c.motivo) { · {{ c.motivo }} }</div>
+                    <div class="text-xs" [class]="c.motivo ? 'text-rose-500' : c.advertencia ? 'text-amber-600' : 'text-zinc-500'">{{ c.proveedor }}{{ c.proveedorPropio ? ' (propio)' : '' }}@if (c.motivo) { · {{ c.motivo }} } @else if (c.advertencia) { · {{ c.advertencia }} }</div>
                   </button>
                 }
               </div>
@@ -250,26 +381,57 @@
       <app-modal [titulo]="'Cambiar estado · ' + o.codigoOperacion" (cerrar)="ventana.set(null)">
         <div class="space-y-5">
           <div class="flex items-center gap-2 text-sm">Estado actual: <app-badge [estado]="o.estadoActual" /></div>
-          @if (siguientes(o).length === 0) {
+          @if (opcionesEstado(o).length === 0) {
             <p class="text-sm text-zinc-500">No hay transiciones disponibles desde este estado.</p>
           } @else {
             <div>
               <div class="label">Nuevo estado</div>
               <div class="grid grid-cols-2 gap-2">
-                @for (s of siguientes(o); track s) {
+                @for (s of opcionesEstado(o); track s) {
                   <button type="button" class="rounded-xl border px-3 py-2 text-sm font-semibold transition text-left"
                           [class]="nuevoEstado === s ? 'border-brand-500 bg-brand-50 text-brand-800' : 'border-zinc-200 text-zinc-700 hover:border-brand-300'"
-                          (click)="nuevoEstado = s">{{ store.getEstadoOperacion(s)?.nombre ?? etiqueta(s) }}</button>
+                          (click)="nuevoEstado = s">{{ s === 'RETRASADO' && o.estadoActual === 'RETRASADO' ? 'Nuevo retraso' : (store.getEstadoOperacion(s)?.nombre ?? etiqueta(s)) }}</button>
                 }
               </div>
               @if (nuevoEstado === 'PROGRAMADO') { <p class="hint mt-2">Volver a Programado libera el vehículo y el conductor.</p> }
-              @if (nuevoEstado === 'EMBARQUE') { <p class="hint mt-2">Para embarcar, el tramo debe tener asientos para todos los pasajeros de la salida.</p> }
+              @if (nuevoEstado === 'EMBARQUE') { <p class="hint mt-2">Para embarcar, la empresa debe haber confirmado el servicio y el tramo debe tener asientos para todos los pasajeros de la salida.</p> }
             </div>
+            @if (nuevoEstado === 'RETRASADO') {
+              <div><label class="label req">Nueva hora de salida</label><input type="datetime-local" class="field" [(ngModel)]="nuevaHoraSalida">
+                <p class="hint">Programada: {{ o.horaProgramadaSalida | date:'dd/MM HH:mm' }}. La llegada estimada se corre lo mismo; si el nuevo horario cruza con otro servicio del vehículo o del conductor, se marcará como conflicto.</p></div>
+            }
             <div><label class="label">Observación <span class="opt">Opcional</span></label><input class="field" maxlength="200" [(ngModel)]="observacion" placeholder="Ej.: huaico en la vía, vuelo demorado…"><p class="hint">Queda en el historial de la operación.</p></div>
           }
           <div class="form-actions">
             <button type="button" class="btn-light" (click)="ventana.set(null)">Cancelar</button>
             <button type="button" class="btn-brand" [disabled]="!nuevoEstado" (click)="cambiarEstado()"><app-icon name="check" size="w-4 h-4" /> Guardar</button>
+          </div>
+        </div>
+      </app-modal>
+    }
+  }
+
+  @case ('responder') {
+    @if (actual(); as o) {
+      <app-modal [titulo]="(aceptar ? 'Confirmar servicio · ' : 'Rechazar servicio · ') + o.codigoOperacion" (cerrar)="ventana.set(null)">
+        <div class="space-y-5">
+          <div class="rounded-xl border border-zinc-100 bg-sand-50 px-4 py-3 text-sm">
+            <div class="font-semibold text-zinc-900">{{ o.origen }} → {{ o.destino }}</div>
+            <div class="text-xs text-zinc-500 mt-0.5">{{ (o.horaSalidaEstimada ?? o.horaProgramadaSalida) | date:'EEEE dd/MM/yyyy HH:mm' }} – {{ o.horaEstimadaLlegada | date:'HH:mm' }} · {{ o.paxProgramados }} pasajeros · {{ etiqueta(o.tipoServicio) }}</div>
+            <div class="text-xs text-zinc-500 mt-1">{{ o.proveedor }} · {{ o.placa }} · {{ o.conductor }}</div>
+          </div>
+          <div class="seg">
+            <button type="button" class="seg-btn" [class.on]="aceptar" (click)="aceptar = true">Aceptar</button>
+            <button type="button" class="seg-btn" [class.on]="!aceptar" (click)="aceptar = false">Rechazar</button>
+          </div>
+          @if (aceptar) {
+            <p class="text-sm text-zinc-600">Al aceptar, la empresa se compromete a cubrir el servicio con la unidad y el conductor indicados.</p>
+          } @else {
+            <div><label class="label req">Motivo del rechazo</label><input class="field" maxlength="200" [(ngModel)]="motivoRechazo" placeholder="Ej.: unidad en revisión técnica"><p class="hint">El servicio vuelve a la cola de Kampu y no se le volverá a asignar a esta empresa.</p></div>
+          }
+          <div class="form-actions">
+            <button type="button" class="btn-light" (click)="ventana.set(null)">Cancelar</button>
+            <button type="button" [class]="aceptar ? 'btn-brand' : 'btn-dark'" (click)="responder()"><app-icon name="check" size="w-4 h-4" /> {{ aceptar ? 'Confirmar servicio' : 'Rechazar servicio' }}</button>
           </div>
         </div>
       </app-modal>

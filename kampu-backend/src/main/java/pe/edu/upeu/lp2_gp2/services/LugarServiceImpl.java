@@ -18,11 +18,13 @@ import java.util.Optional;
 public class LugarServiceImpl implements ILugarService {
     private final LugarRepository lugarRepository;
     private final OperacionTransporteRepository operacionRepository;
+    private final DuracionRutaService duracion;
 
     public LugarServiceImpl(LugarRepository lugarRepository,
-                            OperacionTransporteRepository operacionRepository) {
+                            OperacionTransporteRepository operacionRepository, DuracionRutaService duracion) {
         this.lugarRepository = lugarRepository;
         this.operacionRepository = operacionRepository;
+        this.duracion = duracion;
     }
 
     @Override
@@ -50,6 +52,7 @@ public class LugarServiceImpl implements ILugarService {
     public LugarDTO actualizar(Long id, LugarRequestDTO dto) {
         Lugar l = obtener(id);
         copiar(dto, l, id);
+        duracion.olvidar();
         return LugarDTO.desde(lugarRepository.saveAndFlush(l));
     }
 

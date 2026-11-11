@@ -11,4 +11,7 @@ public interface IProveedorService {
     ProveedorDTO crear(ProveedorRequestDTO dto);
     ProveedorDTO actualizar(Long id, ProveedorRequestDTO dto);
     void eliminar(Long id);
+
+    /** Afiliación desde la web: crea la empresa en estado PENDIENTE */
+    pe.edu.upeu.lp2_gp2.entity.Proveedor afiliar(ProveedorRequestDTO dto);
 }
