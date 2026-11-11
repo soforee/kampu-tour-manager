@@ -1,19 +1,45 @@
-<div class="grupo" [class.grupo-invalido]="invalido">
-  <label class="pais" [title]="pais.nombre + ' (+' + pais.codigo + ')'">
-    <span class="bandera" aria-hidden="true">{{ bandera(pais) }}</span>
-    <span class="codigo">+{{ pais.codigo }}</span>
-    <svg viewBox="0 0 24 24" class="flecha" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    <select [value]="pais.iso" (change)="cambiarPais($any($event.target).value)" (blur)="tocado.emit()" aria-label="Código de país">
-      @for (p of paises; track p.iso) {
-        <option [value]="p.iso">{{ bandera(p) }} {{ p.nombre }} (+{{ p.codigo }})</option>
-      }
-    </select>
-  </label>
-  <input [id]="idCampo || null" type="tel" inputmode="numeric" autocomplete="tel-national" class="numero"
-         [maxLength]="pais.max" [placeholder]="pais.ejemplo" [value]="numero"
-         (input)="escribir($any($event.target))" (blur)="tocado.emit()"
-         [attr.aria-invalid]="invalido" [attr.aria-describedby]="idCampo ? idCampo + '-ayuda' : null">
-  <span class="contador" [class.completo]="digitos >= pais.min">{{ digitos }}/{{ pais.max }}</span>
+<div class="contenedor">
+  <div class="grupo" [class.grupo-invalido]="invalido" [class.grupo-abierto]="abierto()">
+    <button type="button" class="pais" (click)="alternar()" (keydown.arrowdown)="$event.preventDefault(); abierto() || alternar()"
+            [title]="pais.nombre + ' (+' + pais.codigo + ')'"
+            aria-haspopup="listbox" [attr.aria-expanded]="abierto()" [attr.aria-label]="'Código de país: ' + pais.nombre + ' +' + pais.codigo">
+      <img class="bandera" [src]="bandera(pais)" [alt]="''" width="24" height="18">
+      <span class="codigo">+{{ pais.codigo }}</span>
+      <svg viewBox="0 0 24 24" class="flecha" [class.flecha-arriba]="abierto()" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <input #numeroCampo [id]="idCampo || null" type="tel" inputmode="numeric" autocomplete="tel-national" class="numero"
+           [maxLength]="pais.max" [placeholder]="pais.ejemplo" [value]="numero"
+           (input)="escribir($any($event.target))" (blur)="tocado.emit()"
+           [attr.aria-invalid]="invalido" [attr.aria-describedby]="idCampo ? idCampo + '-ayuda' : null">
+    <span class="contador" [class.completo]="digitos >= pais.min">{{ digitos }}/{{ pais.max }}</span>
+  </div>
+
+  @if (abierto()) {
+    <div class="panel">
+      <div class="buscar">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 20l-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input #buscador type="text" placeholder="Buscar país o código" autocomplete="off" aria-label="Buscar país"
+               [value]="texto()" (input)="buscar($any($event.target).value)" (keydown)="teclear($event)"
+               role="combobox" aria-controls="lista-paises" aria-expanded="true">
+      </div>
+      <ul class="lista" id="lista-paises" role="listbox" aria-label="Países">
+        @for (p of filtrados(); track p.iso; let i = $index) {
+          <li role="option" [attr.aria-selected]="p.iso === pais.iso" class="opcion"
+              [class.opcion-activa]="i === activo()" [class.opcion-elegida]="p.iso === pais.iso"
+              (mouseenter)="activo.set(i)" (mousedown)="$event.preventDefault()" (click)="elegir(p)">
+            <img class="bandera" [src]="bandera(p)" alt="" width="24" height="18" loading="lazy">
+            <span class="nombre">{{ p.nombre }}</span>
+            <span class="prefijo">+{{ p.codigo }}</span>
+            @if (p.iso === pais.iso) {
+              <svg viewBox="0 0 24 24" class="check" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            }
+          </li>
+        } @empty {
+          <li class="vacio">No encontramos «{{ texto() }}».</li>
+        }
+      </ul>
+    </div>
+  }
 </div>
 @if (!invalido) {
   <p class="ayuda" [id]="idCampo ? idCampo + '-ayuda' : null">{{ pais.nombre }}: {{ ayuda }}, sin el código de país.</p>

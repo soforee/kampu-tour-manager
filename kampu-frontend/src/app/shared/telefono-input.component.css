@@ -1,5 +1,7 @@
 :host { display: block; }
 
+.contenedor { position: relative; }
+
 .grupo {
   display: flex;
   align-items: stretch;
@@ -11,36 +13,42 @@
   transition: border-color .2s ease, box-shadow .2s ease;
 }
 .grupo:hover { border-color: #D0C8A6; }
-.grupo:focus-within { border-color: #6B7E2B; box-shadow: 0 0 0 4px rgba(107, 125, 42, .18); }
+.grupo:focus-within, .grupo-abierto { border-color: #6B7E2B; box-shadow: 0 0 0 4px rgba(107, 125, 42, .18); }
 .grupo-invalido, .grupo-invalido:hover { border-color: #FB7185; background: rgba(255, 241, 242, .4); }
 .grupo-invalido:focus-within { border-color: #F43F5E; box-shadow: 0 0 0 4px rgba(225, 29, 72, .12); }
 
-/* El select queda invisible encima: se ve solo bandera + código */
+/* Botón del país: bandera + código */
 .pais {
-  position: relative;
   display: flex;
   align-items: center;
-  gap: .35rem;
-  padding: 0 .55rem 0 .8rem;
+  gap: .45rem;
+  padding: 0 .6rem 0 .75rem;
+  border: 0;
   border-right: 1px solid #E5DEC2;
+  background: transparent;
+  font: inherit;
   font-size: 14px;
   font-weight: 700;
   color: #403F2C;
   white-space: nowrap;
   cursor: pointer;
   border-radius: 8px 0 0 8px;
+  outline: none;
   transition: background-color .2s ease;
 }
-.pais:hover { background: #FAF6E6; }
-.bandera { font-size: 17px; line-height: 1; }
-.flecha { width: 14px; height: 14px; color: #A49D7B; }
-.pais select {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  opacity: 0;
-  cursor: pointer;
+.pais:hover, .pais:focus-visible, .grupo-abierto .pais { background: #FAF6E6; }
+
+.bandera {
+  display: block;
+  width: 24px;
+  height: 18px;
+  flex-shrink: 0;
+  border-radius: 3px;
+  object-fit: cover;
+  box-shadow: 0 0 0 1px rgba(46, 56, 18, .12), 0 1px 2px rgba(46, 56, 18, .12);
 }
+.flecha { width: 14px; height: 14px; color: #A49D7B; transition: transform .2s ease; }
+.flecha-arriba { transform: rotate(180deg); }
 
 .numero {
   flex: 1;
@@ -64,5 +72,67 @@
   font-variant-numeric: tabular-nums;
 }
 .contador.completo { color: #446825; }
+
+/* Lista de países */
+.panel {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 6px);
+  left: 0;
+  width: min(300px, 100%);
+  min-width: 260px;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid #E5DEC2;
+  background: #FFFEF8;
+  box-shadow: 0 18px 40px -16px rgba(29, 36, 9, .35), 0 2px 6px rgba(29, 36, 9, .06);
+  animation: panel-in .16s cubic-bezier(.2, .8, .2, 1);
+}
+@keyframes panel-in { from { opacity: 0; transform: translateY(-4px) scale(.98); } to { opacity: 1; transform: none; } }
+
+.buscar {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .6rem .8rem;
+  border-bottom: 1px solid #F2EDD6;
+  color: #A49D7B;
+}
+.buscar svg { width: 16px; height: 16px; flex-shrink: 0; }
+.buscar input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  color: #2C3610;
+}
+.buscar input::placeholder { color: #A49D7B; }
+
+.lista {
+  max-height: 264px;
+  overflow-y: auto;
+  padding: .3rem;
+  margin: 0;
+  list-style: none;
+}
+.opcion {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  padding: .5rem .6rem;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #2C3610;
+  cursor: pointer;
+  transition: background-color .12s ease;
+}
+.opcion-activa { background: #F4F6E4; }
+.opcion-elegida .nombre { font-weight: 700; }
+.nombre { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.prefijo { font-size: 13px; color: #78735A; font-variant-numeric: tabular-nums; }
+.check { width: 16px; height: 16px; color: #4B5B1D; flex-shrink: 0; }
+.vacio { padding: .9rem .7rem; font-size: 13px; color: #78735A; }
 
 .ayuda { margin-top: .375rem; font-size: 12px; line-height: 1.5; color: #78735A; }
