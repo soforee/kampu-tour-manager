@@ -1,9 +1,11 @@
+import { AuthService } from '../../core/services/auth.service';
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TourStore } from '../../core/services/tour-store.service';
 import { AlertService } from '../../core/services/alert.service';
-import { Chofer, EstadoSalida, SalidaForm } from '../../core/models';
+import { RouterLink } from '@angular/router';
+import { EstadoSalida, SalidaForm } from '../../core/models';
 import { addDays, hoy } from '../../core/utils/date.util';
 import { BadgeComponent } from '../../shared/badge.component';
 import { IconComponent } from '../../shared/icon.component';
@@ -14,13 +16,15 @@ import { ModalComponent } from '../../shared/modal.component';
 @Component({
   selector: 'app-salidas',
   standalone: true,
-  imports: [FormsModule, DatePipe, BadgeComponent, IconComponent, ModalComponent],
+  imports: [FormsModule, DatePipe, RouterLink, BadgeComponent, IconComponent, ModalComponent],
   templateUrl: './salidas.component.html',
   styleUrl: './salidas.component.css'
 })
 export class SalidasComponent {
   store = inject(TourStore);
   private alerts = inject(AlertService);
+  // GESTIONAR_CATALOGO: solo Admin y Ventas crean/editan salidas (el Operador solo las consulta)
+  editable = inject(AuthService).puede('GESTIONAR_CATALOGO');
 
   estados: EstadoSalida[] = ['PROGRAMADA', 'CONFIRMADA', 'COMPLETADA', 'CANCELADA'];
   filtros = [{ valor: '', texto: 'Todas' }, { valor: 'PROGRAMADA', texto: 'Programadas' }, { valor: 'CONFIRMADA', texto: 'Confirmadas' },
@@ -31,20 +35,26 @@ export class SalidasComponent {
   form: SalidaForm = this.vacio();
   v = new FormValidacion(() => {
     const f = this.form;
-    const t = this.store.getTransporte(f.transporteId);
     return {
       paquete: f.paqueteId ? null : 'Selecciona un paquete.',
       inicio: V.fecha(f.fechaInicio, 'La fecha de inicio'),
-      fin: V.fecha(f.fechaFin, 'La fecha fin')
-        ?? (f.fechaInicio && f.fechaFin < f.fechaInicio ? 'La fecha fin no puede ser anterior a la fecha de inicio.' : null),
-      cupos: V.entero(f.cuposMaximos, 'Los cupos máximos', 1, 999),
-      transporte: t && f.cuposMaximos > t.capacidad ? `Los cupos (${f.cuposMaximos}) superan la capacidad del transporte (${t.capacidad}).` : null,
-      chofer: f.choferId && !f.transporteId ? 'Asigna primero el vehículo.' : null
+      cupos: V.entero(f.cuposMaximos, 'Los cupos máximos', 1, 999)
     };
   });
 
   private vacio(): SalidaForm {
-    return { paqueteId: 0, fechaInicio: hoy(), fechaFin: hoy(), cuposMaximos: 10, guiaId: null, transporteId: null, choferId: null, estado: 'PROGRAMADA' };
+    return { paqueteId: 0, fechaInicio: hoy(), cuposMaximos: 10, guiaId: null, estado: 'PROGRAMADA' };
+  }
+
+  // Igual que trg_salida_biu: fecha fin = inicio + días del paquete - 1 (solo para mostrarla)
+  get fechaFin(): string {
+    const p = this.store.getPaquete(this.form.paqueteId);
+    return p && this.form.fechaInicio ? addDays(this.form.fechaInicio, p.dias - 1) : '';
+  }
+
+  // Al confirmar, trg_salida_confirmar exige transporte suficiente (PKG_ASIGNACION.faltante_transporte)
+  get faltanteActual(): string | null {
+    return this.editId ? this.store.getSalida(this.editId)?.faltanteTransporte ?? null : null;
   }
 
   filas = computed(() => {
@@ -56,8 +66,7 @@ export class SalidasComponent {
         salida: s,
         paquete: this.store.getPaquete(s.paqueteId),
         guia: this.store.getGuia(s.guiaId),
-        transporte: this.store.getTransporte(s.transporteId),
-        chofer: this.store.getChofer(s.choferId),
+        vendidos: s.cuposMaximos - s.cuposDisponibles,
         pct: Math.round((s.cuposMaximos - s.cuposDisponibles) * 100 / s.cuposMaximos)
       }));
   });
@@ -68,39 +77,11 @@ export class SalidasComponent {
     const sal = this.store.getSalida(id)!;
     this.editId = sal.salidaId;
     this.form = {
-      paqueteId: sal.paqueteId, fechaInicio: sal.fechaInicio, fechaFin: sal.fechaFin, cuposMaximos: sal.cuposMaximos,
-      guiaId: sal.guiaId, transporteId: sal.transporteId, choferId: sal.choferId ?? null, estado: sal.estado
+      paqueteId: sal.paqueteId, fechaInicio: sal.fechaInicio, cuposMaximos: sal.cuposMaximos,
+      guiaId: sal.guiaId ?? null, estado: sal.estado
     };
     this.v.reiniciar();
     this.abierto.set(true);
-  }
-
-  // Choferes activos: primero los que tienen este vehículo como habitual, luego el resto.
-  // Si al editar el chofer asignado ya está inactivo, se mantiene en la lista para no perderlo.
-  get choferesDelVehiculo(): Chofer[] {
-    return this.choferesDisponibles().filter(c => c.transporteId === this.form.transporteId);
-  }
-  get otrosChoferes(): Chofer[] {
-    return this.choferesDisponibles().filter(c => c.transporteId !== this.form.transporteId);
-  }
-  private choferesDisponibles(): Chofer[] {
-    return this.store.choferes().filter(c => c.estado === 'ACTIVO' || c.choferId === this.form.choferId);
-  }
-
-  // Al cambiar el vehículo se propone su chofer habitual
-  cambiarTransporte() {
-    if (!this.form.transporteId) { this.form.choferId = null; return; }
-    const actual = this.store.getChofer(this.form.choferId);
-    const habitual = this.choferesDelVehiculo.find(c => c.estado === 'ACTIVO');
-    const actualEsDeOtro = !!actual?.transporteId && actual.transporteId !== this.form.transporteId;
-    if ((!actual || actualEsDeOtro) && habitual) this.form.choferId = habitual.choferId;
-    else if (actualEsDeOtro) this.form.choferId = null;
-    this.v.tocar('chofer');
-  }
-
-  sugerirFin() {
-    const p = this.store.getPaquete(this.form.paqueteId);
-    if (p && this.form.fechaInicio) this.form.fechaFin = addDays(this.form.fechaInicio, p.dias - 1);
   }
 
   guardar() {

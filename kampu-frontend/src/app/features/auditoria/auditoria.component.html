@@ -1,0 +1,162 @@
+<div class="page-header">
+  <div>
+    <div class="eyebrow mb-1.5">Solo administrador</div>
+    <h1 class="h1">Auditoría</h1>
+    <p class="page-sub">Registro de todos los cambios, transacciones y accesos del sistema: quién, qué, cuándo y cómo cambió.</p>
+  </div>
+  <button type="button" class="btn-light" (click)="exportar()" [disabled]="exportando() || total() === 0">
+    <app-icon name="upload" size="w-4 h-4" /> {{ exportando() ? 'Exportando…' : 'Exportar CSV' }}
+  </button>
+</div>
+
+<!-- Filtros -->
+<section class="card p-4 sm:p-5 mb-6" aria-label="Filtros de auditoría">
+  <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+    <div class="lg:col-span-2">
+      <label class="label" for="aud-q">Buscar</label>
+      <div class="search">
+        <app-icon name="search" size="w-4 h-4" />
+        <input id="aud-q" class="field" [(ngModel)]="filtro.q" (keyup.enter)="buscar()" maxlength="100"
+               placeholder="Usuario, campo, valor o detalle…">
+      </div>
+    </div>
+    <div>
+      <label class="label" for="aud-desde">Desde</label>
+      <input id="aud-desde" type="date" class="field" [(ngModel)]="filtro.desde" [max]="filtro.hasta || hoy" (change)="buscar()">
+    </div>
+    <div>
+      <label class="label" for="aud-hasta">Hasta</label>
+      <input id="aud-hasta" type="date" class="field" [(ngModel)]="filtro.hasta" [min]="filtro.desde" [max]="hoy" (change)="buscar()">
+    </div>
+    <div>
+      <label class="label" for="aud-rol">Rol</label>
+      <select id="aud-rol" class="field" [(ngModel)]="filtro.rol" (ngModelChange)="buscar()">
+        <option value="">Todos</option>
+        @for (r of roles; track r) { <option [value]="r">{{ etiqueta(r) }}</option> }
+      </select>
+    </div>
+    <div>
+      <label class="label" for="aud-accion">Acción</label>
+      <select id="aud-accion" class="field" [(ngModel)]="filtro.accion" (ngModelChange)="buscar()">
+        <option value="">Todas</option>
+        @for (a of acciones; track a) { <option [value]="a">{{ a === 'LOGIN_FALLIDO' ? 'Ingreso fallido' : etiqueta(a) }}</option> }
+      </select>
+    </div>
+    <div>
+      <label class="label" for="aud-entidad">Entidad</label>
+      <select id="aud-entidad" class="field" [(ngModel)]="filtro.entidad" (ngModelChange)="filtro.entidadId = null; buscar()">
+        <option value="">Todas</option>
+        @for (e of entidades(); track e) { <option [value]="e">{{ campo(e) }}</option> }
+      </select>
+    </div>
+    <div>
+      <label class="label" for="aud-usuario">Usuario</label>
+      <select id="aud-usuario" class="field" [(ngModel)]="filtro.usuario" (ngModelChange)="buscar()">
+        <option value="">Todos</option>
+        @for (u of usuarios(); track u) { <option [value]="u">{{ u }}</option> }
+      </select>
+    </div>
+    <div class="flex flex-wrap items-end gap-2 lg:col-span-4">
+      <div class="seg !text-xs" aria-label="Rango rápido">
+        <button type="button" class="seg-btn !px-2.5 !py-1" (click)="rango(0)">Hoy</button>
+        <button type="button" class="seg-btn !px-2.5 !py-1" (click)="rango(7)">7 días</button>
+        <button type="button" class="seg-btn !px-2.5 !py-1" (click)="rango(30)">30 días</button>
+      </div>
+      <button type="button" class="btn-dark btn-sm" (click)="buscar()"><app-icon name="search" size="w-3.5 h-3.5" /> Buscar</button>
+      @if (hayFiltros()) { <button type="button" class="btn-light btn-sm" (click)="limpiar()"><app-icon name="x" size="w-3.5 h-3.5" /> Limpiar</button> }
+    </div>
+  </div>
+  @if (filtro.entidadId) {
+    <p class="mt-3 flex flex-wrap items-center gap-2 text-sm text-zinc-700">
+      <app-icon name="clock" size="w-4 h-4 text-brand-700" />
+      Historial de <b>{{ campo(filtro.entidad) }} #{{ filtro.entidadId }}</b>
+      <button type="button" class="link text-xs" (click)="quitarHistorial()">Quitar</button>
+    </p>
+  }
+</section>
+
+@if (error()) {
+  <p class="alert-danger mb-4 flex items-center gap-2 rounded-lg bg-rose-50 p-3 text-sm font-semibold text-rose-700" role="alert">
+    <app-icon name="alert" size="w-4 h-4" /> {{ error() }}
+  </p>
+}
+
+<section class="card overflow-hidden" data-testid="tabla-auditoria">
+  <div class="card-header">
+    <h2 class="card-title"><span class="ico"><app-icon name="file-text" size="w-4 h-4" /></span>Bitácora</h2>
+    <span class="text-sm text-zinc-500" aria-live="polite">
+      @if (cargando()) { Cargando… } @else { {{ desdeFila() }}–{{ hastaFila() }} de {{ total() }} registros }
+    </span>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="tbl w-full text-sm">
+      <thead>
+        <tr>
+          <th class="th">Fecha y hora</th>
+          <th class="th">Usuario</th>
+          <th class="th">Acción</th>
+          <th class="th">Entidad</th>
+          <th class="th">Detalle del cambio</th>
+          <th class="th text-right"><span class="sr-only">Más</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (a of filas(); track a.auditoriaId) {
+          <tr class="border-t border-zinc-100 align-top" [class.bg-amber-50]="a.accion === 'LOGIN_FALLIDO'">
+            <td class="td whitespace-nowrap">
+              <div class="font-medium text-zinc-900">{{ a.fecha | date:'dd/MM/yyyy' }}</div>
+              <div class="text-xs text-zinc-500 font-mono">{{ a.fecha | date:'HH:mm:ss' }}</div>
+            </td>
+            <td class="td">
+              <div class="font-semibold text-zinc-900 break-all">{{ a.usuario }}</div>
+              <div class="text-xs text-zinc-500">{{ etiqueta(a.rolUsuario) }}</div>
+            </td>
+            <td class="td"><app-badge [estado]="a.accion" /></td>
+            <td class="td whitespace-nowrap">
+              <div class="font-medium text-zinc-800">{{ campo(a.entidad) }}</div>
+              @if (a.entidadId !== null) {
+                @if (enlace(a); as ruta) { <a [routerLink]="ruta" class="link text-xs font-mono">#{{ a.entidadId }}</a> }
+                @else { <span class="text-xs font-mono text-zinc-500">#{{ a.entidadId }}</span> }
+              }
+            </td>
+            <td class="td max-w-md">
+              @if (a.campo && (a.valorAnterior !== null || a.valorNuevo !== null)) {
+                <div class="text-xs font-bold uppercase tracking-wide text-zinc-500">{{ campo(a.campo) }}</div>
+                <div class="mt-0.5 flex flex-wrap items-center gap-1.5">
+                  <span class="rounded bg-rose-50 px-1.5 py-0.5 font-mono text-[12px] text-rose-700 line-through decoration-rose-300 break-all">{{ a.valorAnterior ?? '(vacío)' }}</span>
+                  <app-icon name="arrow-right" size="w-3 h-3 text-zinc-400" />
+                  <span class="rounded bg-emerald-50 px-1.5 py-0.5 font-mono text-[12px] text-emerald-700 break-all">{{ a.valorNuevo ?? '(vacío)' }}</span>
+                </div>
+                @if (a.detalle) { <div class="mt-1 text-xs text-zinc-500">{{ a.detalle }}</div> }
+              } @else {
+                <div class="text-zinc-700 break-words" [class.line-clamp-2]="abierta() !== a.auditoriaId">{{ a.detalle }}</div>
+              }
+            </td>
+            <td class="td text-right whitespace-nowrap">
+              <span class="chip mr-1" [title]="a.origen === 'BD' ? 'Registrado por Oracle (trigger / procedimiento)' : 'Registrado por la aplicación'">{{ a.origen === 'BD' ? 'Oracle' : 'App' }}</span>
+              @if ((a.detalle?.length ?? 0) > 90 && !a.campo) {
+                <button type="button" class="icon-btn" [title]="abierta() === a.auditoriaId ? 'Ver menos' : 'Ver todo'"
+                        (click)="abierta.set(abierta() === a.auditoriaId ? null : a.auditoriaId)"><app-icon name="eye" size="w-4 h-4" /></button>
+              }
+              @if (a.entidadId !== null && !filtro.entidadId) {
+                <button type="button" class="icon-btn" title="Historial de este registro" (click)="historial(a)"><app-icon name="clock" size="w-4 h-4" /></button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="6" class="empty"><span class="ico"><app-icon name="inbox" size="w-6 h-6" /></span>
+            {{ cargando() ? 'Cargando…' : 'No hay registros con estos filtros.' }}</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  @if (paginas() > 1) {
+    <div class="flex items-center justify-between gap-3 border-t border-zinc-100 px-6 py-3 text-sm">
+      <button type="button" class="btn-light btn-sm" [disabled]="pagina() === 0 || cargando()" (click)="buscar(pagina() - 1)">
+        <app-icon name="arrow-left" size="w-3.5 h-3.5" /> Anterior</button>
+      <span class="text-zinc-500">Página {{ pagina() + 1 }} de {{ paginas() }}</span>
+      <button type="button" class="btn-light btn-sm" [disabled]="pagina() + 1 >= paginas() || cargando()" (click)="buscar(pagina() + 1)">
+        Siguiente <app-icon name="arrow-right" size="w-3.5 h-3.5" /></button>
+    </div>
+  }
+</section>

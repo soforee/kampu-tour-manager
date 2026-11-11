@@ -1,0 +1,79 @@
+<div class="min-h-screen bg-sand-50">
+  <app-portal-header />
+
+  <main class="mx-auto max-w-xl px-4 py-10 sm:px-6">
+    <h1 class="text-[28px] font-black tracking-tight text-zinc-900">Crea tu cuenta</h1>
+    <p class="mt-2 text-[15px] text-zinc-500">Con tu cuenta verás tus paquetes, su estado y tus pagos. Si ya compraste en la agencia, usa el mismo documento y correo: tus reservas aparecerán solas.</p>
+
+    <form class="card mt-8 space-y-5 p-6 sm:p-8" (ngSubmit)="registrar()" novalidate>
+      <div>
+        <label class="label req" for="r-nombre">Nombre completo</label>
+        <input id="r-nombre" name="nombre" class="field" [(ngModel)]="form.nombreCompleto" maxlength="150" autocomplete="name"
+               (blur)="v.tocar('nombre')" [class.field-invalid]="v.error('nombre')">
+        @if (v.error('nombre'); as e) { <p class="field-error">{{ e }}</p> }
+      </div>
+
+      <div class="grid gap-5 sm:grid-cols-[150px_1fr]">
+        <div>
+          <label class="label req" for="r-tipo">Documento</label>
+          <select id="r-tipo" name="tipo" class="field" [(ngModel)]="form.tipoDocumento" (ngModelChange)="v.tocar('documento')">
+            @for (t of tipos; track t) { <option [value]="t">{{ t }}</option> }
+          </select>
+        </div>
+        <div>
+          <label class="label req" for="r-doc">N° de documento</label>
+          <input id="r-doc" name="doc" class="field" [(ngModel)]="form.numeroDocumento" [maxlength]="form.tipoDocumento === 'DNI' ? 8 : 12"
+                 (blur)="v.tocar('documento')" [class.field-invalid]="v.error('documento')"
+                 (beforeinput)="filtrar($event, form.tipoDocumento === 'DNI' ? 'dni' : 'alfanumerico')" (paste)="pegar($event, form.tipoDocumento === 'DNI' ? 'dni' : 'alfanumerico')">
+          @if (v.error('documento'); as e) { <p class="field-error">{{ e }}</p> }
+        </div>
+      </div>
+
+      <div>
+        <label class="label req" for="r-email">Correo electrónico</label>
+        <input id="r-email" name="email" type="email" class="field" [(ngModel)]="form.email" maxlength="100" autocomplete="email"
+               placeholder="nombre@correo.com" (blur)="v.tocar('email')" [class.field-invalid]="v.error('email')">
+        @if (v.error('email'); as e) { <p class="field-error">{{ e }}</p> }
+        <p class="mt-1.5 text-xs text-zinc-500">Será tu usuario para iniciar sesión. No puede estar usado por otra cuenta.</p>
+      </div>
+
+      <div>
+        <label class="label req" for="r-tel">Teléfono</label>
+        <app-telefono-input idCampo="r-tel" [(valor)]="form.telefono" (tocado)="v.tocar('telefono')" [invalido]="!!v.error('telefono')" />
+        @if (v.error('telefono'); as e) { <p class="field-error">{{ e }}</p> }
+      </div>
+
+      <div class="grid gap-5 sm:grid-cols-2">
+        <div>
+          <div class="mb-1.5 flex items-center justify-between">
+            <label class="label req !mb-0" for="r-pass">Contraseña</label>
+            <button type="button" class="text-xs font-bold text-brand-600 hover:text-brand-800" (click)="ver.set(!ver())">{{ ver() ? 'Ocultar' : 'Mostrar' }}</button>
+          </div>
+          <input id="r-pass" name="pass" class="field" [type]="ver() ? 'text' : 'password'" [(ngModel)]="form.password" maxlength="64" autocomplete="new-password"
+                 (blur)="v.tocar('password')" [class.field-invalid]="v.error('password')">
+          <div class="mt-2 grid grid-cols-4 gap-1" aria-hidden="true">
+            @for (i of [1, 2, 3, 4]; track i) {
+              <span class="h-1 rounded-full" [class]="fuerza() >= i ? (fuerza() < 2 ? 'bg-rose-400' : fuerza() < 4 ? 'bg-amber-400' : 'bg-emerald-500') : 'bg-zinc-200'"></span>
+            }
+          </div>
+          @if (v.error('password'); as e) { <p class="field-error">{{ e }}</p> } @else { <p class="mt-1.5 text-xs text-zinc-500">Mínimo {{ min }} caracteres.</p> }
+        </div>
+        <div>
+          <label class="label req" for="r-conf">Confirmar contraseña</label>
+          <input id="r-conf" name="conf" class="field" [type]="ver() ? 'text' : 'password'" [(ngModel)]="form.confirmacion" maxlength="64" autocomplete="new-password"
+                 (blur)="v.tocar('confirmacion')" [class.field-invalid]="v.error('confirmacion')">
+          @if (v.error('confirmacion'); as e) { <p class="field-error">{{ e }}</p> }
+        </div>
+      </div>
+
+      @if (error()) {
+        <p class="flex items-center gap-2 rounded-lg bg-rose-50 p-3 text-sm font-semibold text-rose-700" role="alert"><app-icon name="alert" size="w-4 h-4 shrink-0" />{{ error() }}</p>
+      }
+
+      <button type="submit" class="btn-brand w-full !h-12" [disabled]="cargando()">
+        @if (cargando()) { Creando cuenta… } @else { Registrarme <app-icon name="arrow-right" size="w-4 h-4" /> }
+      </button>
+      <p class="text-center text-sm text-zinc-500">¿Ya tienes cuenta? <a routerLink="/login" class="link font-bold">Inicia sesión</a></p>
+    </form>
+  </main>
+</div>

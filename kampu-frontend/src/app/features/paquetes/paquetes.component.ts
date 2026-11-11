@@ -48,7 +48,7 @@ export class PaquetesComponent {
   }));
 
   private vacio(): PaqueteForm {
-    return { nombre: '', descripcion: '', precioBase: 0, dias: 1, noches: 0, imagen: '', estado: 'ACTIVO' };
+    return { nombre: '', descripcion: '', precioBase: 0, dias: 1, noches: 0, imagen: '', estado: 'ACTIVO', lugarDestinoId: null };
   }
 
   filas = computed(() => {
@@ -117,7 +117,7 @@ export class PaquetesComponent {
     this.editId = p.paqueteId;
     this.form = {
       nombre: p.nombre, descripcion: p.descripcion, precioBase: p.precioBase, dias: p.dias, noches: p.noches,
-      imagen: this.imagenes.url(p.imagen) ? p.imagen : '', estado: p.estado
+      imagen: this.imagenes.url(p.imagen) ? p.imagen : '', estado: p.estado, lugarDestinoId: p.lugarDestinoId ?? null
     };
     this.reiniciarImagen();
     this.v.reiniciar();
@@ -146,7 +146,7 @@ export class PaquetesComponent {
     const f = this.form;
     const datos: PaqueteForm = {
       nombre: f.nombre.trim(), descripcion: (f.descripcion ? f.descripcion : '').trim(), precioBase: f.precioBase,
-      dias: f.dias, noches: f.noches, imagen: imagen, estado: f.estado
+      dias: f.dias, noches: f.noches, imagen: imagen, estado: f.estado, lugarDestinoId: f.lugarDestinoId
     };
     const editando = this.editId !== null;
     this.store.guardarPaquete(datos, this.editId).subscribe({

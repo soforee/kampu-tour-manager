@@ -2,9 +2,9 @@ spring:
   application:
     name: lp2_gp2
   datasource:
-    url: jdbc:oracle:thin:@localhost:1522/XE
-    username: LP2
-    password: admin123
+    url: ${DB_URL:jdbc:oracle:thin:@localhost:1522/XE}
+    username: ${DB_USERNAME:LP2}
+    password: ${DB_PASSWORD:admin123}
     driver-class-name: oracle.jdbc.OracleDriver
 
   jpa:
@@ -51,3 +51,11 @@ server:
 
 storage:
   location: "images"
+
+# Duración de las rutas con datos reales: OSRM (red vial de OpenStreetMap).
+# Sin internet se usa PKG_RUTAS (coordenadas de los lugares). Para tu propio
+# servidor OSRM cambia la URL; para no consultarlo, pon OSRM_HABILITADO=false.
+kampu:
+  rutas:
+    osrm-url: ${OSRM_URL:https://router.project-osrm.org}
+    osrm-habilitado: ${OSRM_HABILITADO:true}

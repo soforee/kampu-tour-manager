@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import pe.edu.upeu.lp2_gp2.dto.EjecucionRequestDTO;
 import pe.edu.upeu.lp2_gp2.dto.SalidaProgramadaDTO;
 import pe.edu.upeu.lp2_gp2.dto.SalidaProgramadaRequestDTO;
 import pe.edu.upeu.lp2_gp2.services.ISalidaProgramadaService;
@@ -37,6 +38,12 @@ public class SalidaProgramadaController {
     @PutMapping("/{id}")
     public ResponseEntity<SalidaProgramadaDTO> actualizar(@PathVariable Long id, @Valid @RequestBody SalidaProgramadaRequestDTO dto) {
         return ResponseEntity.ok(salidaService.actualizar(id, dto));
+    }
+
+    // Operador / Ventas: en ejecución (CONFIRMADA) o terminada (COMPLETADA)
+    @PatchMapping("/{id}/ejecucion")
+    public ResponseEntity<SalidaProgramadaDTO> ejecucion(@PathVariable Long id, @Valid @RequestBody EjecucionRequestDTO dto) {
+        return ResponseEntity.ok(salidaService.actualizarEjecucion(id, dto.estado()));
     }
 
     @DeleteMapping("/{id}")

@@ -1,4 +1,4 @@
-import { TipoDocumento } from '../models';
+import { TipoDocumentoCliente } from '../models';
 
 export type ErrorCampo = string | null;
 
@@ -7,7 +7,8 @@ const TEXTO = /^[\p{L}\p{N} .,;:'"()&/+#°ºª¡!¿?%-]*$/u;
 const NACIONALIDAD = /^\p{L}[\p{L} ]*$/u;
 const TELEFONO = /^\+?[0-9][0-9 ()-]*$/;
 const EMAIL = /^[^@\s]+@[^@\s]+\.[A-Za-z]{2,}$/;
-const PLACA = /^[A-Za-z0-9-]{3,15}$/;
+const PLACA = /^[A-Za-z0-9-]{3,10}$/;   // VEHICULO.placa VARCHAR2(10)
+const RUC = /^(10|15|17|20)\d{9}$/;      // chk_emp_ruc
 const CODIGO = /^[A-Za-z0-9 ._/#-]*$/;
 
 const debe = (campo: string) => /^(Los|Las) /.test(campo) ? 'deben' : 'debe';
@@ -41,9 +42,10 @@ export const V = {
     return NACIONALIDAD.test(t) ? null : 'La nacionalidad solo admite letras y espacios.';
   },
 
-  documento(tipo: TipoDocumento, v: string): ErrorCampo {
+  documento(tipo: TipoDocumentoCliente, v: string): ErrorCampo {
     const t = (v ?? '').trim();
     if (!t) return 'El número de documento es obligatorio.';
+    if (tipo === 'RUC') return RUC.test(t) ? null : 'El RUC tiene 11 dígitos y empieza con 10, 15, 17 o 20.';
     if (tipo === 'DNI') return /^\d{8}$/.test(t) ? null : 'El DNI debe tener exactamente 8 dígitos.';
     if (tipo === 'CE') return /^[A-Za-z0-9]{8,12}$/.test(t) ? null : 'El carné de extranjería tiene de 8 a 12 letras o números.';
     return /^[A-Za-z0-9]{6,12}$/.test(t) ? null : 'El pasaporte tiene de 6 a 12 letras o números.';
@@ -67,7 +69,13 @@ export const V = {
   placa(v: string): ErrorCampo {
     const t = (v ?? '').trim();
     if (!t) return 'La placa es obligatoria.';
-    return PLACA.test(t) ? null : 'La placa solo admite letras, números y guion (3 a 15 caracteres).';
+    return PLACA.test(t) ? null : 'La placa solo admite letras, números y guion (3 a 10 caracteres).';
+  },
+
+  ruc(v: string): ErrorCampo {
+    const t = (v ?? '').trim();
+    if (!t) return 'El RUC es obligatorio.';
+    return RUC.test(t) ? null : 'El RUC tiene 11 dígitos y empieza con 10, 15, 17 o 20.';
   },
 
   codigo(v: string): ErrorCampo {
@@ -96,6 +104,17 @@ export const V = {
     return null;
   }
 };
+
+// Solo los dígitos de un teléfono: así se compara si está repetido (igual que el backend)
+export function digitos(telefono?: string | null): string {
+  return (telefono ?? '').replace(/\D/g, '');
+}
+
+export function telefonoRepetido<T>(telefono: string, lista: T[], obtener: (x: T) => string | null | undefined,
+                                    esMismo: (x: T) => boolean): boolean {
+  const d = digitos(telefono);
+  return !!d && lista.some(x => !esMismo(x) && digitos(obtener(x)) === d);
+}
 
 export interface Errores {
   [campo: string]: string | null | undefined;

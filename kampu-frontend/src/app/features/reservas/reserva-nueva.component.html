@@ -16,7 +16,7 @@
         <span class="label req !mb-0">Cliente</span>
         <div class="seg !text-[13px]" role="tablist" aria-label="Tipo de cliente">
           <button type="button" role="tab" class="seg-btn inline-flex items-center gap-1.5 !py-1" [class.on]="modo === 'registrado'" [attr.aria-selected]="modo === 'registrado'" (click)="cambiarModo('registrado')"><app-icon name="users" size="w-3.5 h-3.5" /> Registrado</button>
-          <button type="button" role="tab" class="seg-btn inline-flex items-center gap-1.5 !py-1" [class.on]="modo === 'invitado'" [attr.aria-selected]="modo === 'invitado'" (click)="cambiarModo('invitado')"><app-icon name="user" size="w-3.5 h-3.5" /> Invitado (sin registro)</button>
+          <button type="button" role="tab" class="seg-btn inline-flex items-center gap-1.5 !py-1" [class.on]="modo === 'invitado'" [attr.aria-selected]="modo === 'invitado'" (click)="cambiarModo('invitado')"><app-icon name="user" size="w-3.5 h-3.5" /> Cliente nuevo</button>
         </div>
       </div>
 
@@ -26,11 +26,19 @@
         @if (v.error('cliente'); as e) { <p class="field-error">{{ e }}</p> }
       } @else {
         <div class="form-section animate-fade-in">
-          <p class="text-xs text-zinc-500 -mt-1">Solo se guardan en esta reserva; no se crea un cliente. El correo se usa para enviarle la boleta.</p>
+          <p class="text-xs text-zinc-500 -mt-1">Se registra como cliente al guardar la reserva. Luego puede activar su cuenta web con "Registrarse" usando el mismo documento y correo.</p>
           <div class="grid sm:grid-cols-2 gap-3">
             <div class="sm:col-span-2">
               <label class="label req">Nombre</label>
               <input class="field" maxlength="150" [(ngModel)]="contacto.nombre" placeholder="Nombre y apellido" autocomplete="name" (blur)="v.tocar('cNombre')" [class.field-invalid]="v.error('cNombre')" (beforeinput)="filtrar($event, 'nombre')" (paste)="pegar($event, 'nombre')">@if (v.error('cNombre'); as e) { <p class="field-error">{{ e }}</p> }
+            </div>
+            <div>
+              <label class="label req">Tipo de documento</label>
+              <select class="field" [(ngModel)]="contacto.tipoDocumento" (ngModelChange)="v.tocar('cDocumento')">@for (t of tipos; track t) { <option [value]="t">{{ t }}</option> }</select>
+            </div>
+            <div>
+              <label class="label req">N° de documento</label>
+              <input class="field" [(ngModel)]="contacto.numeroDocumento" [maxlength]="contacto.tipoDocumento === 'DNI' ? 8 : 12" (blur)="v.tocar('cDocumento')" [class.field-invalid]="v.error('cDocumento')" (beforeinput)="filtrar($event, contacto.tipoDocumento === 'DNI' ? 'dni' : 'alfanumerico')" (paste)="pegar($event, contacto.tipoDocumento === 'DNI' ? 'dni' : 'alfanumerico')">@if (v.error('cDocumento'); as e) { <p class="field-error">{{ e }}</p> }
             </div>
             <div>
               <label class="label req">Correo</label>

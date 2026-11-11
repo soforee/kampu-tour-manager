@@ -1,9 +1,9 @@
 package pe.edu.upeu.lp2_gp2.entity;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDate;
 
+// trg_pasajeros_cupo: no más pasajeros que la cantidad del detalle
 @Entity
 @Table(name = "PASAJEROS_RESERVA")
 public class PasajeroReserva {
@@ -12,8 +12,8 @@ public class PasajeroReserva {
     @Column(name = "pasajero_id")
     private Long pasajeroId;
 
-    @Column(name = "reserva_id", nullable = false)
-    private Long reservaId;
+    @Column(name = "detalle_id", nullable = false)
+    private Long detalleId;
 
     @Column(name = "nombre_completo", nullable = false, length = 150)
     private String nombreCompleto;
@@ -41,12 +41,12 @@ public class PasajeroReserva {
         this.pasajeroId = pasajeroId;
     }
 
-    public Long getReservaId() {
-        return reservaId;
+    public Long getDetalleId() {
+        return detalleId;
     }
 
-    public void setReservaId(Long reservaId) {
-        this.reservaId = reservaId;
+    public void setDetalleId(Long detalleId) {
+        this.detalleId = detalleId;
     }
 
     public String getNombreCompleto() {

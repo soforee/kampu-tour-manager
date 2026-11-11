@@ -10,5 +10,7 @@ public interface ISalidaProgramadaService {
     SalidaProgramadaDTO buscarPorId(Long id);
     SalidaProgramadaDTO crear(SalidaProgramadaRequestDTO dto);
     SalidaProgramadaDTO actualizar(Long id, SalidaProgramadaRequestDTO dto);
+    // Operador / Ventas: marcar la salida en ejecución (CONFIRMADA) o terminada (COMPLETADA)
+    SalidaProgramadaDTO actualizarEjecucion(Long id, String estado);
     void eliminar(Long id);
 }

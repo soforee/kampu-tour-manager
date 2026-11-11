@@ -13,7 +13,6 @@ import java.util.Optional;
 
 @Repository
 public interface ClienteRepository extends JpaRepository<Cliente, Long> {
-    Optional<Cliente> findByNumeroDocumento(String numeroDocumento);
 
     List<Cliente> findAllByOrderByClienteIdAsc();
 
@@ -25,4 +24,15 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
             "or upper(c.email) like :texto escape '!' " +
             "order by c.nombreCompleto")
     List<Cliente> buscar(@Param("texto") String texto, Pageable pagina);
+
+    // Teléfono repetido comparando solo los dígitos (mismo criterio que el índice único uq_cli_telefono).
+    // idExcluir = -1 al crear.
+    @Query(value = "SELECT COUNT(*) FROM CLIENTES WHERE TRANSLATE(telefono, '0+-() ', '0') = :digitos AND cliente_id <> :idExcluir",
+            nativeQuery = true)
+    long contarTelefono(@Param("digitos") String digitos, @Param("idExcluir") Long idExcluir);
+
+    // El número de documento es único sin importar el tipo (uq_cli_numero_doc)
+    Optional<Cliente> findFirstByNumeroDocumentoIgnoreCase(String numeroDocumento);
+
+    Optional<Cliente> findFirstByEmailIgnoreCase(String email);
 }

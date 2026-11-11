@@ -1,5 +1,6 @@
 package pe.edu.upeu.lp2_gp2.services;
 
+import jakarta.persistence.EntityManager;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,6 +12,7 @@ import pe.edu.upeu.lp2_gp2.exception.BusinessException;
 import pe.edu.upeu.lp2_gp2.exception.ResourceNotFoundException;
 import pe.edu.upeu.lp2_gp2.repository.PagoRepository;
 import pe.edu.upeu.lp2_gp2.repository.ReservaRepository;
+import pe.edu.upeu.lp2_gp2.seguridad.SesionActual;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -22,13 +24,15 @@ public class PagoServiceImpl implements IPagoService {
     private final ReservaRepository reservaRepository;
     private final ConversorMoneda conversor;
     private final ApplicationEventPublisher eventos;
+    private final EntityManager em;
 
     public PagoServiceImpl(PagoRepository pagoRepository, ReservaRepository reservaRepository, ConversorMoneda conversor,
-                           ApplicationEventPublisher eventos) {
+                           ApplicationEventPublisher eventos, EntityManager em) {
         this.pagoRepository = pagoRepository;
         this.reservaRepository = reservaRepository;
         this.conversor = conversor;
         this.eventos = eventos;
+        this.em = em;
     }
 
     @Override
@@ -56,6 +60,7 @@ public class PagoServiceImpl implements IPagoService {
         p.setReservaId(dto.reservaId());
         p.setMonto(dto.monto().setScale(2, java.math.RoundingMode.HALF_UP));
         p.setMoneda(dto.moneda());
+        p.setTipoCambio(conversor.tasa(dto.moneda()));   // monto_pen = monto * tipo_cambio (columna virtual)
         p.setMetodoPago(dto.metodoPago() == null || dto.metodoPago().isBlank() ? null : dto.metodoPago().trim());
         String codigo = dto.codigoTransaccion() == null || dto.codigoTransaccion().isBlank() ? null : dto.codigoTransaccion().trim();
         if (codigo == null) {
@@ -65,7 +70,10 @@ public class PagoServiceImpl implements IPagoService {
         p.setCodigoTransaccion(codigo);
         p.setFechaPago(LocalDateTime.now());
         p.setEstadoTransaccion(dto.estadoTransaccion());
-        Pago guardado = pagoRepository.save(p);
+        // Clave de partición de PAGOS: quién lo registró
+        p.setRegistradoPor("ADMIN".equals(SesionActual.rol()) ? "ADMIN" : "VENDEDOR");
+        Pago guardado = pagoRepository.saveAndFlush(p);
+        em.refresh(guardado);   // monto_pen la calcula Oracle
         recalcular(r);
         if ("APROBADO".equals(guardado.getEstadoTransaccion())) {
             eventos.publishEvent(new BoletaEvento(r.getReservaId(), "pago aprobado"));
@@ -87,7 +95,7 @@ public class PagoServiceImpl implements IPagoService {
             throw new BusinessException("Aprobar este pago excedería el saldo de la reserva.");
         }
         p.setEstadoTransaccion(estado);
-        Pago guardado = pagoRepository.save(p);
+        Pago guardado = pagoRepository.saveAndFlush(p);
         recalcular(r);
         if ("APROBADO".equals(estado)) {
             eventos.publishEvent(new BoletaEvento(r.getReservaId(), "pago aprobado"));
@@ -103,10 +111,8 @@ public class PagoServiceImpl implements IPagoService {
 
     private void recalcular(Reserva r) {
         if ("ANULADA".equals(r.getEstadoReserva())) return;
-        BigDecimal suma = BigDecimal.ZERO;
-        for (Pago p : pagoRepository.findByReservaIdAndEstadoTransaccion(r.getReservaId(), "APROBADO")) {
-            suma = suma.add(conversor.aPEN(p.getMonto(), p.getMoneda()));
-        }
+        // Suma de PAGOS.monto_pen (columna virtual) de los pagos aprobados
+        BigDecimal suma = pagoRepository.sumarAprobadosEnSoles(r.getReservaId());
         BigDecimal pagado = suma.min(r.getMontoTotal());
         String estadoPago;
         if (pagado.signum() <= 0) estadoPago = "PENDIENTE";
@@ -114,6 +120,6 @@ public class PagoServiceImpl implements IPagoService {
         else estadoPago = "PARCIAL";
         r.setMontoPagado(pagado);
         r.setEstadoPago(estadoPago);
-        reservaRepository.save(r);
+        reservaRepository.saveAndFlush(r);
     }
 }

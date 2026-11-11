@@ -13,7 +13,8 @@ public class ConversorMoneda {
     private static final BigDecimal TASA_USD = new BigDecimal("3.75");
     private static final BigDecimal TASA_EUR = new BigDecimal("4.05");
 
-    public BigDecimal aPEN(BigDecimal monto, String moneda) {
+    // Soles por unidad de la moneda: se guarda en PAGOS.tipo_cambio
+    public BigDecimal tasa(String moneda) {
         BigDecimal tasa;
         if ("PEN".equals(moneda)) {
             tasa = BigDecimal.ONE;
@@ -24,6 +25,10 @@ public class ConversorMoneda {
         } else {
             throw new BusinessException("Moneda no soportada: " + moneda);
         }
-        return monto.multiply(tasa).setScale(2, RoundingMode.HALF_UP);
+        return tasa;
+    }
+
+    public BigDecimal aPEN(BigDecimal monto, String moneda) {
+        return monto.multiply(tasa(moneda)).setScale(2, RoundingMode.HALF_UP);
     }
 }

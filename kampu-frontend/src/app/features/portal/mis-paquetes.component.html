@@ -1,0 +1,76 @@
+<div class="min-h-screen bg-sand-50">
+  <app-portal-header />
+
+  <main class="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+    @if (bienvenido) {
+      <div class="mb-6 flex items-center gap-2 rounded-xl bg-emerald-50 p-4 text-sm font-semibold text-emerald-800 ring-1 ring-emerald-200" role="status">
+        <app-icon name="check-circle" size="w-4 h-4" /> Tu cuenta fue creada. ¡Bienvenido, {{ auth.usuario()?.nombre }}!
+      </div>
+    }
+
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="text-xs font-extrabold uppercase tracking-[0.14em] text-brand-700">Mi cuenta</p>
+        <h1 class="mt-1 text-[28px] font-black tracking-tight text-zinc-900">Mis paquetes</h1>
+        <p class="mt-1 text-sm text-zinc-500">Solo ves los paquetes reservados a tu nombre. Esta vista es de consulta.</p>
+      </div>
+      @if (saldoTotal() > 0) {
+        <div class="rounded-xl bg-white px-4 py-3 text-right shadow-card ring-1 ring-zinc-200/70">
+          <div class="text-[11px] font-bold uppercase tracking-wider text-zinc-500">Saldo por pagar</div>
+          <div class="text-xl font-black text-amber-700">S/ {{ saldoTotal() | number:'1.2-2' }}</div>
+        </div>
+      }
+    </div>
+
+    <div class="seg mt-6" role="tablist">
+      @for (f of filtros; track f.valor) {
+        <button type="button" class="seg-btn" [class.on]="filtro() === f.valor" (click)="filtro.set(f.valor)">{{ f.texto }} <span class="ml-1 text-zinc-400">{{ contar(f.valor) }}</span></button>
+      }
+    </div>
+
+    @if (cargando()) {
+      <p class="mt-10 text-center text-sm text-zinc-500">Cargando tus paquetes…</p>
+    } @else if (error()) {
+      <div class="card mt-8 p-6 text-center">
+        <p class="text-sm font-semibold text-rose-700">{{ error() }}</p>
+        <button type="button" class="btn-light btn-sm mt-4" (click)="cargar()">Reintentar</button>
+      </div>
+    } @else if (!visibles().length) {
+      <div class="card mt-8 p-10 text-center">
+        <app-icon name="inbox" size="w-8 h-8 mx-auto text-zinc-300" />
+        <p class="mt-3 font-bold text-zinc-800">{{ paquetes().length ? 'No hay paquetes con este estado.' : 'Aún no tienes paquetes reservados.' }}</p>
+        <p class="mt-1 text-sm text-zinc-500">Revisa nuestros tours en la página de inicio o escríbenos para reservar.</p>
+        <a routerLink="/" class="btn-brand btn-sm mt-5">Ver tours</a>
+      </div>
+    } @else {
+      <ul class="mt-6 grid gap-4 md:grid-cols-2">
+        @for (p of visibles(); track p.reservaId) {
+          <li>
+            <a [routerLink]="['/mi-cuenta/paquetes', p.reservaId]" class="card card-hover flex h-full overflow-hidden" data-testid="paquete-cliente">
+              <div class="w-28 shrink-0 bg-zinc-100 sm:w-36">
+                @if (imagen(p); as src) { <img [src]="src" alt="" class="h-full w-full object-cover"> }
+                @else { <div class="grid h-full place-items-center text-zinc-300"><app-icon name="mountain" size="w-8 h-8" /></div> }
+              </div>
+              <div class="flex min-w-0 flex-1 flex-col gap-2 p-4">
+                <div class="flex flex-wrap gap-1.5">
+                  <app-badge [estado]="p.estadoEjecucion" />
+                  <app-badge [estado]="p.estadoPago" />
+                </div>
+                <h2 class="truncate font-extrabold text-zinc-900">{{ p.paqueteNombre }}</h2>
+                <p class="text-sm text-zinc-600">
+                  <app-icon name="calendar" size="w-3.5 h-3.5 inline -mt-0.5 text-zinc-400" />
+                  {{ p.fechaInicio | date:'dd/MM/yyyy' }} – {{ p.fechaFin | date:'dd/MM/yyyy' }} · {{ p.dias }}D/{{ p.noches }}N
+                </p>
+                <p class="text-sm text-zinc-600">{{ p.pasajeros }} pasajero{{ p.pasajeros === 1 ? '' : 's' }} · Reserva #{{ p.reservaId }}</p>
+                <div class="mt-auto flex items-end justify-between pt-2 text-sm">
+                  <span class="text-zinc-500">Total <b class="text-zinc-900">S/ {{ p.montoTotal | number:'1.2-2' }}</b></span>
+                  @if (p.saldo > 0 && p.estadoPago !== 'ANULADO') { <span class="font-bold text-amber-700">Saldo S/ {{ p.saldo | number:'1.2-2' }}</span> }
+                </div>
+              </div>
+            </a>
+          </li>
+        }
+      </ul>
+    }
+  </main>
+</div>

@@ -17,10 +17,12 @@
       </div>
     </div>
     <div class="flex flex-wrap gap-2">
+      @if (gestiona) {
       @if (r.estadoReserva === 'PENDIENTE') { <button type="button" class="btn-brand" (click)="confirmar()"><app-icon name="check" size="w-4 h-4" /> Confirmar</button> }
       @if (r.estadoReserva === 'CONFIRMADA') { <button type="button" class="btn-dark" (click)="completar()"><app-icon name="flag" size="w-4 h-4" /> Marcar completada</button> }
       @if (r.estadoReserva === 'PENDIENTE' || r.estadoReserva === 'CONFIRMADA') {
         <button type="button" class="btn-danger" (click)="anular()"><app-icon name="x" size="w-4 h-4" /> Anular</button>
+      }
       }
     </div>
   </div>
@@ -35,8 +37,13 @@
           <div class="rounded-xl border border-zinc-100 bg-sand-50/60 px-3.5 py-2.5"><dt class="text-xs font-medium text-zinc-400 mb-0.5">Fechas</dt><dd class="font-medium">{{ salida()?.fechaInicio | date:'dd/MM/yyyy' }} → {{ salida()?.fechaFin | date:'dd/MM/yyyy' }}</dd></div>
           <div class="rounded-xl border border-zinc-100 bg-sand-50/60 px-3.5 py-2.5"><dt class="text-xs font-medium text-zinc-400 mb-0.5">Estado de la salida</dt><dd>@if (salida(); as s) { <app-badge [estado]="s.estado" /> }</dd></div>
           <div class="rounded-xl border border-zinc-100 bg-sand-50/60 px-3.5 py-2.5"><dt class="text-xs font-medium text-zinc-400 mb-0.5">Guía</dt><dd class="font-medium">{{ guia()?.nombreCompleto ?? 'Sin asignar' }}</dd></div>
-          <div class="rounded-xl border border-zinc-100 bg-sand-50/60 px-3.5 py-2.5"><dt class="text-xs font-medium text-zinc-400 mb-0.5">Transporte</dt><dd class="font-medium">{{ transporte() ? transporte()!.marcaModelo + ' · ' + transporte()!.placa : 'Sin asignar' }}</dd>@if (chofer(); as c) { <dd class="text-xs text-zinc-500 mt-0.5 flex items-center gap-1"><app-icon name="user" size="w-3 h-3" />Chofer: {{ c.nombreCompleto }}</dd> }</div>
-          <div class="rounded-xl border border-zinc-100 bg-sand-50/60 px-3.5 py-2.5"><dt class="text-xs font-medium text-zinc-400 mb-0.5">Cliente</dt><dd class="font-medium">{{ nombreCliente() }}@if (invitado()) { <span class="chip ml-1.5 !font-sans" title="Reserva sin cliente registrado">Invitado</span> }</dd></div>
+          <div class="rounded-xl border border-zinc-100 bg-sand-50/60 px-3.5 py-2.5"><dt class="text-xs font-medium text-zinc-400 mb-0.5">Transporte</dt>
+            @for (o of operaciones(); track o.operacionId) {
+              <dd class="text-xs mt-0.5 flex items-center gap-1"><app-icon name="truck" size="w-3 h-3 text-zinc-400" /><span class="font-mono font-semibold">{{ o.codigoOperacion }}</span> {{ o.origen }} → {{ o.destino }} · {{ o.placa ?? 'sin asignar' }}</dd>
+            } @empty { <dd class="font-medium">Sin operaciones</dd> }
+            @if (salida()?.faltanteTransporte) { <dd class="text-xs text-amber-600 mt-1">Falta transporte para todos los pasajeros.</dd> }
+          </div>
+          <div class="rounded-xl border border-zinc-100 bg-sand-50/60 px-3.5 py-2.5"><dt class="text-xs font-medium text-zinc-400 mb-0.5">Cliente</dt><dd class="font-medium">{{ nombreCliente() }}@if (cliente()?.cuentaWeb) { <span class="chip ml-1.5 !font-sans" title="Ve su paquete en el portal">Cuenta web</span> }</dd></div>
           <div class="rounded-xl border border-zinc-100 bg-sand-50/60 px-3.5 py-2.5"><dt class="text-xs font-medium text-zinc-400 mb-0.5">Contacto</dt><dd class="font-medium">{{ telefonoCliente() || '—' }}</dd><dd class="text-xs text-zinc-500 mt-0.5 truncate">{{ emailCliente() || 'Sin correo' }}</dd></div>
         </dl>
         @if (r.observaciones) {
@@ -63,10 +70,12 @@
         </div>
         <div class="flex flex-wrap gap-2">
           <button type="button" class="btn-light btn-sm" (click)="verBoleta()"><app-icon name="eye" size="w-3.5 h-3.5" /> Ver</button>
+          @if (gestiona) {
           <button type="button" class="btn-brand btn-sm" [disabled]="enviandoBoleta || !emailCliente()" (click)="enviarBoleta()" [title]="emailCliente() ? '' : 'El cliente no tiene correo'">
             @if (enviandoBoleta) { <span class="h-3.5 w-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin"></span> Enviando… }
             @else { <app-icon name="mail" size="w-3.5 h-3.5" /> {{ r.boletaEnviadaEn ? 'Reenviar' : 'Enviar' }} por correo }
           </button>
+          }
         </div>
       </section>
       <section class="card overflow-hidden">
@@ -103,7 +112,7 @@
                   <td class="td text-right font-medium">{{ p.monto | currency:p.moneda + ' ' }}</td>
                   <td class="td"><app-badge [estado]="p.estadoTransaccion" /></td>
                   <td class="td text-right whitespace-nowrap">
-                    @if (p.estadoTransaccion === 'PENDIENTE') {
+                    @if (cobra && p.estadoTransaccion === 'PENDIENTE') {
                       <button type="button" class="icon-btn-success" title="Aprobar" (click)="resolver(p.pagoId, 'APROBADO')"><app-icon name="check" /></button>
                       <button type="button" class="icon-btn-danger" title="Rechazar" (click)="resolver(p.pagoId, 'RECHAZADO')"><app-icon name="x" /></button>
                     }
@@ -171,6 +180,8 @@
       <div class="p-6">
       <dl class="space-y-3 text-sm">
         <div class="flex justify-between"><dt class="text-zinc-500">Viajeros</dt><dd class="font-medium">{{ r.numeroViajeros }}</dd></div>
+        <div class="flex justify-between"><dt class="text-zinc-500">Precio por persona</dt><dd class="font-medium">{{ r.precioUnitario | currency:'S/ ' }}</dd></div>
+        @if (r.descuento > 0) { <div class="flex justify-between"><dt class="text-zinc-500">Descuento</dt><dd class="font-medium text-emerald-700">-{{ r.descuento | currency:'S/ ' }}</dd></div> }
         <div class="flex justify-between"><dt class="text-zinc-500">Monto total</dt><dd class="font-medium">{{ r.montoTotal | currency:'S/ ' }}</dd></div>
         <div class="flex justify-between"><dt class="text-zinc-500">Monto pagado</dt><dd class="font-medium text-brand-700">{{ r.montoPagado | currency:'S/ ' }}</dd></div>
       </dl>
