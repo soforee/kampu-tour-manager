@@ -46,9 +46,15 @@ export const PAISES: PaisTelefono[] = [
 
 export const PAIS_DEFECTO = PAISES[0];
 
-// Bandera a partir del código ISO (🇵🇪, 🇨🇱…)
-export function bandera(iso: string): string {
-  return String.fromCodePoint(...iso.split('').map(c => 0x1F1E6 + c.charCodeAt(0) - 65));
+// Imagen de la bandera (public/banderas/xx.png, generadas desde flag-icons, licencia MIT).
+// Se usan imágenes y no emojis porque Windows no dibuja los emojis de banderas.
+export function banderaUrl(iso: string): string {
+  return `banderas/${iso.toLowerCase()}.png`;
+}
+
+// Para buscar sin importar tildes ni mayúsculas: "Perú" -> "peru"
+export function normalizar(texto: string): string {
+  return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
 }
 
 // "+51 987654321" → país y número. Si no hay código, se asume Perú.
