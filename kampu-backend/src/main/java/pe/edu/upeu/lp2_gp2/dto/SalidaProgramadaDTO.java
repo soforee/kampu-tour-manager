@@ -15,7 +15,7 @@ public record SalidaProgramadaDTO(
         String estado,
         // Operaciones de transporte vigentes de la salida
         Integer operaciones,
-        // PKG_ASIGNACION.faltante_transporte: null si el transporte alcanza para los pasajeros vendidos
+        // null si el transporte asignado alcanza para los pasajeros vendidos (CapacidadTransporte)
         String faltanteTransporte
 ) {
     public static SalidaProgramadaDTO desde(SalidaProgramada s, Integer operaciones, String faltante) {

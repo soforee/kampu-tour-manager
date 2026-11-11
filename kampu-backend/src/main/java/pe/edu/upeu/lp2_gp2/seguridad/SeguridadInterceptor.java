@@ -77,6 +77,7 @@ public class SeguridadInterceptor implements HandlerInterceptor {
         if (ruta.startsWith("/reservas") || ruta.startsWith("/pasajeros")) return lectura ? "VER_RESERVAS" : "GESTIONAR_RESERVAS";
         if (ruta.startsWith("/pagos")) return lectura ? "VER_MONTOS" : "REGISTRAR_PAGO";
         if (ruta.matches("/salidas/\\d+/ejecucion")) return "ACTUALIZAR_EJECUCION";
+        if (ruta.matches("/salidas/\\d+/manifiesto")) return "VER_RESUMEN";
         if (ruta.startsWith("/paquetes") || ruta.startsWith("/salidas")) return lectura ? "VER_LOGISTICA" : "GESTIONAR_CATALOGO";
         if (ruta.startsWith("/proveedores") || ruta.startsWith("/personal") || ruta.startsWith("/vehiculos")
                 || ruta.startsWith("/lugares")) {

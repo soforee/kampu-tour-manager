@@ -93,6 +93,10 @@ public class ReservaServiceImpl implements IReservaService {
         }
         LocalDate hoy = LocalDate.now();
         if (salida.getFechaInicio().isBefore(hoy)) throw new BusinessException("La salida ya inició.");
+        PaqueteTour paquete = paqueteRepository.findById(salida.getPaqueteId()).orElseThrow();
+        if (!"ACTIVO".equals(paquete.getEstado())) {
+            throw new BusinessException("El paquete " + paquete.getNombre() + " ya no está a la venta.");
+        }
         int n = dto.pasajeros().size();
         if (n > salida.getCuposDisponibles()) {
             throw new BusinessException("Solo quedan " + salida.getCuposDisponibles() + " cupo(s) en esta salida.");
@@ -125,7 +129,6 @@ public class ReservaServiceImpl implements IReservaService {
                     c.email(), c.telefono())).clienteId();
         }
 
-        PaqueteTour paquete = paqueteRepository.findById(salida.getPaqueteId()).orElseThrow();
         BigDecimal total = paquete.getPrecioBase().multiply(BigDecimal.valueOf(n));
         Reserva r = new Reserva();
         r.setClienteId(clienteId);
@@ -166,6 +169,10 @@ public class ReservaServiceImpl implements IReservaService {
     public ReservaDTO confirmar(Long id) {
         Reserva r = obtener(id);
         if (!"PENDIENTE".equals(r.getEstadoReserva())) throw new BusinessException("Solo se confirman reservas pendientes.");
+        // El cupo se asegura con dinero: sin adelanto aprobado la reserva sigue pendiente
+        if (r.getMontoPagado() == null || r.getMontoPagado().signum() <= 0) {
+            throw new BusinessException("Registra un pago aprobado (adelanto) antes de confirmar la reserva.");
+        }
         r.setEstadoReserva("CONFIRMADA");
         reservaRepository.saveAndFlush(r);
         eventos.publishEvent(new BoletaEvento(id, "reserva confirmada"));
@@ -177,6 +184,12 @@ public class ReservaServiceImpl implements IReservaService {
     public ReservaDTO completar(Long id) {
         Reserva r = obtener(id);
         if (!"CONFIRMADA".equals(r.getEstadoReserva())) throw new BusinessException("Solo se completan reservas confirmadas.");
+        for (DetalleReserva d : detalleRepository.findByReservaIdOrderByDetalleIdAsc(id)) {
+            SalidaProgramada salida = salidaRepository.findById(d.getSalidaId()).orElse(null);
+            if (salida != null && salida.getFechaInicio().isAfter(LocalDate.now())) {
+                throw new BusinessException("El viaje aún no empieza (" + salida.getFechaInicio() + "): la reserva no puede completarse.");
+            }
+        }
         r.setEstadoReserva("COMPLETADA");
         reservaRepository.saveAndFlush(r);
         return dto(r);

@@ -4,8 +4,8 @@ import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
 
-// La fecha fin no se envía: trg_salida_biu la calcula con los días del paquete.
-// El transporte ya no va en la salida: se asigna en OPERACION_TRANSPORTE.
+// La fecha fin no se envía: el backend la calcula con los días del paquete.
+// El transporte no va en la salida: se asigna por tramo en OPERACIONES_TRANSPORTE.
 public record SalidaProgramadaRequestDTO(
         @NotNull(message = "Selecciona un paquete.")
         Long paqueteId,

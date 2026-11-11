@@ -15,7 +15,7 @@ public interface PasajeroReservaRepository extends JpaRepository<PasajeroReserva
 
     List<PasajeroReserva> findAllByOrderByPasajeroIdAsc();
 
-    // Mismo documento en otra reserva activa de la misma salida (trg_pasajeros_doc_salida)
+    // Mismo documento en otra reserva activa de la misma salida
     @Query(value = """
             SELECT COUNT(*)
               FROM PASAJEROS_RESERVA p
