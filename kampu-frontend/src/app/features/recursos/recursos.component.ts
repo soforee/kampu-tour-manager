@@ -1,4 +1,5 @@
 import { DatePipe } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Observable } from 'rxjs';
@@ -52,7 +53,12 @@ export class RecursosComponent {
   hoy = hoy();
   pronto = addDays(hoy(), 30);
 
-  tab = signal<Tab>('proveedores');
+  // ?tab=personal|vehiculos: llega desde los avisos de licencias y mantenimiento del panel
+  tab = signal<Tab>(this.tabInicial());
+  private tabInicial(): Tab {
+    const t = inject(ActivatedRoute).snapshot.queryParamMap.get('tab');
+    return t === 'personal' || t === 'vehiculos' || t === 'lugares' ? t : 'proveedores';
+  }
   filtroProveedor = signal<number | null>(null);
   filtroRol = signal<'' | RolPersonal>('');
   abierto = signal(false);

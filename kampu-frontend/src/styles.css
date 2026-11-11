@@ -99,3 +99,48 @@ body.swal2-toast-shown .swal2-container,
   will-change: opacity, transform;
 }
 .reveal.reveal-visible { opacity: 1; transform: none; }
+
+/* Marcador de carga */
+.skeleton {
+  border-radius: 16px;
+  background: linear-gradient(90deg, #F2EDD6 25%, #FAF6E6 50%, #F2EDD6 75%);
+  background-size: 200% 100%;
+  animation: kampu-shimmer 1.4s ease-in-out infinite;
+}
+@keyframes kampu-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+/* Entrada escalonada de tarjetas y filas: <div class="stagger"> o <tbody class="stagger"> */
+.stagger > * { animation: kampu-page-in .45s cubic-bezier(.2, .8, .2, 1) backwards; }
+.stagger > *:nth-child(1) { animation-delay: 20ms; }
+.stagger > *:nth-child(2) { animation-delay: 60ms; }
+.stagger > *:nth-child(3) { animation-delay: 100ms; }
+.stagger > *:nth-child(4) { animation-delay: 140ms; }
+.stagger > *:nth-child(5) { animation-delay: 180ms; }
+.stagger > *:nth-child(6) { animation-delay: 220ms; }
+.stagger > *:nth-child(7) { animation-delay: 260ms; }
+.stagger > *:nth-child(8) { animation-delay: 300ms; }
+.stagger > *:nth-child(n+9) { animation-delay: 340ms; }
+
+/* Punto que late en los avisos urgentes */
+.pulso { position: relative; }
+.pulso::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: .55;
+  animation: kampu-pulso 1.8s ease-out infinite;
+}
+@keyframes kampu-pulso { from { transform: scale(1); opacity: .55; } to { transform: scale(2.6); opacity: 0; } }
+
+/* Impresión (manifiesto de pasajeros): solo el contenido, sin menú ni botones */
+@media print {
+  @page { margin: 14mm; }
+  html, body { background: #fff !important; }
+  .no-print, .sidebar, .swal2-container { display: none !important; }
+  .panel { padding: 0 !important; }
+  .panel > main { max-width: none !important; padding: 0 !important; }
+  .card { box-shadow: none !important; }
+  * { animation: none !important; transition: none !important; }
+}

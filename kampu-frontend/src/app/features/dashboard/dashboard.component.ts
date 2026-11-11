@@ -5,6 +5,7 @@ import { EstadoEjecucion, ResumenPaquete } from '../../core/models';
 import { TourStore } from '../../core/services/tour-store.service';
 import { AuthService } from '../../core/services/auth.service';
 import { AlertService } from '../../core/services/alert.service';
+import { AlertasService } from '../../core/services/alertas.service';
 import { BadgeComponent } from '../../shared/badge.component';
 import { IconComponent } from '../../shared/icon.component';
 
@@ -15,13 +16,19 @@ import { IconComponent } from '../../shared/icon.component';
   selector: 'app-dashboard',
   standalone: true,
   imports: [RouterLink, CurrencyPipe, DatePipe, BadgeComponent, IconComponent],
-  templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.css'
+  templateUrl: './dashboard.component.html'
 })
 export class DashboardComponent {
   store = inject(TourStore);
   auth = inject(AuthService);
   private alerts = inject(AlertService);
+  private avisos = inject(AlertasService);
+
+  // Lo que hay que resolver hoy (salidas sin guía o transporte, reservas sin confirmar, pagos por validar...)
+  alertas = this.avisos.lista;
+  verTodas = signal(false);
+  alertasVisibles = computed(() => this.verTodas() ? this.alertas() : this.alertas().slice(0, 4));
+  urgentes = computed(() => this.alertas().filter(a => a.nivel === 'alta').length);
 
   // Bloques comerciales (dinero y reservas) solo con VER_MONTOS / VER_RESERVAS
   comercial = computed(() => this.auth.puede('VER_MONTOS') && this.auth.puede('VER_RESERVAS'));
@@ -30,6 +37,7 @@ export class DashboardComponent {
   traficoVisible = computed(() => this.auth.puede('VER_OPERACIONES'));
   filtro = signal<'TODOS' | EstadoEjecucion>('TODOS');
   procesando = signal<number | null>(null);
+  hoy = new Date();
 
   saludo = computed(() => {
     const h = new Date().getHours();
@@ -43,7 +51,6 @@ export class DashboardComponent {
       porEmpezar: resumen.filter(r => r.estadoEjecucion === 'POR_EMPEZAR').length,
       enCurso: resumen.filter(r => r.estadoEjecucion === 'EN_CURSO').length,
       pasajeros: resumen.filter(r => r.estadoEjecucion === 'EN_CURSO' || r.estadoEjecucion === 'POR_EMPEZAR').reduce((a, r) => a + r.pasajeros, 0),
-      reservas: activas.filter(r => r.estadoReserva === 'PENDIENTE' || r.estadoReserva === 'CONFIRMADA').length,
       cobrado: activas.reduce((a, r) => a + r.montoPagado, 0),
       porCobrar: activas.reduce((a, r) => a + this.store.saldo(r), 0)
     };
@@ -87,14 +94,17 @@ export class DashboardComponent {
   puedeTerminar(r: ResumenPaquete) { return this.ejecuta() && r.estadoEjecucion === 'EN_CURSO' && r.estadoSalida !== 'COMPLETADA'; }
 
   async cambiar(r: ResumenPaquete, estado: 'CONFIRMADA' | 'COMPLETADA') {
-    const texto = estado === 'COMPLETADA' ? 'Se marcará la salida como terminada.' : 'Se confirmará la salida (debe tener transporte asignado para todos los pasajeros).';
+    const texto = estado === 'COMPLETADA'
+      ? 'Las reservas confirmadas pasarán a COMPLETADA y la salida ya no podrá modificarse.'
+      : 'El grupo queda confirmado: debe tener guía, pasajeros y transporte para todos.';
     if (!(await this.alerts.confirm(texto, r.paqueteNombre, 'Continuar'))) return;
     this.procesando.set(r.salidaId);
     this.store.marcarEjecucion(r.salidaId, estado).subscribe({
       next: () => {
         this.procesando.set(null);
-        this.alerts.success(estado === 'COMPLETADA' ? 'Salida terminada.' : 'Salida confirmada.');
+        this.alerts.toast(estado === 'COMPLETADA' ? 'Salida terminada' : 'Salida confirmada');
         this.store.cargarSalidas();
+        this.store.cargarReservas();   // al terminar, sus reservas pasan a COMPLETADA
       },
       error: err => { this.procesando.set(null); this.alerts.error(this.store.error(err)); }
     });

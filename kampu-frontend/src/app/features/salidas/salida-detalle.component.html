@@ -1,0 +1,240 @@
+@if (salida(); as s) {
+  <a routerLink="/salidas" class="no-print group inline-flex items-center gap-1.5 rounded-lg px-2 py-1 -ml-2 text-sm font-medium text-zinc-500 hover:bg-white hover:text-zinc-900 hover:shadow-soft transition-all mb-4">
+    <app-icon name="arrow-left" size="w-4 h-4 transition-transform group-hover:-translate-x-0.5" /> Salidas
+  </a>
+
+  <!-- Cabecera -->
+  <div class="no-print card p-5 sm:p-6 mb-6 animate-fade-up">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+      <div class="flex items-start gap-4 min-w-0">
+        <div class="hidden sm:flex w-16 shrink-0 flex-col items-center rounded-2xl bg-zinc-900 py-2.5 text-white shadow-soft">
+          <span class="text-[11px] font-extrabold uppercase tracking-wider text-leaf-300 leading-none">{{ s.fechaInicio | date:'MMM' }}</span>
+          <span class="text-2xl font-black leading-tight">{{ s.fechaInicio | date:'dd' }}</span>
+        </div>
+        <div class="min-w-0">
+          <div class="eyebrow mb-1">Salida · {{ cuandoSale() }}</div>
+          <h1 class="h1 truncate">{{ paquete()?.nombre }}</h1>
+          <div class="mt-2 flex flex-wrap items-center gap-2 text-sm text-zinc-500">
+            <app-badge [estado]="s.estado" />
+            <span class="inline-flex items-center gap-1.5"><app-icon name="calendar" size="w-3.5 h-3.5" />{{ s.fechaInicio | date:'dd/MM/yyyy' }} → {{ s.fechaFin | date:'dd/MM/yyyy' }}</span>
+            <span class="chip">{{ paquete()?.dias }}D / {{ paquete()?.noches }}N</span>
+          </div>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        @if (puedeVender()) {
+          <a class="btn-light" routerLink="/reservas/nueva" [queryParams]="{ salida: s.salidaId }"><app-icon name="plus" size="w-4 h-4" /> Vender cupo</a>
+        }
+        @if (puedeConfirmar()) {
+          <button type="button" class="btn-brand" [disabled]="procesando()" (click)="ejecucion('CONFIRMADA')"><app-icon name="check" size="w-4 h-4" /> Confirmar salida</button>
+        }
+        @if (puedeTerminar()) {
+          <button type="button" class="btn-dark" [disabled]="procesando()" (click)="ejecucion('COMPLETADA')"><app-icon name="flag" size="w-4 h-4" /> Marcar terminada</button>
+        }
+        @if (puedeReabrir()) {
+          <button type="button" class="btn-light" [disabled]="procesando()" (click)="cambiar('PROGRAMADA')"><app-icon name="refresh" size="w-4 h-4" /> Reabrir</button>
+        }
+        @if (puedeCancelar()) {
+          <button type="button" class="btn-danger" [disabled]="procesando()" (click)="cambiar('CANCELADA')"><app-icon name="x" size="w-4 h-4" /> Cancelar</button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="grid lg:grid-cols-3 gap-6 items-start">
+    <div class="lg:col-span-2 space-y-6">
+
+      <!-- Manifiesto -->
+      <section class="card overflow-hidden manifiesto">
+        <!-- Encabezado solo para la hoja impresa -->
+        <div class="solo-impresion px-6 pt-6">
+          <div class="flex items-center justify-between">
+            <app-logo variante="horizontal" [alto]="26" />
+            <div class="text-right text-xs text-zinc-500">Manifiesto de pasajeros<br>Impreso el {{ hoy | date:'dd/MM/yyyy HH:mm' }}</div>
+          </div>
+          <div class="mt-4 text-xl font-black text-zinc-900">{{ paquete()?.nombre }}</div>
+          <div class="mt-1 text-sm text-zinc-600">
+            {{ s.fechaInicio | date:'dd/MM/yyyy' }} → {{ s.fechaFin | date:'dd/MM/yyyy' }} ·
+            Guía: {{ manifiesto()?.guia ?? 'por asignar' }}@if (manifiesto()?.guiaTelefono) { ({{ manifiesto()?.guiaTelefono }}) } ·
+            {{ manifiesto()?.pasajeros?.length ?? 0 }} pasajeros
+          </div>
+        </div>
+
+        <div class="card-header no-print">
+          <h2 class="card-title"><span class="ico"><app-icon name="users" size="w-4 h-4" /></span>Lista de pasajeros
+            <span class="chip !font-sans">{{ manifiesto()?.pasajeros?.length ?? 0 }}</span></h2>
+          <button type="button" class="btn-light btn-sm" [disabled]="!manifiesto()?.pasajeros?.length" (click)="imprimir()">
+            <app-icon name="printer" size="w-3.5 h-3.5" /> Imprimir manifiesto
+          </button>
+        </div>
+
+        @if (cargando()) {
+          <div class="p-6 space-y-3">
+            @for (i of [1, 2, 3]; track i) { <div class="skeleton h-10"></div> }
+          </div>
+        } @else if (error()) {
+          <div class="p-6"><div class="alert-error"><app-icon name="alert" size="w-4 h-4" /><span>{{ error() }}</span></div></div>
+        } @else {
+          <div class="overflow-x-auto">
+            <table class="tbl">
+              <thead><tr>
+                <th class="th w-10">#</th><th class="th">Pasajero</th><th class="th">Documento</th><th class="th">Nacionalidad</th>
+                <th class="th text-center">Edad</th><th class="th">Reserva</th>
+                @if (conMontos()) { <th class="th no-print">Pago</th> }
+                <th class="th solo-impresion-celda">Firma</th>
+              </tr></thead>
+              <tbody>
+                @for (p of manifiesto()?.pasajeros ?? []; track p.pasajeroId; let i = $index) {
+                  <tr class="border-t border-zinc-100">
+                    <td class="td text-zinc-400 font-mono text-xs">{{ i + 1 }}</td>
+                    <td class="td">
+                      <div class="font-semibold text-zinc-900">{{ p.nombreCompleto }}</div>
+                      @if (p.titular && p.titular !== p.nombreCompleto) { <div class="text-xs text-zinc-400">Titular: {{ p.titular }}</div> }
+                      @if (p.titularTelefono) { <div class="text-xs text-zinc-400 inline-flex items-center gap-1"><app-icon name="phone" size="w-3 h-3" />{{ p.titularTelefono }}</div> }
+                    </td>
+                    <td class="td font-mono text-xs text-zinc-600 whitespace-nowrap">{{ p.tipoDocumento }} {{ p.numeroDocumento }}</td>
+                    <td class="td text-zinc-600">{{ p.nacionalidad || '—' }}</td>
+                    <td class="td text-center text-zinc-600">{{ p.edad ?? '—' }}</td>
+                    <td class="td whitespace-nowrap">
+                      @if (veReservas) {
+                        <a [routerLink]="['/reservas', p.reservaId]" class="font-mono text-[13px] font-semibold text-zinc-900 hover:text-brand-700 transition-colors">{{ store.codigoReserva(p.reservaId) }}</a>
+                      } @else {
+                        <span class="font-mono text-[13px] font-semibold text-zinc-900">{{ store.codigoReserva(p.reservaId) }}</span>
+                      }
+                      @if (p.estadoReserva === 'PENDIENTE') { <div class="mt-1 no-print"><app-badge estado="PENDIENTE" /></div> }
+                    </td>
+                    @if (conMontos()) {
+                      <td class="td no-print whitespace-nowrap">
+                        @if (p.estadoPago) { <app-badge [estado]="p.estadoPago" /> }
+                        @if ((p.saldo ?? 0) > 0) { <div class="text-xs text-amber-600 font-semibold mt-1">Debe {{ p.saldo | currency:'S/ ' }}</div> }
+                      </td>
+                    }
+                    <td class="td solo-impresion-celda"></td>
+                  </tr>
+                } @empty {
+                  <tr><td [attr.colspan]="conMontos() ? 8 : 7"><div class="empty"><span class="ico"><app-icon name="users" size="w-6 h-6" /></span>
+                    Esta salida aún no tiene pasajeros.
+                    @if (puedeVender()) { <a class="link" routerLink="/reservas/nueva" [queryParams]="{ salida: s.salidaId }">Crear la primera reserva</a> }
+                  </div></td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          @if (notas().length > 0) {
+            <div class="border-t border-zinc-100 px-6 py-4">
+              <div class="form-section-title mb-2"><app-icon name="file-text" size="w-4 h-4" /> Notas para el guía</div>
+              <ul class="space-y-1.5 text-sm text-zinc-700">
+                @for (n of notas(); track n.reservaId) {
+                  <li class="flex gap-2"><span class="font-mono text-xs font-semibold text-zinc-500 mt-0.5">{{ store.codigoReserva(n.reservaId) }}</span><span><span class="font-semibold">{{ n.titular }}:</span> {{ n.texto }}</span></li>
+                }
+              </ul>
+            </div>
+          }
+        }
+      </section>
+
+      <!-- Traslados -->
+      @if (veTrafico) {
+        <section class="card overflow-hidden no-print">
+          <div class="card-header">
+            <h2 class="card-title"><span class="ico"><app-icon name="truck" size="w-4 h-4" /></span>Traslados
+              <span class="chip !font-sans">{{ operaciones().length }}</span></h2>
+            <a class="link text-sm" routerLink="/operaciones" [queryParams]="{ salida: s.salidaId }">Gestionar en Tráfico <app-icon name="chevron-right" size="w-4 h-4" /></a>
+          </div>
+          <ul class="divide-y divide-zinc-100">
+            @for (o of operaciones(); track o.operacionId) {
+              <li class="px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-3.5 min-w-0">
+                  <div class="w-14 shrink-0 text-center">
+                    <div class="text-sm font-extrabold text-zinc-900">{{ o.horaProgramadaSalida | date:'HH:mm' }}</div>
+                    <div class="text-[11px] text-zinc-400">{{ o.horaProgramadaSalida | date:'dd/MM' }}</div>
+                  </div>
+                  <div class="min-w-0">
+                    <div class="text-sm font-semibold text-zinc-900 truncate">{{ o.origen }} <span class="text-zinc-300">→</span> {{ o.destino }}</div>
+                    <div class="text-xs mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5" [class]="o.placa ? 'text-zinc-500' : 'text-amber-600 font-semibold'">
+                      <span class="font-mono">{{ o.codigoOperacion }}</span>
+                      @if (o.placa) { <span>· {{ o.placa }} · {{ o.conductor }}</span> } @else { <span>· Sin vehículo ni conductor</span> }
+                      <span class="text-zinc-400 font-normal">· {{ o.paxProgramados }} pax</span>
+                    </div>
+                  </div>
+                </div>
+                <app-badge [estado]="o.estadoActual" />
+              </li>
+            } @empty {
+              <li class="empty !py-10"><span class="ico"><app-icon name="truck" size="w-6 h-6" /></span>No hay traslados programados para esta salida.</li>
+            }
+          </ul>
+        </section>
+      }
+    </div>
+
+    <!-- Columna derecha -->
+    <aside class="space-y-6 no-print lg:sticky lg:top-8">
+      <section class="card overflow-hidden">
+        <div class="bg-gradient-to-br from-zinc-800 to-zinc-950 px-6 py-5 text-white">
+          <div class="text-[11px] font-extrabold uppercase tracking-[0.14em] text-leaf-300">Lista para salir</div>
+          <div class="mt-1 flex items-baseline gap-2">
+            <span class="text-3xl font-black">{{ listos() }}</span><span class="text-zinc-300 font-semibold">de {{ pasos().length }} puntos</span>
+          </div>
+          <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-white/15">
+            <div class="h-full rounded-full bg-leaf-300 transition-[width] duration-700 ease-out" [style.width.%]="pasos().length ? listos() * 100 / pasos().length : 0"></div>
+          </div>
+        </div>
+        <ul class="divide-y divide-zinc-100">
+          @for (p of pasos(); track p.titulo) {
+            <li class="flex items-start gap-3 px-6 py-3.5">
+              <span class="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full" [class]="p.ok ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'">
+                <app-icon [name]="p.ok ? 'check' : 'alert'" size="w-3.5 h-3.5" [trazo]="2.4" />
+              </span>
+              <div class="min-w-0">
+                <div class="text-sm font-bold text-zinc-900">{{ p.titulo }}</div>
+                <div class="text-xs leading-relaxed" [class]="p.ok ? 'text-zinc-500' : 'text-amber-700'">{{ p.detalle }}</div>
+              </div>
+            </li>
+          }
+        </ul>
+      </section>
+
+      <section class="card p-6">
+        <div class="flex items-center justify-between text-sm">
+          <span class="font-bold text-zinc-900">Ocupación</span>
+          <span class="font-extrabold text-zinc-900">{{ ocupacion() }}%</span>
+        </div>
+        <div class="progress mt-2.5 !h-2">
+          <div [class]="ocupacion() >= 90 ? 'bg-gradient-to-r from-rose-400 to-rose-600' : 'bg-gradient-to-r from-brand-400 to-brand-600'" [style.width.%]="ocupacion()"></div>
+        </div>
+        <dl class="mt-4 grid grid-cols-3 gap-2 text-center">
+          <div class="rounded-xl bg-sand-50 border border-zinc-100 py-2.5"><dd class="text-lg font-extrabold text-zinc-900">{{ vendidos() }}</dd><dt class="text-[11px] text-zinc-500">vendidos</dt></div>
+          <div class="rounded-xl bg-sand-50 border border-zinc-100 py-2.5"><dd class="text-lg font-extrabold text-zinc-900">{{ s.cuposDisponibles }}</dd><dt class="text-[11px] text-zinc-500">libres</dt></div>
+          <div class="rounded-xl bg-sand-50 border border-zinc-100 py-2.5"><dd class="text-lg font-extrabold text-zinc-900">{{ s.cuposMaximos }}</dd><dt class="text-[11px] text-zinc-500">cupos</dt></div>
+        </dl>
+        @if (conMontos() && porCobrar() > 0) {
+          <div class="mt-4 rounded-xl bg-amber-50 border border-amber-100 px-4 py-3 flex items-baseline justify-between">
+            <span class="text-sm font-medium text-amber-800">Por cobrar</span>
+            <span class="text-lg font-extrabold text-amber-700">{{ porCobrar() | currency:'S/ ' }}</span>
+          </div>
+        }
+      </section>
+
+      <section class="card p-6">
+        <div class="form-section-title mb-3"><app-icon name="user" size="w-4 h-4" /> Guía</div>
+        @if (manifiesto()?.guia; as nombre) {
+          <div class="flex items-center gap-3">
+            <div class="avatar w-11 h-11 bg-gradient-to-br from-brand-50 to-brand-100 text-brand-700 ring-1 ring-brand-100"><app-icon name="user" size="w-5 h-5" /></div>
+            <div class="min-w-0">
+              <div class="font-semibold text-zinc-900 truncate">{{ nombre }}</div>
+              @if (manifiesto()?.guiaTelefono; as tel) { <a [href]="'tel:' + tel" class="text-sm text-zinc-500 inline-flex items-center gap-1.5 hover:text-brand-700"><app-icon name="phone" size="w-3.5 h-3.5" />{{ tel }}</a> }
+            </div>
+          </div>
+        } @else {
+          <p class="text-sm text-amber-700">Sin guía asignado.@if (gestiona) { Edítala en <a class="link" routerLink="/salidas">Salidas</a>. }</p>
+        }
+      </section>
+    </aside>
+  </div>
+} @else {
+  <div class="space-y-4">
+    <div class="skeleton h-28"></div>
+    <div class="grid lg:grid-cols-3 gap-6"><div class="skeleton h-80 lg:col-span-2"></div><div class="skeleton h-80"></div></div>
+  </div>
+}

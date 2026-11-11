@@ -1,5 +1,6 @@
 import { AuthService } from '../../core/services/auth.service';
 import { CurrencyPipe, DatePipe } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TourStore } from '../../core/services/tour-store.service';
@@ -22,7 +23,8 @@ export class PagosComponent {
   gestiona = inject(AuthService).puede('REGISTRAR_PAGO');
 
   texto = signal('');
-  estado = signal('');
+  // ?estado=PENDIENTE: llega desde el aviso "pagos por validar" del panel
+  estado = signal(inject(ActivatedRoute).snapshot.queryParamMap.get('estado') ?? '');
   estados = [{ valor: '', texto: 'Todos' }, { valor: 'APROBADO', texto: 'Aprobados' }, { valor: 'PENDIENTE', texto: 'Pendientes' },
              { valor: 'RECHAZADO', texto: 'Rechazados' }, { valor: 'REEMBOLSADO', texto: 'Reembolsados' }];
 

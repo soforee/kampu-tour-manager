@@ -127,7 +127,7 @@ INSERT INTO SALIDAS_PROGRAMADAS (salida_id, paquete_id, guia_id, fecha_inicio, f
 INSERT INTO SALIDAS_PROGRAMADAS (salida_id, paquete_id, guia_id, fecha_inicio, fecha_fin, cupos_maximos, cupos_disponibles, estado) VALUES (2, 1, 1, TRUNC(SYSDATE) + 30, TRUNC(SYSDATE) + 33, 20, 18, 'PROGRAMADA');
 INSERT INTO SALIDAS_PROGRAMADAS (salida_id, paquete_id, guia_id, fecha_inicio, fecha_fin, cupos_maximos, cupos_disponibles, estado) VALUES (3, 2, 2, TRUNC(SYSDATE) + 4,  TRUNC(SYSDATE) + 5,  15, 12, 'PROGRAMADA');
 INSERT INTO SALIDAS_PROGRAMADAS (salida_id, paquete_id, guia_id, fecha_inicio, fecha_fin, cupos_maximos, cupos_disponibles, estado) VALUES (4, 3, 3, TRUNC(SYSDATE) + 10, TRUNC(SYSDATE) + 12, 16, 16, 'PROGRAMADA');
-INSERT INTO SALIDAS_PROGRAMADAS (salida_id, paquete_id, guia_id, fecha_inicio, fecha_fin, cupos_maximos, cupos_disponibles, estado) VALUES (5, 4, 4, TRUNC(SYSDATE) + 1,  TRUNC(SYSDATE) + 2,  25, 21, 'CONFIRMADA');
+INSERT INTO SALIDAS_PROGRAMADAS (salida_id, paquete_id, guia_id, fecha_inicio, fecha_fin, cupos_maximos, cupos_disponibles, estado) VALUES (5, 4, 4, TRUNC(SYSDATE) + 1,  TRUNC(SYSDATE) + 2,  25, 21, 'PROGRAMADA');
 INSERT INTO SALIDAS_PROGRAMADAS (salida_id, paquete_id, guia_id, fecha_inicio, fecha_fin, cupos_maximos, cupos_disponibles, estado) VALUES (6, 5, 4, TRUNC(SYSDATE) + 23, TRUNC(SYSDATE) + 26, 12, 10, 'PROGRAMADA');
 INSERT INTO SALIDAS_PROGRAMADAS (salida_id, paquete_id, guia_id, fecha_inicio, fecha_fin, cupos_maximos, cupos_disponibles, estado) VALUES (7, 1, 1, TRUNC(SYSDATE) - 33, TRUNC(SYSDATE) - 30, 20, 18, 'COMPLETADA');
 INSERT INTO SALIDAS_PROGRAMADAS (salida_id, paquete_id, guia_id, fecha_inicio, fecha_fin, cupos_maximos, cupos_disponibles, estado) VALUES (8, 3, 3, TRUNC(SYSDATE) - 20, TRUNC(SYSDATE) - 18, 16, 13, 'COMPLETADA');
@@ -190,6 +190,7 @@ INSERT INTO PAGOS (pago_id, reserva_id, monto, moneda, tipo_cambio, metodo_pago,
 INSERT INTO PAGOS (pago_id, reserva_id, monto, moneda, tipo_cambio, metodo_pago, codigo_transaccion, fecha_pago, estado_transaccion, registrado_por) VALUES (9, 5, 630, 'PEN', 1, 'Efectivo', 'EF-00013', SYSTIMESTAMP - INTERVAL '15' DAY, 'APROBADO', 'VENDEDOR');
 INSERT INTO PAGOS (pago_id, reserva_id, monto, moneda, tipo_cambio, metodo_pago, codigo_transaccion, fecha_pago, estado_transaccion, registrado_por) VALUES (10, 6, 264, 'USD', 3.75, 'Transferencia', 'OP-902277', SYSTIMESTAMP - INTERVAL '12' DAY, 'APROBADO', 'VENDEDOR');
 INSERT INTO PAGOS (pago_id, reserva_id, monto, moneda, tipo_cambio, metodo_pago, codigo_transaccion, fecha_pago, estado_transaccion, registrado_por) VALUES (11, 7, 300, 'PEN', 1, 'Yape', 'YP-54001', SYSTIMESTAMP - INTERVAL '25' DAY, 'APROBADO', 'VENDEDOR');
+INSERT INTO PAGOS (pago_id, reserva_id, monto, moneda, tipo_cambio, metodo_pago, codigo_transaccion, fecha_pago, estado_transaccion, registrado_por) VALUES (12, 8, 760, 'PEN', 1, 'Transferencia', 'OP-903310', SYSTIMESTAMP - INTERVAL '5' DAY, 'APROBADO', 'VENDEDOR');
 
 -- Montos pagados (suma de pagos APROBADOS) y estados; los cambios quedan en AUDITORIA
 UPDATE RESERVAS SET monto_pagado = 3700, estado_pago = 'PAGADO',  estado_reserva = 'COMPLETADA' WHERE reserva_id = 1;
@@ -197,7 +198,7 @@ UPDATE RESERVAS SET monto_pagado = 2940, estado_pago = 'PAGADO',  estado_reserva
 UPDATE RESERVAS SET monto_pagado = 1850, estado_pago = 'PARCIAL', estado_reserva = 'CONFIRMADA' WHERE reserva_id = 3;
 UPDATE RESERVAS SET monto_pagado = 630,  estado_pago = 'PARCIAL', estado_reserva = 'CONFIRMADA' WHERE reserva_id = 5;
 UPDATE RESERVAS SET monto_pagado = 990,  estado_pago = 'PARCIAL'                                WHERE reserva_id = 6;
-UPDATE RESERVAS SET estado_reserva = 'CONFIRMADA'                                               WHERE reserva_id = 8;
+UPDATE RESERVAS SET monto_pagado = 760,  estado_pago = 'PARCIAL', estado_reserva = 'CONFIRMADA' WHERE reserva_id = 8;
 -- Anulación de la reserva 7: el pago se reembolsa y el cupo ya está devuelto en la salida 4
 UPDATE PAGOS    SET estado_transaccion = 'REEMBOLSADO' WHERE pago_id = 11;
 UPDATE RESERVAS SET estado_reserva = 'ANULADA', estado_pago = 'REEMBOLSADO', forma_reembolso = 'Yape', usuario_anula_id = 1 WHERE reserva_id = 7;

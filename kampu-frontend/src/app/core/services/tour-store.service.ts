@@ -3,7 +3,7 @@ import { computed, inject, Injectable, signal, WritableSignal } from '@angular/c
 import { Observable } from 'rxjs';
 import {
   Cliente, ClienteForm, ContactoReserva, EstadoOperacion, EstadoOperacionInfo, EstadoTransaccion, EstimacionDuracion,
-  HistorialOperacion, Lugar, LugarForm, Moneda, Operacion, OperacionForm, PaqueteForm, PaqueteTour, Pago, PasajeroDraft,
+  HistorialOperacion, Lugar, LugarForm, Manifiesto, Moneda, Operacion, OperacionForm, PaqueteForm, PaqueteTour, Pago, PasajeroDraft,
   PasajeroReserva, Permiso, Personal, PersonalForm, Proveedor, ProveedorForm, RecursoCandidato, Reserva, ResumenPaquete, Rol,
   SalidaForm, SalidaProgramada, Sesion, Vehiculo, VehiculoForm
 } from '../models';
@@ -228,6 +228,11 @@ export class TourStore {
   // Operador / Ventas: salida en ejecución (CONFIRMADA) o terminada (COMPLETADA)
   marcarEjecucion(id: number, estado: 'CONFIRMADA' | 'COMPLETADA'): Observable<SalidaProgramada> {
     return this.http.patch<SalidaProgramada>(`${API}/salidas/${id}/ejecucion`, { estado: estado });
+  }
+
+  // Lista de pasajeros de la salida (para el guía y el conductor)
+  manifiesto(salidaId: number): Observable<Manifiesto> {
+    return this.http.get<Manifiesto>(`${API}/salidas/${salidaId}/manifiesto`);
   }
 
   // Se envía clienteId (cliente registrado) o contacto (cliente nuevo), nunca ambos

@@ -7,6 +7,7 @@ import { ReservasComponent } from './features/reservas/reservas.component';
 import { ReservaNuevaComponent } from './features/reservas/reserva-nueva.component';
 import { ReservaDetalleComponent } from './features/reservas/reserva-detalle.component';
 import { SalidasComponent } from './features/salidas/salidas.component';
+import { SalidaDetalleComponent } from './features/salidas/salida-detalle.component';
 import { PaquetesComponent } from './features/paquetes/paquetes.component';
 import { PagosComponent } from './features/pagos/pagos.component';
 import { ClientesComponent } from './features/clientes/clientes.component';
@@ -39,6 +40,7 @@ export const routes: Routes = [
       { path: 'reservas/nueva', component: ReservaNuevaComponent, data: permiso('GESTIONAR_RESERVAS') },
       { path: 'reservas/:id', component: ReservaDetalleComponent, data: permiso('VER_RESERVAS') },
       { path: 'salidas', component: SalidasComponent, data: permiso('VER_RESUMEN') },
+      { path: 'salidas/:id', component: SalidaDetalleComponent, data: permiso('VER_RESUMEN') },
       { path: 'paquetes', component: PaquetesComponent, data: permiso('GESTIONAR_CATALOGO') },
       { path: 'pagos', component: PagosComponent, data: permiso('VER_MONTOS') },
       { path: 'clientes', component: ClientesComponent, data: permiso('VER_CLIENTES') },

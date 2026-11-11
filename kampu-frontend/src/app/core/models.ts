@@ -293,6 +293,47 @@ export interface ResumenPaquete {
   montoCobrado: number | null;
 }
 
+// Manifiesto de una salida (GET /salidas/{id}/manifiesto). estadoPago y saldo solo llegan con VER_MONTOS.
+export interface PasajeroManifiesto {
+  pasajeroId: number;
+  nombreCompleto: string;
+  tipoDocumento: TipoDocumento;
+  numeroDocumento: string;
+  nacionalidad: string | null;
+  edad: number | null;
+  reservaId: number;
+  estadoReserva: EstadoReserva;
+  titular: string | null;
+  titularTelefono: string | null;
+  observaciones: string | null;
+  estadoPago: EstadoPagoReserva | null;
+  saldo: number | null;
+}
+
+export interface Manifiesto {
+  salidaId: number;
+  paquete: string;
+  fechaInicio: string;
+  fechaFin: string;
+  estado: EstadoSalida;
+  guia: string | null;
+  guiaTelefono: string | null;
+  cuposMaximos: number;
+  pasajerosConfirmados: number;
+  pasajerosPendientes: number;
+  pasajeros: PasajeroManifiesto[];
+}
+
+// Aviso del panel "Requiere atención"
+export interface Alerta {
+  nivel: 'alta' | 'media';
+  icono: string;
+  titulo: string;
+  detalle: string;
+  ruta: (string | number)[];
+  consulta?: { [clave: string]: string | number };
+}
+
 export interface RegistroForm {
   nombreCompleto: string;
   tipoDocumento: TipoDocumento;

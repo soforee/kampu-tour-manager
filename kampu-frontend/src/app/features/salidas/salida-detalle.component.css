@@ -1,0 +1,10 @@
+/* La columna "Firma" y el encabezado con logo existen solo en la hoja impresa */
+.solo-impresion, .solo-impresion-celda { display: none; }
+
+@media print {
+  .solo-impresion { display: block; }
+  .solo-impresion-celda { display: table-cell; min-width: 110px; }
+  .manifiesto { border: 0 !important; box-shadow: none !important; background: #fff !important; }
+  .manifiesto .tbl { font-size: 12px; }
+  .manifiesto .td { padding-top: 10px; padding-bottom: 10px; border-bottom: 1px solid #D0C8A6; }
+}
