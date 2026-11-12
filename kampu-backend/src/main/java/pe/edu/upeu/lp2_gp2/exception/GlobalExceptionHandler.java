@@ -103,7 +103,7 @@ public class GlobalExceptionHandler {
         if (campo.equals("clienteId")) return "cliente";
         if (campo.equals("salidaId")) return "salida";
         if (campo.equals("guiaId")) return "guía";
-        if (campo.equals("empresaId")) return "empresa";
+        if (campo.equals("proveedorId")) return "proveedor";
         if (campo.equals("vehiculoId")) return "vehículo";
         if (campo.equals("conductorId")) return "conductor";
         if (campo.equals("origenId")) return "origen";
@@ -112,7 +112,6 @@ public class GlobalExceptionHandler {
         if (campo.equals("horaProgramadaSalida")) return "hora de salida";
         if (campo.equals("horaEstimadaLlegada")) return "llegada estimada";
         if (campo.equals("capacidadPax")) return "capacidad";
-        if (campo.equals("duracionEstimadaMin")) return "duración estimada";
         if (campo.equals("fechaProxMantenimiento")) return "próximo mantenimiento";
         if (campo.equals("fechaVencLicencia")) return "vencimiento de licencia";
         if (campo.equals("reservaId")) return "reserva";

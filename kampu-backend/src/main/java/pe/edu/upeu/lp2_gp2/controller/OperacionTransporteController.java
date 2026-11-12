@@ -33,22 +33,8 @@ public class OperacionTransporteController {
 
     // Duración real del trayecto: OSRM (OpenStreetMap) o coordenadas de los lugares
     @GetMapping("/estimar-duracion")
-    public ResponseEntity<EstimacionDuracionDTO> estimarDuracion(@RequestParam Long origenId, @RequestParam Long destinoId,
-                                                                 @RequestParam(required = false) String tipoServicio) {
-        return ResponseEntity.ok(operacionService.estimarDuracion(origenId, destinoId, tipoServicio));
-    }
-
-    // Asignación automática de todas las operaciones pendientes (?fecha=AAAA-MM-DD para un día)
-    @PostMapping("/asignar-automatico")
-    public ResponseEntity<AsignacionMasivaDTO> asignarPendientes(
-            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate fecha) {
-        return ResponseEntity.ok(operacionService.asignarPendientes(fecha));
-    }
-
-    // La empresa proveedora acepta o rechaza el servicio asignado
-    @PatchMapping("/{id}/respuesta")
-    public ResponseEntity<OperacionDTO> responder(@PathVariable Long id, @Valid @RequestBody RespuestaServicioRequestDTO dto) {
-        return ResponseEntity.ok(operacionService.responder(id, dto));
+    public ResponseEntity<EstimacionDuracionDTO> estimarDuracion(@RequestParam Long origenId, @RequestParam Long destinoId) {
+        return ResponseEntity.ok(operacionService.estimarDuracion(origenId, destinoId));
     }
 
     @GetMapping("/{id}")

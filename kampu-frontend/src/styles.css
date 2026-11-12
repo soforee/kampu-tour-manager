@@ -51,7 +51,7 @@ input[type='checkbox'], input[type='radio'] { accent-color: #4B5B1D; width: 1rem
   border: 1px solid rgba(229, 222, 194, .7);
 }
 .swal2-title { font-size: 1.3rem !important; font-weight: 900 !important; letter-spacing: -0.01em; color: #2C3610 !important; padding-top: .5rem !important; }
-.swal2-html-container { white-space: pre-line; font-size: .925rem !important; color: #5B5741 !important; line-height: 1.6 !important; }
+.swal2-html-container { font-size: .925rem !important; color: #5B5741 !important; line-height: 1.6 !important; }
 .swal2-icon { transform: scale(.8); margin: .5rem auto 0 !important; }
 .swal2-actions { gap: .5rem; margin-top: 1.5rem !important; }
 .swal2-styled {

@@ -15,10 +15,6 @@ export class AlertService {
     Swal.fire({ title, text: message, icon: 'error', confirmButtonColor: DANGER });
   }
 
-  warning(message: string, title: string = 'Atención') {
-    Swal.fire({ title, text: message, icon: 'warning', confirmButtonColor: BRAND });
-  }
-
   async confirm(message: string, title: string = '¿Estás seguro?', confirmText: string = 'Sí, continuar'): Promise<boolean> {
     const result = await Swal.fire({
       title, text: message, icon: 'warning', showCancelButton: true,

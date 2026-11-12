@@ -22,7 +22,7 @@ public final class Reglas {
     // VEHICULO.placa es VARCHAR2(10)
     public static final String PLACA = "^\\s*([A-Za-z0-9-]{3,10})?\\s*$";
 
-    // EMPRESA_TRANSPORTE.ruc: chk_emp_ruc = '^(10|15|17|20)[0-9]{9}$'
+    // PROVEEDORES.ruc: chk_prov_ruc = '^(10|15|17|20)[0-9]{9}$'
     public static final String RUC = "^(10|15|17|20)[0-9]{9}$";
     public static final String MSG_RUC = "El RUC tiene 11 dígitos y empieza con 10, 15, 17 o 20.";
 

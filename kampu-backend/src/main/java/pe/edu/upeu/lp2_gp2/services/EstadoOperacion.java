@@ -11,13 +11,9 @@ public enum EstadoOperacion {
     PROGRAMADO("Programado", 1, false, false),
     ASIGNADO("Asignado", 2, true, false),
     EMBARQUE("Embarque", 3, true, false),
-    EN_ESPERA_SALIDA("En espera de salida", 4, true, false),
-    EN_RUTA("En ruta", 5, true, false),
-    LLEGADA_PROXIMA("Llegada próxima", 6, true, false),
-    FINALIZADO("Finalizado", 7, true, true),
-    // Retrasado: la salida se reprograma (hora_salida_estimada); conserva sus recursos si los tenía
-    RETRASADO("Retrasado", 8, false, false),
-    CANCELADO("Cancelado", 9, false, true);
+    EN_RUTA("En ruta", 4, true, false),
+    FINALIZADO("Finalizado", 5, true, true),
+    CANCELADO("Cancelado", 6, false, true);
 
     private final String nombre;
     private final int orden;
@@ -34,13 +30,10 @@ public enum EstadoOperacion {
     /** Transiciones permitidas desde este estado */
     public Set<EstadoOperacion> siguientes() {
         return switch (this) {
-            case PROGRAMADO -> Set.of(ASIGNADO, RETRASADO, CANCELADO);
-            case ASIGNADO -> Set.of(PROGRAMADO, EMBARQUE, RETRASADO, CANCELADO);   // PROGRAMADO = desasignar
-            case EMBARQUE -> Set.of(EN_ESPERA_SALIDA, EN_RUTA, RETRASADO, CANCELADO);
-            case EN_ESPERA_SALIDA -> Set.of(EN_RUTA, RETRASADO, CANCELADO);
-            case RETRASADO -> Set.of(PROGRAMADO, ASIGNADO, EMBARQUE, EN_ESPERA_SALIDA, EN_RUTA, CANCELADO);
-            case EN_RUTA -> Set.of(LLEGADA_PROXIMA, FINALIZADO);
-            case LLEGADA_PROXIMA -> Set.of(FINALIZADO);
+            case PROGRAMADO -> Set.of(ASIGNADO, CANCELADO);
+            case ASIGNADO -> Set.of(PROGRAMADO, EMBARQUE, CANCELADO);   // PROGRAMADO = desasignar
+            case EMBARQUE -> Set.of(EN_RUTA, CANCELADO);
+            case EN_RUTA -> Set.of(FINALIZADO);
             case FINALIZADO, CANCELADO -> Set.of();
         };
     }
@@ -68,16 +61,6 @@ public enum EstadoOperacion {
     /** Ocupa vehículo y conductor (cuenta para cruces y horas): todo menos CANCELADO */
     public boolean ocupaRecursos() {
         return this != CANCELADO;
-    }
-
-    /** Ya salió del punto de origen (en ruta o por llegar) */
-    public boolean enTransito() {
-        return this == EN_RUTA || this == LLEGADA_PROXIMA;
-    }
-
-    /** Aún no sale: se puede asignar, reasignar o reprogramar */
-    public boolean antesDeSalir() {
-        return this == PROGRAMADO || this == ASIGNADO || this == RETRASADO;
     }
 
     public boolean esFinal() {

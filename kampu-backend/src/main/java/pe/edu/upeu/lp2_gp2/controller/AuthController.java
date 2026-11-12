@@ -4,7 +4,6 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import pe.edu.upeu.lp2_gp2.dto.AfiliacionRequestDTO;
 import pe.edu.upeu.lp2_gp2.dto.LoginRequestDTO;
 import pe.edu.upeu.lp2_gp2.dto.RegistroRequestDTO;
 import pe.edu.upeu.lp2_gp2.dto.SesionDTO;
@@ -29,12 +28,6 @@ public class AuthController {
     @PostMapping("/registro")
     public ResponseEntity<SesionDTO> registrar(@Valid @RequestBody RegistroRequestDTO dto) {
         return new ResponseEntity<>(authService.registrar(dto), HttpStatus.CREATED);
-    }
-
-    // Afiliación de una empresa de transporte (queda PENDIENTE hasta que Kampu la apruebe)
-    @PostMapping("/afiliacion")
-    public ResponseEntity<SesionDTO> afiliar(@Valid @RequestBody AfiliacionRequestDTO dto) {
-        return new ResponseEntity<>(authService.afiliar(dto), HttpStatus.CREATED);
     }
 
     // Sesión vigente y permisos actualizados (el frontend la pide al recargar)
