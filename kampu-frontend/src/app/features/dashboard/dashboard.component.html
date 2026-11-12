@@ -35,6 +35,12 @@
         <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 grid place-items-center ring-1 ring-emerald-100"><app-icon name="trending-up" size="w-5 h-5" /></div>
       </div>
       <div class="mt-3 text-2xl sm:text-3xl font-extrabold font-wide tracking-tight text-emerald-700">{{ kpis().cobrado | currency:'S/':'symbol':'1.0-0' }}</div>
+      <div class="mt-1 text-xs text-zinc-500">Este mes {{ cobros().esteMes | currency:'S/':'symbol':'1.0-0' }}
+        @if (cobros().variacion !== null) {
+          <span class="ml-1 inline-flex items-center rounded-md px-1.5 py-0.5 text-[11px] font-bold" [class]="cobros().variacion! >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'"
+                [title]="'Mes anterior: S/ ' + cobros().mesPasado.toFixed(2)">{{ cobros().variacion! >= 0 ? '▲' : '▼' }} {{ cobros().variacion! >= 0 ? '+' : '' }}{{ cobros().variacion }}% vs mes anterior</span>
+        }
+      </div>
       <div class="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-emerald-500/70 to-transparent"></div>
     </div>
     <div class="card card-hover p-5 relative overflow-hidden">
@@ -43,6 +49,7 @@
         <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 grid place-items-center ring-1 ring-amber-100"><app-icon name="hourglass" size="w-5 h-5" /></div>
       </div>
       <div class="mt-3 text-2xl sm:text-3xl font-extrabold font-wide tracking-tight text-amber-600">{{ kpis().porCobrar | currency:'S/':'symbol':'1.0-0' }}</div>
+      <div class="mt-1 text-xs text-zinc-500">En {{ reservasConSaldo() }} reserva(s) con saldo</div>
       <div class="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-amber-400/70 to-transparent"></div>
     </div>
   } @else {
@@ -98,6 +105,109 @@
       <div class="px-6 py-5 text-sm text-zinc-500">Todo en orden: no hay salidas, reservas ni recursos que necesiten tu atención.</div>
     }
   </section>
+}
+
+<!-- Hoy: lo que pasa en el día -->
+@if (store.cargado()) {
+  <section class="card overflow-hidden mb-8 animate-fade-up" data-testid="hoy">
+    <div class="card-header">
+      <h2 class="card-title"><span class="ico"><app-icon name="clock" size="w-4 h-4" /></span>Hoy</h2>
+      <div class="flex flex-wrap gap-2 text-xs">
+        <span class="chip !font-sans">{{ hoyDatos().salidas.length }} salida(s) empiezan</span>
+        @if (traficoVisible()) { <span class="chip !font-sans">{{ hoyDatos().operaciones.length }} traslado(s)</span> }
+        @if (comercial()) {
+          <a routerLink="/pagos" class="chip !font-sans hover:!bg-amber-100" [class]="hoyDatos().pagosPorValidar ? '!bg-amber-50 !text-amber-800' : ''">{{ hoyDatos().pagosPorValidar }} pago(s) por validar</a>
+        }
+      </div>
+    </div>
+    @if (hoyDatos().operaciones.length || hoyDatos().salidas.length) {
+      <ol class="divide-y divide-zinc-100">
+        @for (s of hoyDatos().salidas; track s.salidaId) {
+          <li><a [routerLink]="['/salidas', s.salidaId]" class="flex items-center gap-4 px-6 py-3 hover:bg-sand-50 transition-colors">
+            <span class="w-14 shrink-0 font-mono text-xs font-bold text-zinc-500">Todo el día</span>
+            <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-700"><app-icon name="flag" size="w-4 h-4" /></span>
+            <span class="min-w-0 flex-1"><span class="block text-sm font-semibold text-zinc-900 truncate">Empieza {{ s.paqueteNombre }}</span>
+              <span class="block text-xs text-zinc-500">{{ s.pasajeros }} pasajero(s){{ s.guia ? ' · Guía ' + s.guia : ' · Sin guía' }}</span></span>
+            <app-badge [estado]="s.estadoSalida" />
+          </a></li>
+        }
+        @for (o of hoyDatos().operaciones; track o.operacionId) {
+          <li><a [routerLink]="traficoVisible() ? '/operaciones' : null" class="flex items-center gap-4 px-6 py-3 hover:bg-sand-50 transition-colors">
+            <span class="w-14 shrink-0 font-mono text-sm font-bold text-zinc-900">{{ o.horaProgramadaSalida | date:'HH:mm' }}</span>
+            <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-zinc-100 text-zinc-600"><app-icon name="truck" size="w-4 h-4" /></span>
+            <span class="min-w-0 flex-1"><span class="block text-sm font-semibold text-zinc-900 truncate">{{ o.origen }} → {{ o.destino }}</span>
+              <span class="block text-xs text-zinc-500 truncate">{{ o.codigoOperacion }} · {{ o.placa ?? 'Sin vehículo' }}{{ o.conductor ? ' · ' + o.conductor : '' }} · {{ o.paxProgramados }} pax</span></span>
+            <app-badge [estado]="o.estadoActual" />
+          </a></li>
+        }
+      </ol>
+    } @else {
+      <div class="px-6 py-5 text-sm text-zinc-500">Hoy no empiezan salidas ni hay traslados programados.</div>
+    }
+  </section>
+}
+
+<!-- Gráficos -->
+@if (store.cargado()) {
+  <div class="grid gap-6 mb-8" [class.lg:grid-cols-2]="comercial()">
+    @if (comercial()) {
+      <section class="card p-5 sm:p-6" data-testid="grafico-ventas">
+        <div class="flex items-start justify-between gap-3 mb-5">
+          <div>
+            <h2 class="card-title">Vendido por mes</h2>
+            <p class="text-xs text-zinc-500 mt-0.5">Monto de reservas no anuladas · últimos 6 meses</p>
+          </div>
+          <button type="button" class="link text-xs" (click)="verTablaVentas.set(!verTablaVentas())">{{ verTablaVentas() ? 'Ver gráfico' : 'Ver tabla' }}</button>
+        </div>
+        @if (verTablaVentas()) {
+          <table class="tbl"><thead><tr><th class="th">Mes</th><th class="th text-right">Reservas</th><th class="th text-right">Vendido</th></tr></thead>
+            <tbody>@for (b of ventasPorMes().barras; track b.clave) {
+              <tr class="border-t border-zinc-100"><td class="td capitalize">{{ b.fecha | date:'MMMM yyyy' }}</td><td class="td text-right">{{ b.reservas }}</td><td class="td text-right font-semibold">{{ b.monto | currency:'S/':'symbol':'1.2-2' }}</td></tr>
+            }</tbody></table>
+        } @else {
+          <div class="relative h-52 pl-10" role="img" [attr.aria-label]="'Vendido por mes. Último mes: S/ ' + ventasPorMes().barras[5].monto">
+            <!-- Eje y líneas de referencia (hairline, recesivas) -->
+            @for (m of ventasPorMes().marcas; track $index) {
+              <div class="absolute left-10 right-0 border-t border-zinc-100" [style.bottom.%]="(m / ventasPorMes().tope) * 100 * 0.86 + 14"></div>
+              <span class="absolute left-0 w-8 -translate-y-1/2 text-right text-[10px] text-zinc-400" [style.bottom.%]="(m / ventasPorMes().tope) * 100 * 0.86 + 14" style="transform: translateY(50%)">{{ compacto(m) }}</span>
+            }
+            <div class="absolute left-10 right-0 top-0 bottom-0 flex items-end justify-around gap-2">
+              @for (b of ventasPorMes().barras; track b.clave) {
+                <div class="group relative flex h-full flex-1 flex-col items-center justify-end">
+                  <div class="relative flex w-full justify-center" [style.height.%]="b.alto * 0.86">
+                    @if (b.etiqueta) { <span class="absolute -top-5 whitespace-nowrap text-[11px] font-bold text-zinc-700">{{ compacto(b.monto) }}</span> }
+                    <div class="h-full w-full max-w-6 rounded-t-[4px] bg-brand-500 transition-opacity group-hover:opacity-80" [class.min-h-[2px]]="b.monto > 0"></div>
+                    <!-- Tooltip -->
+                    <div class="pointer-events-none absolute bottom-full mb-6 hidden whitespace-nowrap rounded-lg bg-zinc-900 px-2.5 py-1.5 text-[11px] text-white shadow-lifted group-hover:block z-10">
+                      <div class="font-bold capitalize">{{ b.fecha | date:'MMMM yyyy' }}</div>
+                      <div>{{ b.monto | currency:'S/':'symbol':'1.0-0' }} · {{ b.reservas }} reserva(s)</div>
+                    </div>
+                  </div>
+                  <span class="mt-2 h-4 text-[11px] capitalize text-zinc-500">{{ b.fecha | date:'MMM' }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </section>
+    }
+    <section class="card p-5 sm:p-6" data-testid="grafico-pasajeros">
+      <h2 class="card-title">Pasajeros por paquete</h2>
+      <p class="text-xs text-zinc-500 mt-0.5 mb-5">Vendidos en salidas no canceladas{{ comercial() ? '' : ' por empezar o en curso' }}</p>
+      @if (pasajerosPorPaquete().length) {
+        <ul class="space-y-3.5">
+          @for (f of pasajerosPorPaquete(); track f.nombre) {
+            <li class="group" [title]="f.nombre + ': ' + f.pax + ' pasajero(s)'">
+              <div class="mb-1 flex items-baseline justify-between gap-3 text-sm"><span class="truncate text-zinc-700">{{ f.nombre }}</span><span class="font-bold text-zinc-900 tabular-nums">{{ f.pax }}</span></div>
+              <div class="h-2.5 rounded-full bg-zinc-100"><div class="h-full rounded-r-[4px] rounded-l-full bg-brand-500 transition-[width,opacity] duration-700 group-hover:opacity-80" [style.width.%]="f.ancho"></div></div>
+            </li>
+          }
+        </ul>
+      } @else {
+        <div class="empty !py-8"><span class="ico"><app-icon name="users" size="w-5 h-5" /></span>Aún no hay pasajeros vendidos.</div>
+      }
+    </section>
+  </div>
 }
 
 <div [class]="comercial() ? 'grid gap-6 lg:grid-cols-5' : 'grid gap-6'">

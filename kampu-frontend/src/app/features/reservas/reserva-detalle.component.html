@@ -1,7 +1,5 @@
 @if (reserva(); as r) {
-  <a routerLink="/reservas" class="group inline-flex items-center gap-1.5 rounded-lg px-2 py-1 -ml-2 text-sm font-medium text-zinc-500 hover:bg-white hover:text-zinc-900 hover:shadow-soft transition-all mb-4">
-    <app-icon name="arrow-left" size="w-4 h-4 transition-transform group-hover:-translate-x-0.5" /> Reservas
-  </a>
+  <app-migas [items]="[{ texto: 'Reservas', ruta: '/reservas' }, { texto: codReserva() }]" />
 
   <div class="card p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4 mb-6">
     <div class="flex items-center gap-4">
@@ -173,7 +171,7 @@
     </div>
 
     <aside class="card overflow-hidden lg:sticky lg:top-8">
-      <div class="bg-gradient-to-br from-zinc-800 to-zinc-950 px-6 py-5 text-white">
+      <div class="tema-claro bg-gradient-to-br from-zinc-800 to-zinc-950 px-6 py-5 text-white">
         <div class="text-[11px] font-extrabold uppercase tracking-[0.14em] text-leaf-300">Resumen financiero</div>
         <div class="mt-1 text-2xl font-extrabold font-wide tracking-tight">{{ r.montoTotal | currency:'S/' }}</div>
       </div>

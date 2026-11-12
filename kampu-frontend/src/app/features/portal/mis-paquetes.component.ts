@@ -6,6 +6,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ImagenService } from '../../core/services/imagen.service';
 import { PortalService } from '../../core/services/portal.service';
 import { mensajeError } from '../../core/utils/api';
+import { cuentaRegresiva, porcentajePagado } from '../../core/utils/viaje';
 import { BadgeComponent } from '../../shared/badge.component';
 import { IconComponent } from '../../shared/icon.component';
 import { PortalHeaderComponent } from './portal-header.component';
@@ -57,4 +58,6 @@ export class MisPaquetesComponent {
   }
 
   imagen(p: PortalPaquete) { return this.imagenes.url(p.imagen); }
+  faltan = cuentaRegresiva;
+  pagado = porcentajePagado;
 }

@@ -57,6 +57,14 @@ export class TourStore {
   conductores = computed(() => this.personal().filter(p => p.rol !== 'GUIA'));
 
   ocupado = signal(false);
+  // Último registro creado o editado ('cliente-12'): su fila se resalta un momento en la lista
+  resaltado = signal<string | null>(null);
+  private temporizador?: ReturnType<typeof setTimeout>;
+  resaltar(clave: string) {
+    this.resaltado.set(clave);
+    clearTimeout(this.temporizador);
+    this.temporizador = setTimeout(() => this.resaltado.set(null), 3500);
+  }
   cargado = signal(false);
 
   private cargando = false;

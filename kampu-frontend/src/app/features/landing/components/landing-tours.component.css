@@ -28,7 +28,7 @@
   gap: .35rem;
   padding: .35rem .75rem;
   border-radius: 999px;
-  background: rgba(255, 254, 248, .92);
+  background: rgb(var(--c-white) / .92);
   backdrop-filter: blur(6px);
   font-size: 12px;
   font-weight: 800;
@@ -49,7 +49,7 @@
   font-weight: 800;
   transition: all .3s ease-in-out;
 }
-.tour:hover .tour-btn { background: var(--kp-primary); border-color: var(--kp-primary); color: #FFFEF8; }
+.tour:hover .tour-btn { background: var(--kp-primary); border-color: var(--kp-primary); color: var(--kp-on-primary); }
 .tour-btn:hover { background: var(--kp-primary-hover) !important; box-shadow: 0 10px 22px -12px rgba(75, 91, 29, .8); }
 .tour-btn:active { transform: scale(.97); }
 

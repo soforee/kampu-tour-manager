@@ -24,4 +24,4 @@
   background: var(--kp-primary-soft);
   transition: all .3s ease-in-out;
 }
-.beneficio:hover .beneficio-icono { background: var(--kp-primary); color: #FFFEF8; transform: rotate(-4deg); }
+.beneficio:hover .beneficio-icono { background: var(--kp-primary); color: var(--kp-on-primary); transform: rotate(-4deg); }

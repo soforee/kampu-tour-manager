@@ -14,7 +14,7 @@ import { IconComponent } from '../../shared/icon.component';
 import { BadgeComponent } from '../../shared/badge.component';
 import { filtrarEscritura, filtrarPegado, sinRueda } from '../../core/utils/filtro';
 import { FormValidacion, telefonoRepetido, V } from '../../core/utils/validacion';
-import { etiqueta } from '../../core/utils/etiquetas';
+import { etiqueta, iconoLugar } from '../../core/utils/etiquetas';
 import { addDays, hoy } from '../../core/utils/date.util';
 import { ModalComponent } from '../../shared/modal.component';
 
@@ -49,6 +49,7 @@ export class RecursosComponent {
   estadosVehiculo: EstadoVehiculo[] = ['OPERATIVO', 'MANTENIMIENTO', 'INACTIVO'];
   tiposLugar: TipoLugar[] = ['AEROPUERTO', 'TERMINAL', 'HOTEL', 'ATRACTIVO', 'CIUDAD', 'OTRO'];
   etiqueta = etiqueta;
+  iconoLugar = iconoLugar;
   hoy = hoy();
   pronto = addDays(hoy(), 30);
 

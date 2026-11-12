@@ -7,9 +7,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 126 100'><g fill='%234B5B1D'><path d='M4 0H31Q35 0 35 4V32Q35 36.5 38.5 33.2L67 6Q73 .6 80 .6H109Q114 1 110.5 4.5L74 39.5Q71 42.5 74 45.5L124.5 94Q126.5 97.8 121.5 100H62Q51 100 49.5 94Q48.5 89 53 85Q63 77 65.5 71Q67.5 65 60 58.5Q49 50.5 30 46Q14 42.8 0 42.6V4Q0 0 4 0Z'/><path d='M0 45Q16 46.5 30 50.5Q42 54 47 59Q50.5 63 46.5 67.5Q41 72.5 30 77.5Q18 82.5 11 90.5Q6 97 3.5 98.5Q0 99.5 0 94Z'/></g></svg>">
 
+  <script>
+    // Tema claro/oscuro: preferencia guardada o la del sistema (antes de pintar, sin parpadeo)
+    try {
+      const t = localStorage.getItem('tm_tema');
+      if (t === 'oscuro' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.classList.add('dark');
+    } catch (e) {}
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
+    const v = n => `rgb(var(--c-${n}) / <alpha-value>)`;
     tailwind.config = {
+      darkMode: 'class',
       theme: {
         extend: {
           fontFamily: {
@@ -34,23 +43,19 @@
             'pop-in': 'pop-in .28s cubic-bezier(.2,.8,.2,1) both',
             'fade-in': 'fade-in .2s ease-out both'
           },
+          // Colores con variables CSS (styles.css): el modo oscuro solo cambia las variables
           colors: {
-            white: '#FFFEF8',
-            zinc: {
-              50: '#FAF6E6', 100: '#F2EDD6', 200: '#E5DEC2', 300: '#D0C8A6', 400: '#A49D7B', 500: '#78735A',
-              600: '#5B5741', 700: '#403F2C', 800: '#3A4716', 900: '#2C3610', 950: '#1D2409'
-            },
-            brand: {
-              50: '#F4F6E4', 100: '#E7ECC9', 200: '#CED89C', 300: '#AFBF68', 400: '#8B9E3F', 500: '#6B7E2B',
-              600: '#4B5B1D', 700: '#3F4C18', 800: '#333D14', 900: '#262E0F'
-            },
-            leaf: { 50: '#FAF9E3', 100: '#F3F0C2', 200: '#E6E08F', 300: '#D7D068', 400: '#C4BD45', 500: '#A9A232', 600: '#878126', 700: '#666120' },
-            emerald: {
-              50: '#EEF4E6', 100: '#D9E7C8', 200: '#B9D29C', 300: '#94B86C', 400: '#6F9B45', 500: '#56802F',
-              600: '#446825', 700: '#36521E', 800: '#2B4218', 900: '#223513'
-            },
-            earth: { 50: '#F7F0E8', 100: '#E6D6C7', 300: '#B58E6D', 400: '#8C6A4C', 500: '#6B4A32', 600: '#5A3D28', 700: '#472F1F' },
-            sand: { 50: '#FFFCF0', 100: '#FDF8E6', 200: '#F6F0DA', 300: '#E7DEBF' }
+            zinc: { 50: v('zinc-50'), 100: v('zinc-100'), 200: v('zinc-200'), 300: v('zinc-300'), 400: v('zinc-400'), 500: v('zinc-500'), 600: v('zinc-600'), 700: v('zinc-700'), 800: v('zinc-800'), 900: v('zinc-900'), 950: v('zinc-950') },
+            brand: { 50: v('brand-50'), 100: v('brand-100'), 200: v('brand-200'), 300: v('brand-300'), 400: v('brand-400'), 500: v('brand-500'), 600: v('brand-600'), 700: v('brand-700'), 800: v('brand-800'), 900: v('brand-900') },
+            leaf: { 50: v('leaf-50'), 100: v('leaf-100'), 200: v('leaf-200'), 300: v('leaf-300'), 400: v('leaf-400'), 500: v('leaf-500'), 600: v('leaf-600'), 700: v('leaf-700') },
+            emerald: { 50: v('emerald-50'), 100: v('emerald-100'), 200: v('emerald-200'), 300: v('emerald-300'), 400: v('emerald-400'), 500: v('emerald-500'), 600: v('emerald-600'), 700: v('emerald-700'), 800: v('emerald-800'), 900: v('emerald-900') },
+            earth: { 50: v('earth-50'), 100: v('earth-100'), 300: v('earth-300'), 400: v('earth-400'), 500: v('earth-500'), 600: v('earth-600'), 700: v('earth-700') },
+            sand: { 50: v('sand-50'), 100: v('sand-100'), 200: v('sand-200'), 300: v('sand-300') },
+            white: v('white'),
+            amber: { 50: v('amber-50'), 100: v('amber-100'), 200: v('amber-200'), 300: v('amber-300'), 400: v('amber-400'), 500: v('amber-500'), 600: v('amber-600'), 700: v('amber-700'), 800: v('amber-800'), 900: v('amber-900') },
+            rose: { 50: v('rose-50'), 100: v('rose-100'), 200: v('rose-200'), 300: v('rose-300'), 400: v('rose-400'), 500: v('rose-500'), 600: v('rose-600'), 700: v('rose-700'), 800: v('rose-800'), 900: v('rose-900') },
+            sky: { 50: v('sky-50'), 100: v('sky-100'), 200: v('sky-200'), 300: v('sky-300'), 400: v('sky-400'), 500: v('sky-500'), 600: v('sky-600'), 700: v('sky-700'), 800: v('sky-800'), 900: v('sky-900') },
+            violet: { 50: v('violet-50'), 100: v('violet-100'), 200: v('violet-200'), 300: v('violet-300'), 400: v('violet-400'), 500: v('violet-500'), 600: v('violet-600'), 700: v('violet-700'), 800: v('violet-800'), 900: v('violet-900') }
           }
         }
       }
@@ -109,8 +114,8 @@
       .tbl thead tr { @apply bg-sand-50; }
       .tbl tbody tr { @apply transition-colors duration-150; }
       .tbl tbody tr:hover { @apply !bg-brand-50/50; }
-      .th { @apply whitespace-nowrap border-b border-zinc-100 px-5 py-3 text-left text-[11px] font-extrabold uppercase tracking-[0.1em] text-zinc-500; }
-      .td { @apply px-5 py-3.5 align-middle; }
+      .th { @apply whitespace-nowrap border-b border-zinc-100 px-4 py-3 text-left text-[11px] font-extrabold uppercase tracking-[0.1em] text-zinc-500; }
+      .td { @apply px-4 py-3 align-middle; }
       .empty { @apply flex flex-col items-center justify-center gap-3 px-6 py-14 text-center text-sm text-zinc-400; }
       .empty > .ico { @apply grid h-12 w-12 place-items-center rounded-2xl bg-zinc-100 text-zinc-400; }
       .avatar { @apply grid shrink-0 place-items-center rounded-full font-semibold; }

@@ -1,25 +1,31 @@
-<div class="min-h-screen lg:pl-20">
+<div class="min-h-screen transition-[padding] duration-300" [class]="pref.menuColapsado() ? 'lg:pl-20' : 'lg:pl-64'">
   <header class="no-print lg:hidden sticky top-0 z-30 h-16 px-4 flex items-center justify-between bg-white/80 backdrop-blur-md border-b border-zinc-200/70 shadow-soft">
     <button type="button" class="icon-btn -ml-1 text-zinc-600" aria-label="Abrir menú" (click)="abierto.set(true)"><app-icon name="menu" /></button>
     <app-logo variante="horizontal" [alto]="22" />
-    <!-- Volver al inicio (móvil): no cierra la sesión -->
-    <a routerLink="/" class="icon-btn text-zinc-600" title="Volver al inicio" aria-label="Volver al inicio"><app-icon name="home" /></a>
+    <div class="flex items-center">
+      <button type="button" class="icon-btn text-zinc-600" [attr.aria-label]="pref.oscuro() ? 'Usar tema claro' : 'Usar tema oscuro'" (click)="pref.alternarTema()">
+        <app-icon [name]="pref.oscuro() ? 'sun' : 'moon'" />
+      </button>
+      <!-- Volver al inicio (móvil): no cierra la sesión -->
+      <a routerLink="/" class="icon-btn text-zinc-600" title="Volver al inicio" aria-label="Volver al inicio"><app-icon name="home" /></a>
+    </div>
   </header>
 
   @if (abierto()) {
     <div class="lg:hidden fixed inset-0 z-40 bg-zinc-950/40 backdrop-blur-[2px] animate-fade-in" (click)="abierto.set(false)"></div>
   }
 
+  <!-- Menú lateral: abierto (con textos) o colapsado (solo íconos, se despliega al pasar el mouse) -->
   <aside class="sidebar group/side fixed inset-y-0 left-0 z-50 w-72 flex flex-col overflow-hidden bg-white/95 backdrop-blur-xl border-r border-zinc-200/70 shadow-lifted
-                transition-[width,transform,box-shadow] duration-300 ease-[cubic-bezier(.2,.8,.2,1)]
-                lg:w-20 lg:shadow-soft lg:translate-x-0 lg:hover:w-64 lg:hover:shadow-lifted lg:focus-within:w-64"
+                transition-[width,transform,box-shadow] duration-300 ease-[cubic-bezier(.2,.8,.2,1)] lg:shadow-soft lg:translate-x-0"
+         [class]="pref.menuColapsado() ? 'lg:w-20 lg:hover:w-64 lg:hover:shadow-lifted lg:focus-within:w-64' : 'abierta lg:w-64'"
          [class.-translate-x-full]="!abierto()">
 
-    <div class="relative h-20 shrink-0 border-b border-zinc-100">
-      <div class="absolute left-[24px] top-1/2 -translate-y-1/2 hidden lg:block transition-opacity duration-200 lg:group-hover/side:opacity-0 lg:group-focus-within/side:opacity-0">
+    <div class="relative h-24 shrink-0 border-b border-zinc-100">
+      <div class="solo-colapsado absolute left-[24px] top-1/2 -translate-y-1/2 hidden lg:block transition-opacity duration-200 lg:group-hover/side:opacity-0 lg:group-focus-within/side:opacity-0">
         <app-logo variante="isotipo" [alto]="26" />
       </div>
-      <div class="absolute left-[24px] top-1/2 -translate-y-1/2 flex flex-col gap-1.5 whitespace-nowrap transition-opacity duration-200
+      <div class="lbl absolute left-[24px] top-1/2 -translate-y-1/2 flex flex-col gap-1.5 whitespace-nowrap transition-opacity duration-200
                   lg:opacity-0 lg:group-hover/side:opacity-100 lg:group-focus-within/side:opacity-100 lg:group-hover/side:delay-75">
         <app-logo variante="horizontal" [alto]="26" />
         <span class="eyebrow !text-[10px]">Tour Manager</span>
@@ -29,45 +35,59 @@
       </button>
     </div>
 
-    <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto overflow-x-hidden">
-      <div class="px-[18px] pb-2 eyebrow !text-[10px] whitespace-nowrap transition-opacity duration-200 lg:opacity-0 lg:group-hover/side:opacity-100 lg:group-focus-within/side:opacity-100">Menú</div>
+    <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto overflow-x-hidden" aria-label="Menú principal">
+      <div class="lbl px-[18px] pb-2 eyebrow !text-[10px] whitespace-nowrap transition-opacity duration-200 lg:opacity-0 lg:group-hover/side:opacity-100 lg:group-focus-within/side:opacity-100">Menú</div>
       @for (item of menu(); track item.ruta) {
-        <a [routerLink]="item.ruta" (click)="abierto.set(false)" [attr.aria-label]="item.texto"
+        <a [routerLink]="item.ruta" (click)="abierto.set(false)" [attr.aria-label]="item.texto" [title]="pref.menuColapsado() ? item.texto : ''"
            routerLinkActive="nav-active" [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
            class="nav-item group/item relative flex h-11 items-center gap-3.5 rounded-xl px-[18px] text-sm font-medium text-zinc-500 outline-none
                   transition-all duration-200 hover:bg-zinc-100 hover:text-zinc-900 focus-visible:ring-2 focus-visible:ring-brand-500/40">
           <span class="nav-ico relative shrink-0 transition-transform duration-200 group-hover/item:scale-110">
             <app-icon [name]="item.icono" size="w-5 h-5" />
             @if (item.ruta === '/reservas' && pendientes() > 0) {
-              <span class="absolute -right-1 -top-1 hidden lg:block h-2.5 w-2.5 rounded-full bg-amber-500 ring-2 ring-white transition-opacity lg:group-hover/side:opacity-0"></span>
+              <span class="solo-colapsado absolute -right-1 -top-1 hidden lg:block h-2.5 w-2.5 rounded-full bg-amber-500 ring-2 ring-white transition-opacity lg:group-hover/side:opacity-0"></span>
             }
           </span>
-          <span class="flex-1 whitespace-nowrap transition-all duration-200 lg:opacity-0 lg:-translate-x-1 lg:group-hover/side:opacity-100 lg:group-hover/side:translate-x-0 lg:group-focus-within/side:opacity-100 lg:group-focus-within/side:translate-x-0">{{ item.texto }}</span>
+          <span class="lbl flex-1 whitespace-nowrap transition-all duration-200 lg:opacity-0 lg:-translate-x-1 lg:group-hover/side:opacity-100 lg:group-hover/side:translate-x-0 lg:group-focus-within/side:opacity-100 lg:group-focus-within/side:translate-x-0">{{ item.texto }}</span>
           @if (item.ruta === '/reservas' && pendientes() > 0) {
-            <span class="nav-count text-[11px] font-semibold bg-amber-100 text-amber-800 rounded-full px-2 py-0.5 transition-opacity duration-200 lg:opacity-0 lg:group-hover/side:opacity-100 lg:group-focus-within/side:opacity-100">{{ pendientes() }}</span>
+            <span class="lbl nav-count text-[11px] font-semibold bg-amber-100 text-amber-800 rounded-full px-2 py-0.5 transition-opacity duration-200 lg:opacity-0 lg:group-hover/side:opacity-100 lg:group-focus-within/side:opacity-100" [title]="pendientes() + ' reservas pendientes'">{{ pendientes() }}</span>
           }
         </a>
       }
     </nav>
 
-    <!-- Volver al inicio: página principal sin cerrar la sesión -->
-    <div class="shrink-0 px-3 pb-2">
-      <a routerLink="/" (click)="abierto.set(false)" aria-label="Volver al inicio" data-testid="volver-inicio-panel"
+    <div class="shrink-0 px-3 pb-2 space-y-1">
+      <!-- Tema claro / oscuro -->
+      <button type="button" (click)="pref.alternarTema()" [attr.aria-label]="pref.oscuro() ? 'Usar tema claro' : 'Usar tema oscuro'" [title]="pref.menuColapsado() ? (pref.oscuro() ? 'Tema claro' : 'Tema oscuro') : ''"
+              class="group/item flex w-full h-11 items-center gap-3.5 rounded-xl px-[18px] text-sm font-medium text-zinc-500 outline-none transition-all duration-200
+                     hover:bg-zinc-100 hover:text-zinc-900 focus-visible:ring-2 focus-visible:ring-brand-500/40">
+        <span class="shrink-0 transition-transform duration-200 group-hover/item:rotate-12"><app-icon [name]="pref.oscuro() ? 'sun' : 'moon'" size="w-5 h-5" /></span>
+        <span class="lbl whitespace-nowrap transition-all duration-200 lg:opacity-0 lg:group-hover/side:opacity-100 lg:group-focus-within/side:opacity-100">{{ pref.oscuro() ? 'Tema claro' : 'Tema oscuro' }}</span>
+      </button>
+      <!-- Volver al inicio: página principal sin cerrar la sesión -->
+      <a routerLink="/" (click)="abierto.set(false)" aria-label="Volver al inicio" data-testid="volver-inicio-panel" [title]="pref.menuColapsado() ? 'Volver al inicio' : ''"
          class="group/item flex h-11 items-center gap-3.5 rounded-xl px-[18px] text-sm font-medium text-zinc-500 outline-none transition-all duration-200
                 hover:bg-brand-50 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500/40">
         <span class="shrink-0 transition-transform duration-200 group-hover/item:scale-110"><app-icon name="home" size="w-5 h-5" /></span>
-        <span class="whitespace-nowrap transition-all duration-200 lg:opacity-0 lg:group-hover/side:opacity-100 lg:group-focus-within/side:opacity-100">Volver al inicio</span>
+        <span class="lbl whitespace-nowrap transition-all duration-200 lg:opacity-0 lg:group-hover/side:opacity-100 lg:group-focus-within/side:opacity-100">Volver al inicio</span>
       </a>
+      <!-- Colapsar / expandir (solo escritorio) -->
+      <button type="button" (click)="pref.alternarMenu()" [attr.aria-label]="pref.menuColapsado() ? 'Fijar el menú abierto' : 'Colapsar el menú'" [attr.aria-expanded]="!pref.menuColapsado()"
+              class="hidden lg:flex w-full h-11 items-center gap-3.5 rounded-xl px-[18px] text-sm font-medium text-zinc-400 outline-none transition-all duration-200
+                     hover:bg-zinc-100 hover:text-zinc-900 focus-visible:ring-2 focus-visible:ring-brand-500/40">
+        <span class="shrink-0"><app-icon [name]="pref.menuColapsado() ? 'panel-right' : 'panel-left'" size="w-5 h-5" /></span>
+        <span class="lbl whitespace-nowrap transition-all duration-200 lg:opacity-0 lg:group-hover/side:opacity-100 lg:group-focus-within/side:opacity-100">{{ pref.menuColapsado() ? 'Fijar menú abierto' : 'Colapsar menú' }}</span>
+      </button>
     </div>
 
     <div class="shrink-0 p-3 border-t border-zinc-100">
       <div class="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors lg:group-hover/side:bg-sand-50">
-        <div class="avatar w-10 h-10 text-sm bg-gradient-to-br from-brand-100 to-brand-200 text-brand-800 ring-2 ring-white shadow-soft">{{ iniciales() }}</div>
-        <div class="min-w-0 flex-1 whitespace-nowrap transition-opacity duration-200 lg:opacity-0 lg:group-hover/side:opacity-100 lg:group-focus-within/side:opacity-100">
+        <div class="avatar w-10 h-10 text-sm bg-gradient-to-br from-brand-100 to-brand-200 text-brand-800 ring-2 ring-white shadow-soft" [title]="auth.usuario()?.username + ' · ' + rolTexto()">{{ iniciales() }}</div>
+        <div class="lbl min-w-0 flex-1 whitespace-nowrap transition-opacity duration-200 lg:opacity-0 lg:group-hover/side:opacity-100 lg:group-focus-within/side:opacity-100">
           <div class="text-sm font-semibold text-zinc-900 truncate">{{ auth.usuario()?.username }}</div>
           <div class="eyebrow !text-[10px]">{{ rolTexto() }}</div>
         </div>
-        <button type="button" class="icon-btn-danger shrink-0 transition-opacity duration-200 lg:opacity-0 lg:group-hover/side:opacity-100 lg:focus-visible:opacity-100" title="Cerrar sesión" aria-label="Cerrar sesión" (click)="salir()">
+        <button type="button" class="lbl icon-btn-danger shrink-0 transition-opacity duration-200 lg:opacity-0 lg:group-hover/side:opacity-100 lg:focus-visible:opacity-100" title="Cerrar sesión" aria-label="Cerrar sesión" (click)="salir()">
           <app-icon name="logout" size="w-[18px] h-[18px]" />
         </button>
       </div>
@@ -75,9 +95,12 @@
   </aside>
 
   <main class="px-4 py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-10 max-w-7xl mx-auto">
-    <!-- Barra superior (escritorio): siempre a la vista en todas las pantallas del panel -->
+    <!-- Barra superior (escritorio): usuario, rol y accesos rápidos -->
     <div class="no-print hidden lg:flex items-center justify-end gap-2 -mt-4 mb-4">
-      <span class="text-xs text-zinc-500">{{ auth.usuario()?.username }} · {{ rolTexto() }}</span>
+      <span class="inline-flex items-center gap-2 rounded-full border border-zinc-200/70 bg-white/70 py-1 pl-1 pr-3 text-xs text-zinc-600 shadow-soft">
+        <span class="avatar w-6 h-6 text-[10px] bg-brand-100 text-brand-800">{{ iniciales() }}</span>
+        <span class="font-semibold text-zinc-800">{{ auth.usuario()?.username }}</span> · {{ rolTexto() }}
+      </span>
       <a routerLink="/" class="btn-light btn-sm" title="Ir a la página principal sin cerrar sesión">
         <app-icon name="home" size="w-4 h-4" /> Volver al inicio
       </a>

@@ -2,7 +2,7 @@
   <app-portal-header />
 
   <main class="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-    <a routerLink="/mi-cuenta" class="link text-sm font-bold"><app-icon name="arrow-left" size="w-3.5 h-3.5" /> Mis paquetes</a>
+    <app-migas [items]="[{ texto: 'Mis paquetes', ruta: '/mi-cuenta' }, { texto: detalle()?.paquete?.paqueteNombre ?? 'Detalle' }]" />
 
     @if (cargando() && !detalle()) {
       <p class="mt-10 text-center text-sm text-zinc-500">Cargando…</p>
@@ -15,7 +15,7 @@
     } @else if (paquete()) {
       @let p = paquete()!;
       <section class="card mt-4 overflow-hidden">
-        <div class="relative h-44 bg-zinc-200 sm:h-56">
+        <div class="tema-claro relative h-44 bg-zinc-200 sm:h-56">
           @if (imagen(); as src) { <img [src]="src" alt="" class="h-full w-full object-cover"> }
           <div class="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-zinc-900/20 to-transparent"></div>
           <div class="absolute bottom-0 p-5 text-white sm:p-6">
@@ -23,7 +23,32 @@
             <h1 class="mt-2 text-2xl font-black tracking-tight sm:text-3xl">{{ p.paqueteNombre }}</h1>
             <p class="mt-1 text-sm text-zinc-200">{{ p.fechaInicio | date:'dd/MM/yyyy' }} – {{ p.fechaFin | date:'dd/MM/yyyy' }} · {{ p.dias }} días / {{ p.noches }} noches</p>
           </div>
+          @if (faltan(); as f) {
+            <div class="absolute right-4 top-4 rounded-2xl bg-white/90 px-4 py-2.5 text-center shadow-lifted backdrop-blur sm:right-6 sm:top-6" data-testid="cuenta-regresiva">
+              <div class="text-[10px] font-extrabold uppercase tracking-[0.14em] text-brand-700">Tu viaje</div>
+              <div class="text-lg font-black text-zinc-900">{{ f }}</div>
+            </div>
+          }
         </div>
+
+        <!-- Línea de tiempo del viaje -->
+        @if (p.estadoPago !== 'ANULADO') {
+          <ol class="flex items-start gap-1 overflow-x-auto border-b border-zinc-100 px-5 py-4 sm:px-6" aria-label="Estado de tu viaje" data-testid="linea-viaje">
+            @for (paso of linea(); track paso.texto; let ultimo = $last) {
+              <li class="flex min-w-[88px] flex-1 flex-col items-center gap-1.5 text-center" [attr.aria-current]="paso.estado === 'actual' ? 'step' : null">
+                <div class="flex w-full items-center">
+                  <span class="h-0.5 flex-1" [class]="$first ? 'bg-transparent' : (paso.estado === 'pendiente' ? 'bg-zinc-200' : 'bg-brand-500')"></span>
+                  <span class="grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-bold ring-4"
+                        [class]="paso.estado === 'hecho' ? 'bg-brand-600 text-white ring-brand-100' : paso.estado === 'actual' ? 'bg-amber-400 text-zinc-900 ring-amber-100' : 'bg-zinc-100 text-zinc-400 ring-transparent'">
+                    @if (paso.estado === 'hecho') { <app-icon name="check" size="w-3.5 h-3.5" /> } @else { {{ $index + 1 }} }
+                  </span>
+                  <span class="h-0.5 flex-1" [class]="ultimo ? 'bg-transparent' : (linea()[$index + 1].estado === 'pendiente' ? 'bg-zinc-200' : 'bg-brand-500')"></span>
+                </div>
+                <span class="text-xs font-semibold" [class]="paso.estado === 'pendiente' ? 'text-zinc-400' : 'text-zinc-800'">{{ paso.texto }}</span>
+              </li>
+            }
+          </ol>
+        }
 
         <div class="grid gap-6 p-5 sm:p-6 lg:grid-cols-[1.4fr_1fr]">
           <div class="space-y-6">
@@ -51,7 +76,8 @@
           <aside class="space-y-4">
             <div class="rounded-2xl p-5 ring-1 ring-zinc-200/70">
               <h2 class="font-extrabold text-zinc-900">Estado de pago</h2>
-              <div class="mt-3 h-2 overflow-hidden rounded-full bg-zinc-100"><div class="h-full rounded-full bg-emerald-500" [style.width.%]="porcentaje()"></div></div>
+              <p class="mt-1 text-sm text-zinc-600">Pagaste <b class="text-zinc-900">S/ {{ p.montoPagado | number:'1.2-2' }}</b> de S/ {{ p.montoTotal | number:'1.2-2' }} ({{ porcentaje() }}%)</p>
+              <div class="mt-3 h-2.5 overflow-hidden rounded-full bg-zinc-100" role="progressbar" [attr.aria-valuenow]="porcentaje()" aria-valuemin="0" aria-valuemax="100"><div class="h-full rounded-full bg-emerald-500 transition-[width] duration-700" [style.width.%]="porcentaje()"></div></div>
               <dl class="mt-4 space-y-2 text-sm">
                 <div class="flex justify-between"><dt class="text-zinc-500">Total</dt><dd class="font-bold">S/ {{ p.montoTotal | number:'1.2-2' }}</dd></div>
                 <div class="flex justify-between"><dt class="text-zinc-500">Pagado (validado)</dt><dd class="font-bold text-emerald-700">S/ {{ p.montoPagado | number:'1.2-2' }}</dd></div>

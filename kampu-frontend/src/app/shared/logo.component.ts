@@ -11,6 +11,7 @@ export class LogoComponent {
   @Input() alto = 32;
   @Input() colorCarpa?: string;
 
-  get marca() { return this.colorCarpa ?? (this.oscuro ? '#FDF8E6' : '#4B5B1D'); }
-  get texto() { return this.oscuro ? '#FDF8E6' : '#4B5B1D'; }
+  // Sin "oscuro" explícito el color sigue al tema (variables de styles.css): verde en claro, verde claro en oscuro
+  get marca() { return this.colorCarpa ?? (this.oscuro ? '#FDF8E6' : 'rgb(var(--c-brand-600))'); }
+  get texto() { return this.oscuro ? '#FDF8E6' : 'rgb(var(--c-brand-600))'; }
 }

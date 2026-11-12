@@ -1,5 +1,5 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, signal, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TourStore } from '../../core/services/tour-store.service';
@@ -7,6 +7,7 @@ import { AlertService } from '../../core/services/alert.service';
 import { Cliente, ContactoReserva, PasajeroDraft, TipoDocumento } from '../../core/models';
 import { hoy } from '../../core/utils/date.util';
 import { IconComponent } from '../../shared/icon.component';
+import { MigasComponent } from '../../shared/migas.component';
 import { filtrarEscritura, filtrarPegado } from '../../core/utils/filtro';
 import { Errores, FormValidacion, V } from '../../core/utils/validacion';
 import { ClienteSelectorComponent } from './cliente-selector.component';
@@ -16,7 +17,7 @@ import { errorTelefonoPais } from '../../core/utils/paises';
 @Component({
   selector: 'app-reserva-nueva',
   standalone: true,
-  imports: [FormsModule, RouterLink, CurrencyPipe, DatePipe, IconComponent, ClienteSelectorComponent, TelefonoInputComponent],
+  imports: [FormsModule, RouterLink, CurrencyPipe, DatePipe, IconComponent, ClienteSelectorComponent, TelefonoInputComponent, MigasComponent],
   templateUrl: './reserva-nueva.component.html'
 })
 export class ReservaNuevaComponent implements OnInit {
@@ -150,6 +151,35 @@ export class ReservaNuevaComponent implements OnInit {
     }
     if (this.primeroVacio()) this.pasajeros[0] = dato;
     else this.pasajeros.push(dato);
+  }
+
+  // ---------- Asistente: 1 Cliente · 2 Salida · 3 Pasajeros · 4 Revisar ----------
+  pasos = ['Cliente', 'Salida', 'Pasajeros', 'Revisar'];
+  paso = signal(1);
+  private camposPaso(n: number): string[] {
+    if (n === 1) return ['cliente', 'cNombre', 'cDocumento', 'cEmail', 'cTelefono'];
+    if (n === 2) return ['salida', 'observaciones'];
+    if (n === 3) return this.pasajeros.flatMap((_, i) => ['nombre', 'documento', 'nacionalidad', 'nacimiento'].map(c => 'p' + i + c));
+    return [];
+  }
+  private pasoValido(n: number): boolean {
+    return this.v.validos(this.camposPaso(n)) && !(n === 3 && this.excede);
+  }
+  siguiente() {
+    if (!this.pasoValido(this.paso())) { this.alerts.toast('Revisa los campos marcados en rojo', 'error'); return; }
+    this.paso.set(Math.min(this.paso() + 1, 4));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  anterior() { this.paso.set(Math.max(this.paso() - 1, 1)); }
+  // Se puede volver a cualquier paso; avanzar solo si los anteriores están completos
+  irA(n: number) {
+    for (let i = 1; i < n; i++) {
+      if (!this.pasoValido(i)) { this.paso.set(i); this.alerts.toast('Completa este paso primero', 'error'); return; }
+    }
+    this.paso.set(n);
+  }
+  nombreCliente(): string {
+    return this.modo === 'registrado' ? (this.cliente?.nombreCompleto ?? '') : this.contacto.nombre.trim();
   }
 
   guardar() {

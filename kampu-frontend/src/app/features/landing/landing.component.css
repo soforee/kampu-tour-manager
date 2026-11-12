@@ -1,16 +1,17 @@
-/* Paleta de la landing: la misma del panel administrativo (index.html → tailwind.config) */
+/* Paleta de la landing: las mismas variables del panel (styles.css), así sigue el tema claro u oscuro */
 :host {
-  --kp-primary: #4B5B1D;        /* brand-600: botones primarios, acentos */
-  --kp-primary-hover: #3F4C18;  /* brand-700 */
-  --kp-primary-soft: #F4F6E4;   /* brand-50 */
-  --kp-secondary: #6B7E2B;      /* brand-500: botones secundarios, iconos */
-  --kp-accent: #C4BD45;         /* leaf-400: detalles */
-  --kp-bg: #FFFEF8;             /* fondo principal */
-  --kp-bg-alt: #FBF6E4;         /* fondo alterno (arena) */
-  --kp-text: #2C3610;           /* texto principal (zinc-900) */
-  --kp-muted: #78735A;          /* texto secundario (zinc-500) */
-  --kp-border: #E5DEC2;         /* zinc-200 */
-  --kp-dark: #1D2409;           /* zinc-950 */
+  --kp-primary: rgb(var(--c-brand-600));        /* botones primarios, acentos */
+  --kp-primary-hover: rgb(var(--c-brand-700));
+  --kp-primary-soft: rgb(var(--c-brand-50));
+  --kp-on-primary: rgb(var(--c-white));         /* texto sobre botones primarios */
+  --kp-secondary: rgb(var(--c-brand-500));      /* botones secundarios, iconos */
+  --kp-accent: rgb(var(--c-leaf-400));          /* detalles */
+  --kp-bg: rgb(var(--c-white));                 /* fondo principal */
+  --kp-bg-alt: rgb(var(--c-sand-100));          /* fondo alterno (arena) */
+  --kp-text: rgb(var(--c-zinc-900));            /* texto principal */
+  --kp-muted: rgb(var(--c-zinc-500));           /* texto secundario */
+  --kp-border: rgb(var(--c-zinc-200));
+  --kp-dark: #1D2409;                           /* fondo del pie de página (igual en ambos temas) */
   --kp-ease: cubic-bezier(.4, 0, .2, 1);
 
   display: block;

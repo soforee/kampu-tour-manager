@@ -1,17 +1,37 @@
-<a routerLink="/reservas" class="group inline-flex items-center gap-1.5 rounded-lg px-2 py-1 -ml-2 text-sm font-medium text-zinc-500 hover:bg-white hover:text-zinc-900 hover:shadow-soft transition-all mb-4">
-  <app-icon name="arrow-left" size="w-4 h-4 transition-transform group-hover:-translate-x-0.5" /> Reservas
-</a>
+<app-migas [items]="[{ texto: 'Reservas', ruta: '/reservas' }, { texto: 'Nueva reserva' }]" />
 <div class="page-header">
   <div>
     <h1 class="h1">Nueva reserva</h1>
-    <p class="page-sub">Completa los datos del cliente, la salida y los pasajeros. Los campos con <span class="font-bold text-rose-500">*</span> son obligatorios.</p>
+    <p class="page-sub">En 4 pasos: cliente, salida, pasajeros y revisión. Los campos con <span class="font-bold text-rose-500">*</span> son obligatorios.</p>
   </div>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
   <div class="lg:col-span-2 space-y-6 min-w-0">
-    <section class="card p-6">
-      <h2 class="card-title mb-5"><span class="ico">1</span>Cliente y salida</h2>
+    <!-- Pasos del asistente -->
+    <nav aria-label="Pasos de la reserva">
+      <ol class="grid grid-cols-4 gap-2">
+        @for (nombre of pasos; track nombre; let i = $index) {
+          <li>
+            <button type="button" (click)="irA(i + 1)" [attr.aria-current]="paso() === i + 1 ? 'step' : null"
+                    class="group flex w-full flex-col items-start gap-1.5 rounded-xl px-1 py-1 text-left outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40">
+              <span class="h-1.5 w-full rounded-full transition-colors" [class]="paso() > i ? 'bg-brand-500' : 'bg-zinc-200'"></span>
+              <span class="flex items-center gap-2 text-xs sm:text-sm font-semibold" [class]="paso() === i + 1 ? 'text-zinc-900' : paso() > i + 1 ? 'text-brand-700' : 'text-zinc-400'">
+                <span class="grid h-5 w-5 shrink-0 place-items-center rounded-full text-[10px] font-bold"
+                      [class]="paso() > i + 1 ? 'bg-brand-600 text-white' : paso() === i + 1 ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500'">
+                  @if (paso() > i + 1) { <app-icon name="check" size="w-3 h-3" /> } @else { {{ i + 1 }} }
+                </span>
+                <span class="hidden sm:inline">{{ nombre }}</span>
+              </span>
+            </button>
+          </li>
+        }
+      </ol>
+    </nav>
+
+    @if (paso() === 1) {
+    <section class="card p-6 animate-fade-up">
+      <h2 class="card-title mb-5"><span class="ico">1</span>Cliente</h2>
       <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
         <span class="label req !mb-0">Cliente</span>
         <div class="seg !text-[13px]" role="tablist" aria-label="Tipo de cliente">
@@ -52,7 +72,13 @@
         </div>
       }
 
-      <div class="grid sm:grid-cols-2 gap-4 mt-5">
+    </section>
+    }
+
+    @if (paso() === 2) {
+    <section class="card p-6 animate-fade-up">
+      <h2 class="card-title mb-5"><span class="ico">2</span>Salida</h2>
+      <div class="grid sm:grid-cols-2 gap-4">
         <div>
           <label class="label req">Salida</label>
           <select class="field" [(ngModel)]="salidaId" (blur)="v.tocar('salida')" [class.field-invalid]="v.error('salida')">
@@ -70,10 +96,12 @@
         </div>
       </div>
     </section>
+    }
 
-    <section class="card p-6">
+    @if (paso() === 3) {
+    <section class="card p-6 animate-fade-up">
       <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
-        <h2 class="card-title"><span class="ico">2</span>Pasajeros <span class="chip !font-sans">{{ pasajeros.length }}</span></h2>
+        <h2 class="card-title"><span class="ico">3</span>Pasajeros <span class="chip !font-sans">{{ pasajeros.length }}</span></h2>
         <div class="flex flex-wrap gap-2">
           <button type="button" class="btn-light btn-sm" [disabled]="!tieneCliente" (click)="agregarCliente()"><app-icon name="user" size="w-3.5 h-3.5" /> Usar datos del cliente</button>
           <button type="button" class="btn-light btn-sm" (click)="agregar()"><app-icon name="plus" size="w-3.5 h-3.5" /> Agregar</button>
@@ -122,10 +150,42 @@
         </div>
       }
     </section>
+    }
+
+    @if (paso() === 4) {
+    <section class="card p-6 animate-fade-up">
+      <h2 class="card-title mb-5"><span class="ico">4</span>Revisa antes de crear</h2>
+      <dl class="grid gap-4 sm:grid-cols-2 text-sm">
+        <div class="form-section !space-y-1"><dt class="form-section-title">Cliente</dt>
+          <dd class="font-semibold text-zinc-900">{{ nombreCliente() }}</dd>
+          <dd class="text-xs text-zinc-500">{{ modo === 'registrado' ? 'Cliente registrado' : 'Cliente nuevo: se registrará al guardar' }}</dd>
+          <dd><button type="button" class="link text-xs" (click)="paso.set(1)">Cambiar</button></dd></div>
+        <div class="form-section !space-y-1"><dt class="form-section-title">Salida</dt>
+          <dd class="font-semibold text-zinc-900">{{ paquete?.nombre }}</dd>
+          <dd class="text-xs text-zinc-500">@if (salida) { {{ salida.fechaInicio | date:'dd/MM/yyyy' }} → {{ salida.fechaFin | date:'dd/MM/yyyy' }} · {{ salida.cuposDisponibles }} cupos libres }</dd>
+          <dd><button type="button" class="link text-xs" (click)="paso.set(2)">Cambiar</button></dd></div>
+      </dl>
+      <div class="form-section mt-4"><div class="flex items-center justify-between"><span class="form-section-title">Pasajeros ({{ pasajeros.length }})</span><button type="button" class="link text-xs" (click)="paso.set(3)">Cambiar</button></div>
+        <ul class="divide-y divide-zinc-100 text-sm">
+          @for (p of pasajeros; track $index) {
+            <li class="flex items-center justify-between gap-3 py-2"><span class="font-medium text-zinc-900">{{ p.nombreCompleto }}</span><span class="font-mono text-xs text-zinc-500">{{ p.tipoDocumento }} {{ p.numeroDocumento }}</span></li>
+          }
+        </ul>
+      </div>
+      @if (observaciones.trim()) { <p class="mt-4 text-sm text-zinc-600"><span class="font-semibold">Observaciones:</span> {{ observaciones }}</p> }
+    </section>
+    }
+
+    <div class="flex items-center justify-between gap-3">
+      <button type="button" class="btn-light" [class.invisible]="paso() === 1" (click)="anterior()"><app-icon name="arrow-left" size="w-4 h-4" /> Atrás</button>
+      @if (paso() < 4) {
+        <button type="button" class="btn-dark" (click)="siguiente()">Continuar <app-icon name="arrow-right" size="w-4 h-4" /></button>
+      }
+    </div>
   </div>
 
   <aside class="card overflow-hidden lg:sticky lg:top-8">
-    <div class="bg-gradient-to-br from-zinc-800 to-zinc-950 px-6 py-5 text-white">
+    <div class="tema-claro bg-gradient-to-br from-zinc-800 to-zinc-950 px-6 py-5 text-white">
       <div class="text-[11px] font-extrabold uppercase tracking-[0.14em] text-leaf-300">Resumen</div>
       <div class="mt-1 font-bold leading-snug">{{ paquete?.nombre ?? 'Elige una salida' }}</div>
     </div>
@@ -142,7 +202,11 @@
         <span class="text-zinc-500 text-sm font-medium">Total</span>
         <span class="text-2xl font-extrabold font-wide tracking-tight text-zinc-900">{{ total | currency:'S/' }}</span>
       </div>
-      <button type="button" class="btn-brand w-full mt-5 !py-3" [disabled]="store.ocupado()" (click)="guardar()"><app-icon name="check" size="w-4 h-4" /> Crear reserva</button>
+      @if (paso() === 4) {
+        <button type="button" class="btn-brand w-full mt-5 !py-3" [disabled]="store.ocupado()" (click)="guardar()"><app-icon name="check" size="w-4 h-4" /> Crear reserva</button>
+      } @else {
+        <button type="button" class="btn-light w-full mt-5 !py-3" (click)="siguiente()">Paso {{ paso() }} de 4 · Continuar <app-icon name="arrow-right" size="w-4 h-4" /></button>
+      }
       <p class="text-xs text-zinc-400 mt-3 text-center leading-relaxed">Se crea como pendiente y descuenta los cupos de la salida.</p>
     </div>
   </aside>

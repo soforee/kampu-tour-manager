@@ -149,7 +149,8 @@ export class PaquetesComponent {
     };
     const editando = this.editId !== null;
     this.store.guardarPaquete(datos, this.editId).subscribe({
-      next: () => {
+      next: (p) => {
+        this.store.resaltar('paquete-' + p.paqueteId);
         this.store.ocupado.set(false);
         this.store.cargarPaquetes();
         this.abierto.set(false);

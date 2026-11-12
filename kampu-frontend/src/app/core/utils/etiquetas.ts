@@ -29,3 +29,8 @@ export function duracion(minutos?: number | null): string {
   const m = minutos % 60;
   return h ? (m ? `${h} h ${m} min` : `${h} h`) : `${m} min`;
 }
+
+// Ícono de cada tipo de lugar (chk_lug_tipo)
+export function iconoLugar(tipo?: string | null): string {
+  return ({ AEROPUERTO: 'plane', TERMINAL: 'train', HOTEL: 'bed', ATRACTIVO: 'mountain', CIUDAD: 'building' } as { [t: string]: string })[tipo ?? ''] ?? 'map-pin';
+}

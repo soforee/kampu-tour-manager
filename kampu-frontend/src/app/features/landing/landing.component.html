@@ -9,6 +9,15 @@
                      [contacto]="contacto" (limpiar)="limpiar()" />
 
   <app-landing-beneficios />
+
+  <app-landing-testimonios />
 </main>
+
+<!-- WhatsApp: botón flotante para escribir a la agencia -->
+<a [href]="'https://wa.me/' + whatsapp" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp" data-testid="whatsapp"
+   class="group fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 rounded-full bg-[#25D366] py-3 pl-3 pr-3 text-white shadow-lifted transition-all duration-300 hover:pr-5 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#25D366]/40">
+  <app-icon name="whatsapp" size="w-7 h-7" [trazo]="1.7" />
+  <span class="max-w-0 overflow-hidden whitespace-nowrap text-sm font-bold transition-all duration-300 group-hover:max-w-[160px]">¿Te ayudamos?</span>
+</a>
 
 <app-landing-footer [contacto]="contacto" />

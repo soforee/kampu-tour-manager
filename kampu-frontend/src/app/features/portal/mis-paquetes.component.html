@@ -47,7 +47,8 @@
         @for (p of visibles(); track p.reservaId) {
           <li>
             <a [routerLink]="['/mi-cuenta/paquetes', p.reservaId]" class="card card-hover flex h-full overflow-hidden" data-testid="paquete-cliente">
-              <div class="w-28 shrink-0 bg-zinc-100 sm:w-36">
+              <div class="relative w-28 shrink-0 bg-zinc-100 sm:w-36">
+                @if (faltan(p); as f) { <span class="absolute left-2 top-2 z-10 rounded-lg bg-white/90 px-2 py-1 text-[11px] font-black text-zinc-900 shadow-soft">{{ f }}</span> }
                 @if (imagen(p); as src) { <img [src]="src" alt="" class="h-full w-full object-cover"> }
                 @else { <div class="grid h-full place-items-center text-zinc-300"><app-icon name="mountain" size="w-8 h-8" /></div> }
               </div>
@@ -62,6 +63,12 @@
                   {{ p.fechaInicio | date:'dd/MM/yyyy' }} – {{ p.fechaFin | date:'dd/MM/yyyy' }} · {{ p.dias }}D/{{ p.noches }}N
                 </p>
                 <p class="text-sm text-zinc-600">{{ p.pasajeros }} pasajero{{ p.pasajeros === 1 ? '' : 's' }} · Reserva #{{ p.reservaId }}</p>
+                @if (p.estadoPago !== 'ANULADO') {
+                  <div class="flex items-center gap-2" [title]="'Pagado ' + pagado(p) + '%'">
+                    <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-zinc-100"><div class="h-full rounded-full bg-emerald-500" [style.width.%]="pagado(p)"></div></div>
+                    <span class="text-[11px] font-semibold text-zinc-500">{{ pagado(p) }}% pagado</span>
+                  </div>
+                }
                 <div class="mt-auto flex items-end justify-between pt-2 text-sm">
                   <span class="text-zinc-500">Total <b class="text-zinc-900">S/ {{ p.montoTotal | number:'1.2-2' }}</b></span>
                   @if (p.saldo > 0 && p.estadoPago !== 'ANULADO') { <span class="font-bold text-amber-700">Saldo S/ {{ p.saldo | number:'1.2-2' }}</span> }

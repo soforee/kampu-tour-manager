@@ -6,9 +6,11 @@ import { PortalDetalle } from '../../core/models';
 import { ImagenService } from '../../core/services/imagen.service';
 import { PortalService } from '../../core/services/portal.service';
 import { mensajeError } from '../../core/utils/api';
+import { cuentaRegresiva, lineaViaje, porcentajePagado } from '../../core/utils/viaje';
 import { FormValidacion, V } from '../../core/utils/validacion';
 import { BadgeComponent } from '../../shared/badge.component';
 import { IconComponent } from '../../shared/icon.component';
+import { MigasComponent } from '../../shared/migas.component';
 import { PortalHeaderComponent } from './portal-header.component';
 
 // Detalle de un paquete del cliente: GET /portal/paquetes/{id}
@@ -17,7 +19,7 @@ import { PortalHeaderComponent } from './portal-header.component';
 @Component({
   selector: 'app-paquete-cliente',
   standalone: true,
-  imports: [FormsModule, RouterLink, DatePipe, DecimalPipe, BadgeComponent, IconComponent, PortalHeaderComponent],
+  imports: [FormsModule, RouterLink, DatePipe, DecimalPipe, BadgeComponent, IconComponent, PortalHeaderComponent, MigasComponent],
   templateUrl: './paquete-cliente.component.html'
 })
 export class PaqueteClienteComponent {
@@ -37,6 +39,8 @@ export class PaqueteClienteComponent {
   okPago = signal('');
 
   paquete = computed(() => this.detalle()?.paquete ?? null);
+  linea = computed(() => this.paquete() ? lineaViaje(this.paquete()!) : []);
+  faltan = computed(() => this.paquete() ? cuentaRegresiva(this.paquete()!) : null);
   // Lo que todavía se puede informar: saldo menos lo que ya está por validar
   maximo = computed(() => {
     const p = this.paquete();
@@ -46,10 +50,7 @@ export class PaqueteClienteComponent {
     const p = this.paquete();
     return !!p && p.estadoPago !== 'ANULADO' && p.estadoEjecucion !== 'CANCELADO' && p.estadoEjecucion !== 'TERMINADO' && this.maximo() > 0;
   });
-  porcentaje = computed(() => {
-    const p = this.paquete();
-    return p && p.montoTotal > 0 ? Math.min(100, Math.round(p.montoPagado * 100 / p.montoTotal)) : 0;
-  });
+  porcentaje = computed(() => this.paquete() ? porcentajePagado(this.paquete()!) : 0);
 
   v = new FormValidacion(() => ({
     monto: V.importe(this.pago.monto, 'El monto')

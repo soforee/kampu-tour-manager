@@ -37,6 +37,42 @@ Agencia de turismo: catálogo de paquetes, salidas programadas, reservas, pagos,
 Los demás clientes de la demo los creó Ventas y **no tienen cuenta web**: pueden activarla con *Registrarse* usando
 su **mismo documento y correo** (el procedimiento "reclama" el cliente existente y sus reservas aparecen solas).
 
+## Versión 4.3 — mejoras visuales
+
+Solo frontend; además, los datos de demostración cargan una foto del paquete Machu Picchu.
+
+- **Menú lateral**:
+  - fijo y abierto, con el nombre de cada módulo, el usuario y su rol;
+  - se puede colapsar a íconos, y el sistema recuerda la elección;
+  - migas de pan en los detalles (*Reservas › R-0003*).
+- **Modo oscuro**:
+  - botón en el menú; la primera vez sigue la preferencia del sistema;
+  - los colores salen de variables CSS (`styles.css`): el tema oscuro solo cambia sus valores;
+  - la clase `tema-claro` mantiene claras las zonas que van sobre fotos.
+- **Panel**:
+  - comparación de lo cobrado con el mes anterior;
+  - sección **Hoy**: salidas que empiezan, traslados del día y pagos por validar;
+  - gráficos *Vendido por mes* y *Pasajeros por paquete*, con tooltip y vista de tabla.
+- **Listas** (reservas, clientes, pagos, salidas, tráfico):
+  - en celular cada fila es una tarjeta;
+  - la columna de acciones queda fija a la derecha;
+  - esqueleto de carga mientras llegan los datos;
+  - estados vacíos con un botón de acción;
+  - el registro recién guardado se resalta un momento;
+  - avatares con iniciales y fechas relativas (*mañana*, *hace 5 días*);
+  - íconos según el tipo de lugar.
+- **Nueva reserva**: asistente en 4 pasos (Cliente → Salida → Pasajeros → Revisar) que valida cada paso antes de avanzar.
+- **Portal del cliente**:
+  - línea de tiempo del viaje (Reservado → Pagado → Por empezar → En curso → Terminado);
+  - cuenta regresiva para la salida;
+  - barra de progreso del pago.
+- **Página principal**: testimonios (son de ejemplo: reemplázalos por reseñas reales) y botón flotante de WhatsApp.
+- **Fotos**: Machu Picchu en la portada, en el login y en su paquete, de Wikimedia Commons con licencia CC BY-SA. Los créditos están en `kampu-backend/images/demo/ATRIBUCIONES.md` y en el pie de página. Las fotos de los demás paquetes se suben desde *Paquetes → Editar*.
+- **Accesibilidad**:
+  - las ventanas se cierran con Esc, ponen el foco en el primer campo y no dejan que el tabulador salga de ellas;
+  - mayor contraste del texto secundario;
+  - se respeta la opción del sistema de reducir animaciones.
+
 ## Versión 4.2 — lógica de tour manager y pulido
 
 **Reglas de negocio nuevas (backend, `SalidaProgramadaServiceImpl` y `ReservaServiceImpl`):**
