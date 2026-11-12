@@ -338,6 +338,17 @@ cd kampu-backend
 - Imágenes de paquetes: se guardan en la carpeta `images/` (propiedad `storage.location`) y se sirven en `/lp2_gp2/images/...`.
 - `spring.jpa.hibernate.ddl-auto` está en **`none`**: Hibernate no crea ni altera tablas; manda el script.
 
+### Si el backend no arranca: "no tiene las tablas del sistema" / ORA-00942 / PLS-00201
+
+El backend se conectó a un esquema donde **no están instalados los scripts**. Al arrancar muestra a qué usuario,
+contenedor y servicio se conectó. Opciones:
+
+1. Ejecuta `01_schema.sql`, `02_data.sql` y `03_particionamiento_roles.sql` **conectado con ese mismo usuario y servicio**.
+2. O apunta `DB_URL` a la base donde sí los ejecutaste. En **Oracle XE 21c**, el servicio `XE` es el contenedor raíz:
+   las tablas suelen estar en `XEPDB1` (`jdbc:oracle:thin:@localhost:1521/XEPDB1`). En Oracle 23 Free usa `FREEPDB1`.
+
+Para saber dónde estás, en SQL Developer: `SELECT USER, SYS_CONTEXT('USERENV','CON_NAME') FROM dual;`.
+
 ## 3. Frontend (`kampu-frontend`)
 
 ```bash
