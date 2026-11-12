@@ -105,8 +105,9 @@ export class TourStore {
     for (const [url, destino] of permitidas) this.cargarLista(url, destino, true);
   }
 
-  private terminoTabla(e?: unknown) {
-    if (e !== undefined && !this.errorCarga) this.errorCarga = this.error(e);
+  // lista: cuál falló, para que el aviso diga qué datos no se cargaron
+  private terminoTabla(e?: unknown, lista?: string) {
+    if (e !== undefined && !this.errorCarga) this.errorCarga = (lista ? `No se cargó "${lista}": ` : '') + this.error(e);
     this.pendientes--;
     if (this.pendientes > 0) return;
     this.cargando = false;
@@ -134,7 +135,7 @@ export class TourStore {
     if (!this.puede(url)) { if (contar) this.terminoTabla(); return; }
     this.http.get<T[]>(`${API}/${url}`).subscribe({
       next: data => { destino.set(data); if (contar) this.terminoTabla(); },
-      error: e => { if (contar) this.terminoTabla(e); else this.error(e); }
+      error: e => { if (contar) this.terminoTabla(e, url); else this.error(e); }
     });
   }
   cargarPaquetes() { this.cargarLista('paquetes', this.paquetes, false); }
