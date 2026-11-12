@@ -48,37 +48,6 @@ public class OperacionTransporte {
     @Column(name = "observaciones", length = 200)
     private String observaciones;
 
-    // TRASLADO, TOUR o INTERPROVINCIAL
-    @Column(name = "tipo_servicio", nullable = false, length = 20)
-    private String tipoServicio;
-
-    // Vía o referencia de la ruta (texto libre)
-    @Column(name = "ruta", length = 150)
-    private String ruta;
-
-    // Tipo de vehículo exigido (null = cualquiera con capacidad)
-    @Column(name = "tipo_vehiculo_req", length = 20)
-    private String tipoVehiculoReq;
-
-    // Empresa preferida para la asignación automática (null = la que convenga)
-    @Column(name = "proveedor_pref_id")
-    private Long proveedorPrefId;
-
-    // Nueva hora de salida cuando la operación está RETRASADA
-    @Column(name = "hora_salida_estimada")
-    private LocalDateTime horaSalidaEstimada;
-
-    // Respuesta de la empresa al servicio: PENDIENTE, ACEPTADO o RECHAZADO
-    @Column(name = "confirmacion", length = 20)
-    private String confirmacion;
-
-    @Column(name = "motivo_rechazo", length = 200)
-    private String motivoRechazo;
-
-    // Ids de las empresas que rechazaron el servicio (no se les vuelve a asignar)
-    @Column(name = "proveedores_rechazo", length = 200)
-    private String proveedoresRechazo;
-
     public OperacionTransporte() {
     }
 
@@ -176,69 +145,5 @@ public class OperacionTransporte {
 
     public void setObservaciones(String observaciones) {
         this.observaciones = observaciones;
-    }
-
-    public String getTipoServicio() {
-        return tipoServicio;
-    }
-
-    public void setTipoServicio(String tipoServicio) {
-        this.tipoServicio = tipoServicio;
-    }
-
-    public String getRuta() {
-        return ruta;
-    }
-
-    public void setRuta(String ruta) {
-        this.ruta = ruta;
-    }
-
-    public String getTipoVehiculoReq() {
-        return tipoVehiculoReq;
-    }
-
-    public void setTipoVehiculoReq(String tipoVehiculoReq) {
-        this.tipoVehiculoReq = tipoVehiculoReq;
-    }
-
-    public Long getProveedorPrefId() {
-        return proveedorPrefId;
-    }
-
-    public void setProveedorPrefId(Long proveedorPrefId) {
-        this.proveedorPrefId = proveedorPrefId;
-    }
-
-    public LocalDateTime getHoraSalidaEstimada() {
-        return horaSalidaEstimada;
-    }
-
-    public void setHoraSalidaEstimada(LocalDateTime horaSalidaEstimada) {
-        this.horaSalidaEstimada = horaSalidaEstimada;
-    }
-
-    public String getConfirmacion() {
-        return confirmacion;
-    }
-
-    public void setConfirmacion(String confirmacion) {
-        this.confirmacion = confirmacion;
-    }
-
-    public String getMotivoRechazo() {
-        return motivoRechazo;
-    }
-
-    public void setMotivoRechazo(String motivoRechazo) {
-        this.motivoRechazo = motivoRechazo;
-    }
-
-    public String getProveedoresRechazo() {
-        return proveedoresRechazo;
-    }
-
-    public void setProveedoresRechazo(String proveedoresRechazo) {
-        this.proveedoresRechazo = proveedoresRechazo;
     }
 }

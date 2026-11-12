@@ -8,7 +8,6 @@ import pe.edu.upeu.lp2_gp2.entity.OperacionTransporte;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface OperacionTransporteRepository extends JpaRepository<OperacionTransporte, Long> {
@@ -40,22 +39,6 @@ public interface OperacionTransporteRepository extends JpaRepository<OperacionTr
             "and o.operacionId <> :excluir and o.horaSalida >= :inicio and o.horaSalida < :fin")
     List<OperacionTransporte> delConductorEnElDia(@Param("id") Long id, @Param("excluir") Long excluir,
                                                   @Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin);
-
-    @Query("select o from OperacionTransporte o where o.vehiculoId = :id and o.estado <> 'CANCELADO' " +
-            "and o.operacionId <> :excluir and o.horaSalida >= :inicio and o.horaSalida < :fin")
-    List<OperacionTransporte> delVehiculoEnElDia(@Param("id") Long id, @Param("excluir") Long excluir,
-                                                 @Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin);
-
-    // Servicio anterior y siguiente del vehículo: para saber si alcanza a reposicionarse
-    Optional<OperacionTransporte> findFirstByVehiculoIdAndEstadoNotAndOperacionIdNotAndHoraLlegadaLessThanEqualOrderByHoraLlegadaDesc(
-            Long vehiculoId, String estado, Long excluir, LocalDateTime hasta);
-
-    Optional<OperacionTransporte> findFirstByVehiculoIdAndEstadoNotAndOperacionIdNotAndHoraSalidaGreaterThanEqualOrderByHoraSalidaAsc(
-            Long vehiculoId, String estado, Long excluir, LocalDateTime desde);
-
-    // Pendientes de asignar (asignación automática masiva), en orden de salida
-    List<OperacionTransporte> findByVehiculoIdIsNullAndEstadoInAndHoraSalidaGreaterThanEqualOrderByHoraSalidaAsc(
-            List<String> estados, LocalDateTime desde);
 
     @Query(value = "SELECT SEQ_CODIGO_OPERACION.NEXTVAL FROM dual", nativeQuery = true)
     Long siguienteCodigo();

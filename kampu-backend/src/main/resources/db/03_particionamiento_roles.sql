@@ -69,14 +69,13 @@ BEGIN
         PARTITION p_aud_ventas   VALUES ('VENDEDOR'),
         PARTITION p_aud_operador VALUES ('OPERADOR'),
         PARTITION p_aud_cliente  VALUES ('CLIENTE'),
-        PARTITION p_aud_proveedor VALUES ('PROVEEDOR'),
         PARTITION p_aud_sistema  VALUES (DEFAULT))]');
     particionar('PAGOS', q'[PARTITION BY LIST (registrado_por) (
         PARTITION p_pag_admin   VALUES ('ADMIN'),
         PARTITION p_pag_ventas  VALUES ('VENDEDOR'),
         PARTITION p_pag_cliente VALUES ('CLIENTE'))]');
     particionar('OPERACIONES_TRANSPORTE', q'[PARTITION BY LIST (estado) (
-        PARTITION p_op_cola_operador VALUES ('PROGRAMADO', 'ASIGNADO', 'EMBARQUE', 'EN_ESPERA_SALIDA', 'EN_RUTA', 'LLEGADA_PROXIMA', 'RETRASADO'),
+        PARTITION p_op_cola_operador VALUES ('PROGRAMADO', 'ASIGNADO', 'EMBARQUE', 'EN_RUTA'),
         PARTITION p_op_cerradas      VALUES ('FINALIZADO', 'CANCELADO'))]');
     particionar('RESERVAS', q'[PARTITION BY LIST (estado_reserva) (
         PARTITION p_res_vigentes VALUES ('PENDIENTE', 'CONFIRMADA'),
@@ -104,7 +103,7 @@ END;
 -- =====================================================================
 DECLARE
     TYPE t_lista IS TABLE OF VARCHAR2(300);
-    v_roles   t_lista := t_lista('ROL_ADMIN', 'ROL_VENTAS', 'ROL_OPERADOR', 'ROL_PROVEEDOR', 'ROL_CLIENTE');
+    v_roles   t_lista := t_lista('ROL_ADMIN', 'ROL_VENTAS', 'ROL_OPERADOR', 'ROL_CLIENTE');
     v_motivo  VARCHAR2(400);
     v_total   PLS_INTEGER := 0;
     v_permisos t_lista := t_lista(
@@ -158,14 +157,6 @@ DECLARE
         'SELECT ON VW_RESUMEN_PAQUETES_POR_ROL TO ROL_OPERADOR',
         'SELECT ON SEQ_CODIGO_OPERACION TO ROL_OPERADOR',
         'EXECUTE ON PKG_SEGURIDAD_ROLES TO ROL_OPERADOR',
-        -- PROVEEDOR: su flota, su personal y los servicios que se le asignan
-        'SELECT, UPDATE ON PROVEEDORES TO ROL_PROVEEDOR',
-        'SELECT, INSERT, UPDATE ON PERSONAL TO ROL_PROVEEDOR',
-        'SELECT, INSERT, UPDATE ON VEHICULOS TO ROL_PROVEEDOR',
-        'SELECT ON LUGARES TO ROL_PROVEEDOR',
-        'SELECT, UPDATE ON OPERACIONES_TRANSPORTE TO ROL_PROVEEDOR',
-        'SELECT, INSERT ON HISTORIAL_OPERACIONES TO ROL_PROVEEDOR',
-        'EXECUTE ON PKG_SEGURIDAD_ROLES TO ROL_PROVEEDOR',
         -- CLIENTE: solo sus paquetes y el catálogo; ninguna tabla transaccional directa
         'SELECT ON VW_PAQUETES_CLIENTE TO ROL_CLIENTE',
         'SELECT ON PAQUETES_TOUR TO ROL_CLIENTE',
@@ -214,7 +205,7 @@ BEGIN
         EXECUTE IMMEDIATE 'GRANT ' || v_permisos(i);
         v_total := v_total + 1;
     END LOOP;
-    DBMS_OUTPUT.PUT_LINE('  ' || v_total || ' permisos otorgados a los 5 roles');
+    DBMS_OUTPUT.PUT_LINE('  ' || v_total || ' permisos otorgados a los 4 roles');
 END;
 /
 

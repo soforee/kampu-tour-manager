@@ -7,22 +7,17 @@ export type TipoDocumento = 'DNI' | 'CE' | 'PASAPORTE';
 export type TipoDocumentoCliente = TipoDocumento | 'RUC';
 export type Moneda = 'PEN' | 'USD' | 'EUR';
 // chk_usu_rol (personal interno) + CLIENTE (portal web)
-// PROVEEDOR: empresa de transporte afiliada (administra su flota y responde los servicios)
-export type Rol = 'ADMIN' | 'VENDEDOR' | 'OPERADOR' | 'PROVEEDOR' | 'CLIENTE';
+export type Rol = 'ADMIN' | 'VENDEDOR' | 'OPERADOR' | 'CLIENTE';
 export type EstadoRegistro = 'ACTIVO' | 'INACTIVO';
 export type CategoriaLicencia = 'A-I' | 'A-IIa' | 'A-IIb' | 'A-IIIa' | 'A-IIIb' | 'A-IIIc';
-// PENDIENTE: empresa que se afilió desde la web y espera la aprobación de Kampu
-export type EstadoProveedor = 'ACTIVO' | 'PENDIENTE' | 'INACTIVO' | 'SUSPENDIDO';
-export type TipoServicio = 'TRASLADO' | 'TOUR' | 'INTERPROVINCIAL';
-export type Confirmacion = 'PENDIENTE' | 'ACEPTADO' | 'RECHAZADO';
+export type EstadoProveedor = 'ACTIVO' | 'INACTIVO' | 'SUSPENDIDO';
 export type TipoLugar = 'AEROPUERTO' | 'TERMINAL' | 'HOTEL' | 'ATRACTIVO' | 'CIUDAD' | 'OTRO';
 export type TipoVehiculo = 'AUTO' | 'CAMIONETA_4X4' | 'VAN' | 'MINIBUS' | 'BUS';
 export type EstadoVehiculo = 'OPERATIVO' | 'MANTENIMIENTO' | 'INACTIVO';
 export type RolPersonal = 'GUIA' | 'CONDUCTOR' | 'AMBOS';
 export type EstadoPersonal = 'DISPONIBLE' | 'OCUPADO' | 'INACTIVO';
 // Estados de tráfico v4 (EstadoOperacion.java)
-export type EstadoOperacion = 'PROGRAMADO' | 'ASIGNADO' | 'EMBARQUE' | 'EN_ESPERA_SALIDA' | 'EN_RUTA' | 'LLEGADA_PROXIMA'
-  | 'FINALIZADO' | 'RETRASADO' | 'CANCELADO';
+export type EstadoOperacion = 'PROGRAMADO' | 'ASIGNADO' | 'EMBARQUE' | 'EN_RUTA' | 'FINALIZADO' | 'CANCELADO';
 // Portal del cliente (VW_PAQUETES_CLIENTE)
 export type EstadoEjecucion = 'POR_EMPEZAR' | 'EN_CURSO' | 'TERMINADO' | 'CANCELADO';
 export type EstadoPagoPaquete = 'PAGADO_COMPLETO' | 'FALTA_PAGAR' | 'PENDIENTE_PAGO' | 'ANULADO';
@@ -61,17 +56,6 @@ export interface Proveedor {
   capacidadOperativa: number;
   conductores: number;
   guias: number;
-  // Afiliación
-  direccion: string;
-  email: string;
-  contacto: string;
-  servicios: TipoServicio[];
-  zonas: string;              // ciudades separadas por coma ('' = todo el país)
-  fechaAfiliacion: string | null;
-  // Disponibilidad operativa
-  vehiculosDisponibles: number;
-  serviciosHoy: number;
-  serviciosPorConfirmar: number;
 }
 
 // Guías y conductores (un registro puede ser AMBOS)
@@ -143,29 +127,6 @@ export interface Operacion {
   horaRealLlegada: string | null;
   minRetrasoSalida: number | null;
   minRetrasoLlegada: number | null;
-  tipoServicio: TipoServicio;
-  ruta: string;
-  tipoVehiculoReq: TipoVehiculo | null;
-  proveedorPrefId: number | null;
-  proveedorPref: string | null;
-  tipoVehiculo: TipoVehiculo | null;
-  capacidadVehiculo: number | null;
-  ciudadOrigen: string;
-  ciudadDestino: string;
-  // RETRASADO: nueva hora de salida y minutos de demora
-  horaSalidaEstimada: string | null;
-  minRetrasoEstimado: number | null;
-  confirmacion: Confirmacion | null;
-  motivoRechazo: string | null;
-  // Cruce de horario detectado con otra operación del mismo vehículo o conductor
-  conflicto: string | null;
-  siguientes: EstadoOperacion[];
-}
-
-export interface AsignacionMasiva {
-  revisadas: number;
-  asignadas: Operacion[];
-  sinAsignar: string[];
 }
 
 export interface EstadoOperacionInfo {
@@ -199,8 +160,6 @@ export interface RecursoCandidato {
   capacidadPax: number | null;
   horasDia: number | null;
   motivo: string | null;
-  // Regla de prioridad que no cumple (zona, servicio, preferencia): solo se pasa por alto a mano
-  advertencia: string | null;
 }
 
 export interface Cliente {
@@ -403,26 +362,6 @@ export interface ProveedorForm {
   telefono: string;
   esPropio: boolean;
   estado: EstadoProveedor;
-  direccion: string;
-  email: string;
-  contacto: string;
-  servicios: TipoServicio[];
-  zonas: string;
-}
-
-// Afiliación web de una empresa de transporte
-export interface AfiliacionForm {
-  nombreComercial: string;
-  ruc: string;
-  telefono: string;
-  email: string;
-  direccion: string;
-  contacto: string;
-  servicios: TipoServicio[];
-  zonas: string;
-  username: string;
-  password: string;
-  confirmacion: string;
 }
 
 export interface PersonalForm {
@@ -464,10 +403,6 @@ export interface OperacionForm {
   horaProgramadaSalida: string;      // 'YYYY-MM-DDTHH:mm'
   horaEstimadaLlegada: string | null;
   observaciones: string;
-  tipoServicio: TipoServicio;
-  ruta: string;
-  tipoVehiculoReq: TipoVehiculo | null;
-  proveedorPrefId: number | null;
 }
 
 export interface ClienteForm {
@@ -502,10 +437,6 @@ export interface Sesion {
   username: string;
   nombre: string;
   rol: Rol;
-  // Empresa del usuario PROVEEDOR
-  proveedorId: number | null;
-  proveedor: string | null;
-  estadoProveedor: EstadoProveedor | null;
   estado: string;
   token: string;
   // Acciones permitidas por PKG_SEGURIDAD_ROLES (VER_LOGISTICA, GESTIONAR_RESERVAS, ...)
@@ -517,7 +448,7 @@ export type Permiso =
   | 'VER_CLIENTES' | 'GESTIONAR_CLIENTES' | 'VER_RESERVAS' | 'GESTIONAR_RESERVAS' | 'VER_MONTOS' | 'REGISTRAR_PAGO'
   | 'GESTIONAR_CATALOGO' | 'ACTUALIZAR_EJECUCION' | 'VER_RESUMEN'
   | 'VER_LOGISTICA' | 'GESTIONAR_LOGISTICA' | 'VER_OPERACIONES' | 'GESTIONAR_OPERACIONES'
-  | 'VER_PAQUETES_PROPIOS' | 'INFORMAR_PAGO' | 'RESPONDER_SERVICIO';
+  | 'VER_PAQUETES_PROPIOS' | 'INFORMAR_PAGO';
 
 // ---------- Auditoría (solo ADMIN) ----------
 export type AccionAuditoria = 'CREAR' | 'ACTUALIZAR' | 'ELIMINAR' | 'REGISTRO' | 'LOGIN' | 'LOGOUT' | 'LOGIN_FALLIDO';

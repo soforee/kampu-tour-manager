@@ -7,8 +7,6 @@ public record CambioEstadoRequestDTO(
         @NotBlank(message = "Indica el nuevo estado.")
         String estado,
         @Size(max = 200, message = "La observación admite máximo 200 caracteres.")
-        String observacion,
-        // Obligatoria al pasar a RETRASADO: nueva hora de salida (la llegada se corre lo mismo)
-        java.time.LocalDateTime nuevaHoraSalida
+        String observacion
 ) {
 }

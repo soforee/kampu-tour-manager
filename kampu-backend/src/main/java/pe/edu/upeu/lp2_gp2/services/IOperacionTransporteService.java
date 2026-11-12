@@ -15,7 +15,5 @@ public interface IOperacionTransporteService {
     List<HistorialOperacionDTO> historial(Long id);
     List<RecursoCandidatoDTO> candidatos(Long id);
     List<EstadoOperacionDTO> estados();
-    EstimacionDuracionDTO estimarDuracion(Long origenId, Long destinoId, String tipoServicio);
-    AsignacionMasivaDTO asignarPendientes(java.time.LocalDate fecha);
-    OperacionDTO responder(Long id, RespuestaServicioRequestDTO dto);
+    EstimacionDuracionDTO estimarDuracion(Long origenId, Long destinoId);
 }

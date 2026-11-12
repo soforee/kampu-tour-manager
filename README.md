@@ -31,47 +31,11 @@ Agencia de turismo: catálogo de paquetes, salidas programadas, reservas, pagos,
 | `admin` | `admin123` | ADMIN | Panel completo |
 | `ventas` | `ventas123` | VENDEDOR | Panel comercial |
 | `operador` | `operador123` | OPERADOR | Panel operativo |
-| `inkaexpress` | `inka123` | PROVEEDOR (Inka Express) | Mis servicios · Mi flota |
-| `limamovilidad` | `lima123` | PROVEEDOR (Lima Tours Movilidad) | Mis servicios · Mi flota |
-| `andesmovilidad` | `andes123` | PROVEEDOR (Andes Movilidad, afiliación PENDIENTE) | Mis servicios · Mi flota |
 | `ana.ramirez@mail.com` (o DNI `45871236`) | `cliente123` | CLIENTE | Mis paquetes |
 | `john.miller@mail.com` | `cliente123` | CLIENTE | Mis paquetes |
 
 Los demás clientes de la demo los creó Ventas y **no tienen cuenta web**: pueden activarla con *Registrarse* usando
 su **mismo documento y correo** (el procedimiento "reclama" el cliente existente y sus reservas aparecen solas).
-
-## Versión 4.3 — Tour Manager como centro de operaciones (multi-empresa)
-
-**Tráfico** funciona como el centro de operaciones de un aeropuerto, con varias empresas de transporte:
-
-- **Estados**: Programado, Asignado, Embarque, En espera de salida, En ruta, Llegada próxima, Finalizado,
-  Retrasado y Cancelado (`EstadoOperacion.java`). *Retrasado* pide la nueva hora de salida: la operación conserva la
-  hora programada, guarda `hora_salida_estimada` y corre la llegada estimada.
-- **Programación**: fecha y hora, llegada calculada (OSRM / coordenadas), origen, destino, ruta o vía, pasajeros,
-  tipo de servicio (traslado, tour, interprovincial), tipo de vehículo exigido, empresa preferida y observaciones.
-- **Asignación automática** (una operación o *Asignar pendientes* del día). Reglas obligatorias: empresa ACTIVA;
-  vehículo OPERATIVO, del tipo exigido, con capacidad y sin mantenimiento; conductor DISPONIBLE de la misma empresa con
-  licencia vigente **de la categoría que exige el vehículo** (Van A-IIb, Minibús A-IIIa, Bus A-IIIb); sin cruces de
-  horario (30 min de margen); **tiempo para reposicionarse** desde el servicio anterior del vehículo y hacia el
-  siguiente; máximo 10 h de conducción al día. Reglas de prioridad: empresa preferida, servicios y ciudades que atiende
-  cada empresa, empresas que ya rechazaron; luego flota propia (salvo que deba viajar vacía muchas horas), menos
-  reposicionamiento, menos asientos vacíos, menos horas del conductor y menos servicios del vehículo en el día.
-- **Asignación manual** (caso excepcional, Admin u Operador): exige las reglas obligatorias; las de prioridad que no se
-  cumplan quedan anotadas en el historial como excepción.
-- **Confirmación de la empresa**: la flota propia queda *Aceptada*; a una empresa externa el servicio le llega
-  *Pendiente* y la empresa lo acepta o lo rechaza con motivo (`PATCH /operaciones/{id}/respuesta`). Sin aceptación no
-  hay embarque; si rechaza, el servicio vuelve a la cola y no se le vuelve a ofrecer.
-- **Control central de conflictos**: cada operación informa si su vehículo o conductor se cruza con otra (por ejemplo,
-  tras un retraso); hay una cola *Conflictos* en el panel.
-- **Pantallas**: indicadores (servicios del día, en ruta, próximas salidas y llegadas, vehículos libres y ocupados,
-  conductores disponibles, empresas activas, retrasados, finalizados), filtros por fecha, empresa, vehículo,
-  conductor, estado y ruta; *Panel de tráfico*, *Salidas y llegadas* (tablero oscuro tipo aeropuerto con reloj,
-  pantalla completa y recarga cada 30 s), *Calendario* semanal y *Flota y empresas* (tarjeta por empresa y línea de
-  tiempo del día por vehículo). Colores por estado en todas las vistas.
-- **Empresas de transporte**: se afilian en `/afiliacion` (RUC, contacto, dirección, correo, servicios y ciudades) y
-  quedan PENDIENTES con un usuario de rol **PROVEEDOR**. Ese usuario solo ve su empresa, su flota, su personal y los
-  servicios que se le asignan (filtro en el backend por `proveedor_id` de la sesión). Kampu aprueba o rechaza la
-  afiliación en Logística → Empresas.
 
 ## Versión 4.2 — lógica de tour manager y pulido
 
@@ -131,19 +95,18 @@ Todos están en `01_schema.sql`, comentados.
 
 ### Matriz de permisos (`PKG_SEGURIDAD_ROLES.puede`)
 
-| Acción | ADMIN | VENDEDOR | OPERADOR | PROVEEDOR | CLIENTE |
-|---|:-:|:-:|:-:|:-:|:-:|
-| Usuarios (ver / gestionar) · Auditoría | ✔ | — | — | — | — |
-| Clientes (ver / crear / editar) | ✔ | ✔ | — | — | — |
-| Reservas (ver / gestionar) | ✔ | ✔ | — | — | — |
-| Ver montos · Registrar/validar pagos | ✔ | ✔ | — | — | — |
-| Catálogo (paquetes y salidas) | ✔ | ✔ | solo ver | — | — |
-| Actualizar estado de ejecución | ✔ | ✔ | ✔ | — | — |
-| Logística (proveedores, personal, vehículos, lugares) | ✔ | ver | ✔ | solo su empresa | — |
-| Operaciones de tráfico | ✔ | ver | ✔ | ver las suyas | — |
-| Aceptar / rechazar servicios | ✔ | — | ✔ | ✔ (los suyos) | — |
-| Resumen de paquetes | ✔ | ✔ | ✔ (sin montos, sin terminados) | — | — |
-| Ver paquetes propios · Informar pago | — | — | — | — | ✔ |
+| Acción | ADMIN | VENDEDOR | OPERADOR | CLIENTE |
+|---|:-:|:-:|:-:|:-:|
+| Usuarios (ver / gestionar) · Auditoría | ✔ | — | — | — |
+| Clientes (ver / crear / editar) | ✔ | ✔ | — | — |
+| Reservas (ver / gestionar) | ✔ | ✔ | — | — |
+| Ver montos · Registrar/validar pagos | ✔ | ✔ | — | — |
+| Catálogo (paquetes y salidas) | ✔ | ✔ | solo ver | — |
+| Actualizar estado de ejecución | ✔ | ✔ | ✔ | — |
+| Logística (proveedores, personal, vehículos, lugares) | ✔ | ver | ✔ | — |
+| Operaciones de tráfico | ✔ | ver | ✔ | — |
+| Resumen de paquetes | ✔ | ✔ | ✔ (sin montos, sin terminados) | — |
+| Ver paquetes propios · Informar pago | — | — | — | ✔ |
 
 Una acción que no está en el catálogo se niega a todos (también a ADMIN). Cambiar un permiso es editar solo
 `PKG_SEGURIDAD_ROLES.puede`: el backend lo aplica en cada petición (caché de 5 min) y el frontend lo recibe en
@@ -180,7 +143,7 @@ Filtrar por rol aprovecha la partición de `AUDITORIA` por `rol_usuario`.
 | `OPERACIONES_TRANSPORTE` | `estado` | cola del operador (PROGRAMADO, ASIGNADO, EMBARQUE, EN_RUTA) · cerradas | Cola de trabajo del Operador. `ROW MOVEMENT`: al finalizar pasa sola al histórico. |
 | `RESERVAS` | `estado_reserva` | vigentes (PENDIENTE, CONFIRMADA) · cerradas | Trabajo diario de Ventas separado de lo histórico. |
 
-Además crea `ROL_ADMIN`, `ROL_VENTAS`, `ROL_OPERADOR`, `ROL_PROVEEDOR` y `ROL_CLIENTE` con los mismos ámbitos que la matriz
+Además crea `ROL_ADMIN`, `ROL_VENTAS`, `ROL_OPERADOR` y `ROL_CLIENTE` con los mismos ámbitos que la matriz
 (Ventas sin usuarios ni flota; Operador sin pagos, sin `CLIENTES` y sin montos; Cliente solo las vistas y el paquete
 del portal) para cuentas que entren directo a Oracle (reportes, SQL Developer). La aplicación usa un único usuario
 de conexión y su nivel lo controla `PKG_SEGURIDAD_ROLES`.
@@ -241,7 +204,7 @@ Resto de la API (bajo `/lp2_gp2/api/v1`, con token salvo lo indicado):
 | Reservas | `GET /reservas[/{id}]`, `/{id}/pasajeros`, `/{id}/boleta` · `POST /reservas`, `/{id}/boleta` · `PATCH /{id}/confirmar\|completar\|anular` | `VER_RESERVAS` / `GESTIONAR_RESERVAS` |
 | Pagos | `GET /pagos[?reservaId=]` · `POST /pagos` · `PATCH /pagos/{id}/resolver` | `VER_MONTOS` / `REGISTRAR_PAGO` |
 | Logística | `/proveedores`, `/personal`, `/vehiculos`, `/lugares` (CRUD) | `VER_LOGISTICA` / `GESTIONAR_LOGISTICA` |
-| Tráfico | `GET /operaciones`, `/operaciones/estados`, `/operaciones/estimar-duracion`, `/{id}`, `/{id}/historial`, `/{id}/candidatos` · `POST /operaciones`, `/asignar-automatico?fecha=`, `/{id}/asignar-automatico` · `PUT /{id}` · `PATCH /{id}/estado` (`nuevaHoraSalida` para RETRASADO), `/{id}/asignar` · `PATCH /{id}/respuesta` | `VER_OPERACIONES` / `GESTIONAR_OPERACIONES` / `RESPONDER_SERVICIO` |
+| Tráfico | `GET /operaciones`, `/operaciones/estados`, `/operaciones/estimar-duracion`, `/{id}`, `/{id}/historial`, `/{id}/candidatos` · `POST /operaciones`, `/{id}/asignar-automatico` · `PUT /{id}` · `PATCH /{id}/estado`, `/{id}/asignar` | `VER_OPERACIONES` / `GESTIONAR_OPERACIONES` |
 | Usuarios | `GET /usuarios` | `VER_USUARIOS` |
 
 Errores: `{ "status", "error", "timestamp" }` — 400 validación/regla, 401 sin sesión o sesión vencida, 403 rol sin permiso,
@@ -357,7 +320,7 @@ Abre http://localhost:4200. `npm start` usa `proxy.config.json`: `/api` → `htt
   lugares, el Operador no crea clientes ni ve pagos (403); la bitácora registra alta, modificación campo por campo,
   baja, login, logout e ingreso fallido; "Volver al inicio" conserva la sesión.
 
-- Oracle 23ai Free: los 3 scripts se ejecutan sin errores (también dos veces seguidas); los 8 objetos `VALID`; 13 particiones y 5 roles creados.
+- Oracle 23ai Free: los 3 scripts se ejecutan sin errores (también dos veces seguidas); los 8 objetos `VALID`; 12 particiones y 4 roles creados.
 - Backend con `ddl-auto=validate` (las entidades coinciden con el esquema) y pruebas de API por rol (200/401/403, errores de Oracle).
 - Navegador (Playwright): login sin botones demo; registro con contraseña corta, confirmación distinta y correo repetido
   (rechazados) y registro válido con ingreso automático; cliente redirigido fuera del panel; "Volver al inicio" en

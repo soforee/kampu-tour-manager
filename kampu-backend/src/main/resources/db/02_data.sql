@@ -48,17 +48,11 @@ VALUES (9, 'Viajes Andinos SAC', 'RUC', '20556677889', 'reservas@viajesandinos.p
 -- ---------------------------------------------------------------------
 -- Proveedores: Kampu Tours (propio) y terceros
 -- ---------------------------------------------------------------------
-INSERT INTO PROVEEDORES (proveedor_id, nombre_comercial, ruc, telefono, es_propio, estado, direccion, email, contacto, servicios, zonas, fecha_afiliacion) VALUES (1, 'Kampu Tours SAC', '20601122334', '+51 084223344', 1, 'ACTIVO', 'Av. El Sol 520, Cusco', 'operaciones@kampu.pe', 'Centro de operaciones Kampu', 'TRASLADO,TOUR,INTERPROVINCIAL', NULL, ADD_MONTHS(TRUNC(SYSDATE), -36));
-INSERT INTO PROVEEDORES (proveedor_id, nombre_comercial, ruc, telefono, es_propio, estado, direccion, email, contacto, servicios, zonas, fecha_afiliacion) VALUES (2, 'Transportes Inka Express SAC', '20512345678', '+51 984100200', 0, 'ACTIVO', 'Av. La Cultura 1240, Cusco', 'reservas@inkaexpress.pe', 'Karina Huillca', 'TRASLADO,TOUR,INTERPROVINCIAL', 'Cusco,Ollantaytambo,Puno', ADD_MONTHS(TRUNC(SYSDATE), -24));
-INSERT INTO PROVEEDORES (proveedor_id, nombre_comercial, ruc, telefono, es_propio, estado, direccion, email, contacto, servicios, zonas, fecha_afiliacion) VALUES (3, 'Lima Tours Movilidad SAC', '20601234567', '+51 014223344', 0, 'ACTIVO', 'Av. Larco 345, Miraflores, Lima', 'operaciones@limamovilidad.pe', 'Jorge Salas', 'TRASLADO,TOUR,INTERPROVINCIAL', 'Lima,Paracas,Ica', ADD_MONTHS(TRUNC(SYSDATE), -18));
-INSERT INTO PROVEEDORES (proveedor_id, nombre_comercial, ruc, telefono, es_propio, estado, direccion, email, contacto, servicios, zonas, fecha_afiliacion) VALUES (4, 'Colca Bus EIRL', '20498765432', '+51 959887766', 0, 'ACTIVO', 'Calle Mercaderes 210, Arequipa', 'contacto@colcabus.pe', 'Ana Zevallos', 'TRASLADO,TOUR', 'Arequipa,Caylloma', ADD_MONTHS(TRUNC(SYSDATE), -12));
-INSERT INTO PROVEEDORES (proveedor_id, nombre_comercial, ruc, telefono, es_propio, estado, direccion, email, contacto, servicios, zonas, fecha_afiliacion) VALUES (5, 'Selva Trans SRL', '20187654321', '+51 982554433', 0, 'SUSPENDIDO', 'Jr. Loreto 180, Puerto Maldonado', 'selvatrans@correo.pe', 'Raúl Shapiama', 'TRASLADO', 'Puerto Maldonado', ADD_MONTHS(TRUNC(SYSDATE), -10));
-INSERT INTO PROVEEDORES (proveedor_id, nombre_comercial, ruc, telefono, es_propio, estado, direccion, email, contacto, servicios, zonas, fecha_afiliacion) VALUES (6, 'Andes Movilidad Turística EIRL', '20611223344', '+51 984777100', 0, 'PENDIENTE', 'Av. Garcilaso 455, Cusco', 'afiliacion@andesmovilidad.pe', 'Pedro Ccahuana', 'TRASLADO,TOUR', 'Cusco,Ollantaytambo', TRUNC(SYSDATE) - 2);
-
--- Cuentas de las empresas proveedoras (rol PROVEEDOR): administran su flota y responden los servicios
-INSERT INTO USUARIOS_SISTEMA (usuario_id, username, password_hash, rol, estado, proveedor_id) VALUES (4, 'inkaexpress', 'inka123', 'PROVEEDOR', 'ACTIVO', 2);
-INSERT INTO USUARIOS_SISTEMA (usuario_id, username, password_hash, rol, estado, proveedor_id) VALUES (5, 'limamovilidad', 'lima123', 'PROVEEDOR', 'ACTIVO', 3);
-INSERT INTO USUARIOS_SISTEMA (usuario_id, username, password_hash, rol, estado, proveedor_id) VALUES (6, 'andesmovilidad', 'andes123', 'PROVEEDOR', 'ACTIVO', 6);
+INSERT INTO PROVEEDORES (proveedor_id, nombre_comercial, ruc, telefono, es_propio, estado) VALUES (1, 'Kampu Tours SAC', '20601122334', '+51 084223344', 1, 'ACTIVO');
+INSERT INTO PROVEEDORES (proveedor_id, nombre_comercial, ruc, telefono, es_propio, estado) VALUES (2, 'Transportes Inka Express SAC', '20512345678', '+51 984100200', 0, 'ACTIVO');
+INSERT INTO PROVEEDORES (proveedor_id, nombre_comercial, ruc, telefono, es_propio, estado) VALUES (3, 'Lima Tours Movilidad SAC', '20601234567', '+51 014223344', 0, 'ACTIVO');
+INSERT INTO PROVEEDORES (proveedor_id, nombre_comercial, ruc, telefono, es_propio, estado) VALUES (4, 'Colca Bus EIRL', '20498765432', '+51 959887766', 0, 'ACTIVO');
+INSERT INTO PROVEEDORES (proveedor_id, nombre_comercial, ruc, telefono, es_propio, estado) VALUES (5, 'Selva Trans SRL', '20187654321', '+51 982554433', 0, 'SUSPENDIDO');
 
 -- ---------------------------------------------------------------------
 -- Lugares con coordenadas reales (para calcular duraciones)
@@ -212,52 +206,33 @@ UPDATE RESERVAS SET estado_reserva = 'ANULADA', estado_pago = 'REEMBOLSADO', for
 -- ---------------------------------------------------------------------
 -- Operaciones de transporte (código KMP-### de SEQ_CODIGO_OPERACION) e historial
 -- ---------------------------------------------------------------------
-INSERT INTO OPERACIONES_TRANSPORTE (operacion_id, codigo_operacion, salida_id, origen_id, destino_id, vehiculo_id, conductor_id, pax_programados, hora_salida, hora_llegada, estado, observaciones, tipo_servicio, confirmacion)
+INSERT INTO OPERACIONES_TRANSPORTE (operacion_id, codigo_operacion, salida_id, origen_id, destino_id, vehiculo_id, conductor_id, pax_programados, hora_salida, hora_llegada, estado, observaciones)
 VALUES (1, 'KMP-' || LPAD(SEQ_CODIGO_OPERACION.NEXTVAL, 3, '0'), 7, 1, 2, 3, 6, 2,
-        CAST(TRUNC(SYSDATE) - 33 AS TIMESTAMP) + INTERVAL '9' HOUR, CAST(TRUNC(SYSDATE) - 33 AS TIMESTAMP) + INTERVAL '9:20' HOUR TO MINUTE, 'FINALIZADO', 'Recojo en aeropuerto', 'TRASLADO', 'ACEPTADO');
-INSERT INTO OPERACIONES_TRANSPORTE (operacion_id, codigo_operacion, salida_id, origen_id, destino_id, vehiculo_id, conductor_id, pax_programados, hora_salida, hora_llegada, estado, observaciones, tipo_servicio, confirmacion)
+        CAST(TRUNC(SYSDATE) - 33 AS TIMESTAMP) + INTERVAL '9' HOUR, CAST(TRUNC(SYSDATE) - 33 AS TIMESTAMP) + INTERVAL '9:20' HOUR TO MINUTE, 'FINALIZADO', 'Recojo en aeropuerto');
+INSERT INTO OPERACIONES_TRANSPORTE (operacion_id, codigo_operacion, salida_id, origen_id, destino_id, vehiculo_id, conductor_id, pax_programados, hora_salida, hora_llegada, estado, observaciones)
 VALUES (2, 'KMP-' || LPAD(SEQ_CODIGO_OPERACION.NEXTVAL, 3, '0'), 8, 7, 8, 6, 10, 3,
-        CAST(TRUNC(SYSDATE) - 20 AS TIMESTAMP) + INTERVAL '10' HOUR, CAST(TRUNC(SYSDATE) - 20 AS TIMESTAMP) + INTERVAL '10:25' HOUR TO MINUTE, 'FINALIZADO', NULL, 'TRASLADO', 'ACEPTADO');
-INSERT INTO OPERACIONES_TRANSPORTE (operacion_id, codigo_operacion, salida_id, origen_id, destino_id, vehiculo_id, conductor_id, pax_programados, hora_salida, hora_llegada, estado, observaciones, tipo_servicio, confirmacion)
+        CAST(TRUNC(SYSDATE) - 20 AS TIMESTAMP) + INTERVAL '10' HOUR, CAST(TRUNC(SYSDATE) - 20 AS TIMESTAMP) + INTERVAL '10:25' HOUR TO MINUTE, 'FINALIZADO', NULL);
+INSERT INTO OPERACIONES_TRANSPORTE (operacion_id, codigo_operacion, salida_id, origen_id, destino_id, vehiculo_id, conductor_id, pax_programados, hora_salida, hora_llegada, estado, observaciones)
 VALUES (3, 'KMP-' || LPAD(SEQ_CODIGO_OPERACION.NEXTVAL, 3, '0'), 8, 8, 9, 6, 10, 3,
-        CAST(TRUNC(SYSDATE) - 19 AS TIMESTAMP) + INTERVAL '6' HOUR, CAST(TRUNC(SYSDATE) - 19 AS TIMESTAMP) + INTERVAL '9' HOUR, 'FINALIZADO', NULL, 'TOUR', 'ACEPTADO');
-INSERT INTO OPERACIONES_TRANSPORTE (operacion_id, codigo_operacion, salida_id, origen_id, destino_id, vehiculo_id, conductor_id, pax_programados, hora_salida, hora_llegada, estado, observaciones, tipo_servicio, confirmacion)
+        CAST(TRUNC(SYSDATE) - 19 AS TIMESTAMP) + INTERVAL '6' HOUR, CAST(TRUNC(SYSDATE) - 19 AS TIMESTAMP) + INTERVAL '9' HOUR, 'FINALIZADO', NULL);
+INSERT INTO OPERACIONES_TRANSPORTE (operacion_id, codigo_operacion, salida_id, origen_id, destino_id, vehiculo_id, conductor_id, pax_programados, hora_salida, hora_llegada, estado, observaciones)
 VALUES (4, 'KMP-' || LPAD(SEQ_CODIGO_OPERACION.NEXTVAL, 3, '0'), 1, 1, 2, 1, 5, 3,
-        CAST(TRUNC(SYSDATE) - 1 AS TIMESTAMP) + INTERVAL '9' HOUR, CAST(TRUNC(SYSDATE) - 1 AS TIMESTAMP) + INTERVAL '9:20' HOUR TO MINUTE, 'FINALIZADO', NULL, 'TRASLADO', 'ACEPTADO');
-INSERT INTO OPERACIONES_TRANSPORTE (operacion_id, codigo_operacion, salida_id, origen_id, destino_id, vehiculo_id, conductor_id, pax_programados, hora_salida, hora_llegada, estado, observaciones, tipo_servicio, confirmacion)
+        CAST(TRUNC(SYSDATE) - 1 AS TIMESTAMP) + INTERVAL '9' HOUR, CAST(TRUNC(SYSDATE) - 1 AS TIMESTAMP) + INTERVAL '9:20' HOUR TO MINUTE, 'FINALIZADO', NULL);
+INSERT INTO OPERACIONES_TRANSPORTE (operacion_id, codigo_operacion, salida_id, origen_id, destino_id, vehiculo_id, conductor_id, pax_programados, hora_salida, hora_llegada, estado, observaciones)
 VALUES (5, 'KMP-' || LPAD(SEQ_CODIGO_OPERACION.NEXTVAL, 3, '0'), 1, 2, 3, 1, 5, 3,
-        CAST(TRUNC(SYSDATE) AS TIMESTAMP) + INTERVAL '7' HOUR, CAST(TRUNC(SYSDATE) AS TIMESTAMP) + INTERVAL '8:50' HOUR TO MINUTE, 'EN_RUTA', 'Tour al Valle Sagrado', 'TOUR', 'ACEPTADO');
-INSERT INTO OPERACIONES_TRANSPORTE (operacion_id, codigo_operacion, salida_id, origen_id, destino_id, vehiculo_id, conductor_id, pax_programados, hora_salida, hora_llegada, estado, observaciones, tipo_servicio, confirmacion)
+        CAST(TRUNC(SYSDATE) AS TIMESTAMP) + INTERVAL '7' HOUR, CAST(TRUNC(SYSDATE) AS TIMESTAMP) + INTERVAL '8:50' HOUR TO MINUTE, 'EN_RUTA', 'Tour al Valle Sagrado');
+INSERT INTO OPERACIONES_TRANSPORTE (operacion_id, codigo_operacion, salida_id, origen_id, destino_id, vehiculo_id, conductor_id, pax_programados, hora_salida, hora_llegada, estado, observaciones)
 VALUES (6, 'KMP-' || LPAD(SEQ_CODIGO_OPERACION.NEXTVAL, 3, '0'), 3, 4, 5, 5, 8, 3,
-        CAST(TRUNC(SYSDATE) + 4 AS TIMESTAMP) + INTERVAL '8' HOUR, CAST(TRUNC(SYSDATE) + 4 AS TIMESTAMP) + INTERVAL '8:50' HOUR TO MINUTE, 'ASIGNADO', NULL, 'TRASLADO', 'PENDIENTE');
-INSERT INTO OPERACIONES_TRANSPORTE (operacion_id, codigo_operacion, salida_id, origen_id, destino_id, vehiculo_id, conductor_id, pax_programados, hora_salida, hora_llegada, estado, observaciones, tipo_servicio, confirmacion)
+        CAST(TRUNC(SYSDATE) + 4 AS TIMESTAMP) + INTERVAL '8' HOUR, CAST(TRUNC(SYSDATE) + 4 AS TIMESTAMP) + INTERVAL '8:50' HOUR TO MINUTE, 'ASIGNADO', NULL);
+INSERT INTO OPERACIONES_TRANSPORTE (operacion_id, codigo_operacion, salida_id, origen_id, destino_id, vehiculo_id, conductor_id, pax_programados, hora_salida, hora_llegada, estado, observaciones)
 VALUES (7, 'KMP-' || LPAD(SEQ_CODIGO_OPERACION.NEXTVAL, 3, '0'), 5, 5, 10, NULL, NULL, 4,
-        CAST(TRUNC(SYSDATE) + 1 AS TIMESTAMP) + INTERVAL '6:30' HOUR TO MINUTE, CAST(TRUNC(SYSDATE) + 1 AS TIMESTAMP) + INTERVAL '10:15' HOUR TO MINUTE, 'PROGRAMADO', 'Salida temprano por la Panamericana Sur', 'INTERPROVINCIAL', NULL);
-INSERT INTO OPERACIONES_TRANSPORTE (operacion_id, codigo_operacion, salida_id, origen_id, destino_id, vehiculo_id, conductor_id, pax_programados, hora_salida, hora_llegada, estado, observaciones, tipo_servicio, confirmacion)
+        CAST(TRUNC(SYSDATE) + 1 AS TIMESTAMP) + INTERVAL '6:30' HOUR TO MINUTE, CAST(TRUNC(SYSDATE) + 1 AS TIMESTAMP) + INTERVAL '10:15' HOUR TO MINUTE, 'PROGRAMADO', 'Salida temprano por la Panamericana Sur');
+INSERT INTO OPERACIONES_TRANSPORTE (operacion_id, codigo_operacion, salida_id, origen_id, destino_id, vehiculo_id, conductor_id, pax_programados, hora_salida, hora_llegada, estado, observaciones)
 VALUES (8, 'KMP-' || LPAD(SEQ_CODIGO_OPERACION.NEXTVAL, 3, '0'), 2, 1, 2, NULL, NULL, 2,
-        CAST(TRUNC(SYSDATE) + 30 AS TIMESTAMP) + INTERVAL '10' HOUR, CAST(TRUNC(SYSDATE) + 30 AS TIMESTAMP) + INTERVAL '10:20' HOUR TO MINUTE, 'PROGRAMADO', NULL, 'TRASLADO', NULL);
-INSERT INTO OPERACIONES_TRANSPORTE (operacion_id, codigo_operacion, salida_id, origen_id, destino_id, vehiculo_id, conductor_id, pax_programados, hora_salida, hora_llegada, estado, observaciones, tipo_servicio, confirmacion)
+        CAST(TRUNC(SYSDATE) + 30 AS TIMESTAMP) + INTERVAL '10' HOUR, CAST(TRUNC(SYSDATE) + 30 AS TIMESTAMP) + INTERVAL '10:20' HOUR TO MINUTE, 'PROGRAMADO', NULL);
+INSERT INTO OPERACIONES_TRANSPORTE (operacion_id, codigo_operacion, salida_id, origen_id, destino_id, vehiculo_id, conductor_id, pax_programados, hora_salida, hora_llegada, estado, observaciones)
 VALUES (9, 'KMP-' || LPAD(SEQ_CODIGO_OPERACION.NEXTVAL, 3, '0'), 6, 12, 13, NULL, NULL, 2,
-        CAST(TRUNC(SYSDATE) + 23 AS TIMESTAMP) + INTERVAL '11' HOUR, CAST(TRUNC(SYSDATE) + 23 AS TIMESTAMP) + INTERVAL '13' HOUR, 'PROGRAMADO', 'Traslado en bote incluido', 'TRASLADO', NULL);
-
--- Operaciones de hoy para el tablero de salidas y llegadas (horas relativas al momento de la instalación)
-INSERT INTO OPERACIONES_TRANSPORTE (operacion_id, codigo_operacion, salida_id, origen_id, destino_id, vehiculo_id, conductor_id, pax_programados, hora_salida, hora_llegada, estado, observaciones, tipo_servicio, confirmacion, ruta, hora_salida_estimada)
-VALUES (10, 'KMP-' || LPAD(SEQ_CODIGO_OPERACION.NEXTVAL, 3, '0'), NULL, 4, 5, 4, 8, 18,
-        CAST(TRUNC(SYSDATE, 'HH24') AS TIMESTAMP) + INTERVAL '1' HOUR, CAST(TRUNC(SYSDATE, 'HH24') AS TIMESTAMP) + INTERVAL '2:45' HOUR TO MINUTE,
-        'RETRASADO', 'Vuelo LA2041 llega con demora', 'TRASLADO', 'ACEPTADO', 'Av. Elmer Faucett / Costa Verde',
-        CAST(TRUNC(SYSDATE, 'HH24') AS TIMESTAMP) + INTERVAL '1:40' HOUR TO MINUTE);
-INSERT INTO OPERACIONES_TRANSPORTE (operacion_id, codigo_operacion, salida_id, origen_id, destino_id, vehiculo_id, conductor_id, pax_programados, hora_salida, hora_llegada, estado, observaciones, tipo_servicio, confirmacion, ruta)
-VALUES (11, 'KMP-' || LPAD(SEQ_CODIGO_OPERACION.NEXTVAL, 3, '0'), NULL, 8, 7, 6, 10, 9,
-        CAST(TRUNC(SYSDATE, 'HH24') AS TIMESTAMP) - INTERVAL '30' MINUTE, CAST(TRUNC(SYSDATE, 'HH24') AS TIMESTAMP) + INTERVAL '10' MINUTE,
-        'LLEGADA_PROXIMA', 'Grupo con vuelo de salida', 'TRASLADO', 'ACEPTADO', 'Av. Aviación');
-INSERT INTO OPERACIONES_TRANSPORTE (operacion_id, codigo_operacion, salida_id, origen_id, destino_id, vehiculo_id, conductor_id, pax_programados, hora_salida, hora_llegada, estado, observaciones, tipo_servicio, confirmacion, ruta)
-VALUES (12, 'KMP-' || LPAD(SEQ_CODIGO_OPERACION.NEXTVAL, 3, '0'), NULL, 2, 1, 2, 3, 3,
-        CAST(TRUNC(SYSDATE, 'HH24') AS TIMESTAMP) + INTERVAL '20' MINUTE, CAST(TRUNC(SYSDATE, 'HH24') AS TIMESTAMP) + INTERVAL '50' MINUTE,
-        'EN_ESPERA_SALIDA', 'Pasajeros ya a bordo', 'TRASLADO', 'ACEPTADO', 'Av. El Sol');
-INSERT INTO OPERACIONES_TRANSPORTE (operacion_id, codigo_operacion, salida_id, origen_id, destino_id, vehiculo_id, conductor_id, pax_programados, hora_salida, hora_llegada, estado, observaciones, tipo_servicio, confirmacion, ruta, tipo_vehiculo_req)
-VALUES (13, 'KMP-' || LPAD(SEQ_CODIGO_OPERACION.NEXTVAL, 3, '0'), NULL, 4, 6, NULL, NULL, 6,
-        CAST(TRUNC(SYSDATE, 'HH24') AS TIMESTAMP) + INTERVAL '4' HOUR, CAST(TRUNC(SYSDATE, 'HH24') AS TIMESTAMP) + INTERVAL '5:10' HOUR TO MINUTE,
-        'PROGRAMADO', 'Familia con equipaje voluminoso', 'TRASLADO', NULL, 'Circuito de Playas', 'VAN');
+        CAST(TRUNC(SYSDATE) + 23 AS TIMESTAMP) + INTERVAL '11' HOUR, CAST(TRUNC(SYSDATE) + 23 AS TIMESTAMP) + INTERVAL '13' HOUR, 'PROGRAMADO', 'Traslado en bote incluido');
 
 -- Historial de estados (en la aplicación lo registra el backend en cada cambio)
 INSERT INTO HISTORIAL_OPERACIONES (operacion_id, estado_nuevo, fecha_cambio, usuario, observacion)
@@ -270,27 +245,7 @@ SELECT o.operacion_id, e.estado,
         SELECT 'EN_RUTA',       3, 4 FROM dual UNION ALL
         SELECT 'FINALIZADO',   25, 5 FROM dual) e
     ON e.orden <= CASE o.estado WHEN 'PROGRAMADO' THEN 1 WHEN 'ASIGNADO' THEN 2 WHEN 'EN_RUTA' THEN 4 WHEN 'FINALIZADO' THEN 5 END
- WHERE o.operacion_id <= 9
  ORDER BY o.operacion_id, e.orden;
-
--- Historial de las operaciones de hoy con los estados nuevos
-INSERT INTO HISTORIAL_OPERACIONES (operacion_id, estado_nuevo, fecha_cambio, usuario, observacion)
-SELECT x.op, x.estado, o.hora_salida + NUMTODSINTERVAL(x.minutos, 'MINUTE'), x.usuario, x.obs
-  FROM (SELECT 10 op, 'PROGRAMADO' estado, -1440 minutos, 'operador' usuario, CAST(NULL AS VARCHAR2(200)) obs FROM dual UNION ALL
-        SELECT 10, 'ASIGNADO', -600, 'operador', 'Asignación automática' FROM dual UNION ALL
-        SELECT 10, 'RETRASADO', -65, 'operador', 'Vuelo LA2041 llega con demora' FROM dual UNION ALL
-        SELECT 11, 'PROGRAMADO', -1440, 'operador', NULL FROM dual UNION ALL
-        SELECT 11, 'ASIGNADO', -720, 'operador', NULL FROM dual UNION ALL
-        SELECT 11, 'EMBARQUE', -10, 'operador', NULL FROM dual UNION ALL
-        SELECT 11, 'EN_RUTA', 2, 'operador', NULL FROM dual UNION ALL
-        SELECT 11, 'LLEGADA_PROXIMA', 30, 'operador', NULL FROM dual UNION ALL
-        SELECT 12, 'PROGRAMADO', -1440, 'operador', NULL FROM dual UNION ALL
-        SELECT 12, 'ASIGNADO', -720, 'operador', NULL FROM dual UNION ALL
-        SELECT 12, 'EMBARQUE', -25, 'operador', NULL FROM dual UNION ALL
-        SELECT 12, 'EN_ESPERA_SALIDA', -21, 'operador', NULL FROM dual UNION ALL
-        SELECT 13, 'PROGRAMADO', -300, 'operador', NULL FROM dual) x
-  JOIN OPERACIONES_TRANSPORTE o ON o.operacion_id = x.op
- ORDER BY x.op, x.minutos;
 
 COMMIT;
 
