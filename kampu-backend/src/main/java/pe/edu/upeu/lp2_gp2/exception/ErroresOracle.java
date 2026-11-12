@@ -23,7 +23,6 @@ public final class ErroresOracle {
             // UNIQUE
             Map.entry("UQ_CLI_EMAIL", "Ese correo ya está registrado para otro cliente."),
             Map.entry("UQ_CLI_NUMERO_DOC", "Ese número de documento ya está registrado para otro cliente."),
-            Map.entry("UQ_CLI_TIPO_DOC", "Ya existe un cliente con ese tipo y número de documento."),
             Map.entry("UQ_CLI_TELEFONO", "Ese teléfono ya está registrado para otro cliente."),
             Map.entry("UQ_PROV_PROPIO", "Solo puede haber un proveedor propio (Kampu Tours)."),
             Map.entry("UQ_PROV_TELEFONO", "Ese teléfono ya está registrado para otro proveedor."),
@@ -39,6 +38,9 @@ public final class ErroresOracle {
             Map.entry("CHK_LUG_COORDS", "Indica la latitud y la longitud juntas (o deja ambas vacías)."),
             Map.entry("CHK_OP_OD", "El origen y el destino deben ser distintos."),
             Map.entry("CHK_OP_HORAS", "La llegada debe ser posterior a la hora de salida."),
+            Map.entry("CHK_OP_RECURSOS", "Asigna el vehículo y el conductor juntos (o deja ambos vacíos)."),
+            Map.entry("CHK_OP_ASIGNADA", "Ese estado requiere vehículo y conductor asignados."),
+            Map.entry("CHK_DET_MONTOS", "El precio debe ser mayor a 0 y el descuento no puede superar el importe."),
             Map.entry("CHK_SAL_CUPOS", "Los cupos disponibles no pueden ser negativos ni superar los cupos máximos."),
             Map.entry("CHK_RES_MONTOS", "El monto pagado no puede superar el total de la reserva."),
             Map.entry("CHK_PAG_TC", "El tipo de cambio de un pago en soles debe ser 1."),

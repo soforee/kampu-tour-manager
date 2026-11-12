@@ -315,6 +315,10 @@ Abre http://localhost:4200. `npm start` usa `proxy.config.json`: `/api` → `htt
 
 ## 4. Pruebas realizadas
 
+- Auditoría y restauración (ver `INFORME_AUDITORIA.md`): scripts instalados dos veces seguidas sin errores, entidades
+  validadas contra el esquema (`ddl-auto=validate` y comparación columna por columna), 129 pruebas de API (permisos,
+  CRUD, reglas de negocio y rechazos) y recorrido de todas las pantallas por rol sin errores.
+
 - v4.1: Logística con datos para Admin, Ventas y Operador; recorrido de las 11 rutas del panel por rol sin ningún 403
   ni error de JavaScript; Ventas y Operador sin botones de gestión fuera de sus permisos; por API, Ventas no crea
   lugares, el Operador no crea clientes ni ve pagos (403); la bitácora registra alta, modificación campo por campo,

@@ -64,14 +64,6 @@
           <label class="label">Descripción <span class="opt">Opcional · {{ form.descripcion.length }}/1000</span></label>
           <textarea class="field" rows="3" maxlength="1000" [(ngModel)]="form.descripcion" placeholder="Qué incluye, puntos destacados, nivel de dificultad…" (blur)="v.tocar('descripcion')" [class.field-invalid]="v.error('descripcion')"></textarea>@if (v.error('descripcion'); as e) { <p class="field-error">{{ e }}</p> }
         </div>
-        <div>
-          <label class="label">Lugar de destino <span class="opt">Opcional</span></label>
-          <select class="field" [(ngModel)]="form.lugarDestinoId">
-            <option [ngValue]="null">Sin definir</option>
-            @for (l of store.lugares(); track l.lugarId) { <option [ngValue]="l.lugarId">{{ l.nombre }} ({{ l.ciudad }})</option> }
-          </select>
-          <p class="hint">Adonde llega el transporte del paquete. Se usa al crear rutas hacia el paquete (Logística → Rutas).</p>
-        </div>
       </div>
 
       <div class="form-section">

@@ -8,7 +8,7 @@ const NACIONALIDAD = /^\p{L}[\p{L} ]*$/u;
 const TELEFONO = /^\+?[0-9][0-9 ()-]*$/;
 const EMAIL = /^[^@\s]+@[^@\s]+\.[A-Za-z]{2,}$/;
 const PLACA = /^[A-Za-z0-9-]{3,10}$/;   // VEHICULO.placa VARCHAR2(10)
-const RUC = /^(10|15|17|20)\d{9}$/;      // chk_emp_ruc
+const RUC = /^(10|15|17|20)\d{9}$/;      // chk_prov_ruc
 const CODIGO = /^[A-Za-z0-9 ._/#-]*$/;
 
 const debe = (campo: string) => /^(Los|Las) /.test(campo) ? 'deben' : 'debe';

@@ -25,7 +25,6 @@ export type EstadoPagoPaquete = 'PAGADO_COMPLETO' | 'FALTA_PAGAR' | 'PENDIENTE_P
 export interface UsuarioSistema {
   usuarioId: number;
   username: string;
-  passwordHash: string;
   rol: Rol;
   estado: EstadoRegistro;
 }
@@ -39,8 +38,6 @@ export interface PaqueteTour {
   noches: number;
   imagen: string;
   estado: EstadoRegistro;
-  // Lugar al que llega el paquete (02_extension_kampu.sql)
-  lugarDestinoId: number | null;
 }
 
 
@@ -352,7 +349,6 @@ export interface PaqueteForm {
   noches: number;
   imagen: string;
   estado: EstadoRegistro;
-  lugarDestinoId: number | null;
 }
 
 
