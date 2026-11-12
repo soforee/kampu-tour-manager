@@ -15,3 +15,9 @@
 }
 .nav-item.nav-active .nav-ico { color: #E6E08F; }
 .nav-item.nav-active .nav-count { background: rgba(255, 254, 248, .18); color: #FFFEF8; }
+
+/* Menú fijado abierto: textos siempre visibles; lo que es solo del modo colapsado se oculta */
+@media (min-width: 1024px) {
+  .sidebar.abierta .lbl { opacity: 1 !important; transform: none !important; }
+  .sidebar.abierta .solo-colapsado { display: none !important; }
+}

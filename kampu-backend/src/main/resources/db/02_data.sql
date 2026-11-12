@@ -111,9 +111,9 @@ INSERT INTO VEHICULOS (vehiculo_id, proveedor_id, placa, tipo_vehiculo, marca_mo
 INSERT INTO VEHICULOS (vehiculo_id, proveedor_id, placa, tipo_vehiculo, marca_modelo, capacidad_pax, prox_mantenimiento, estado) VALUES (8, 5, 'VAN-330', 'VAN', 'Toyota Hiace', 12, ADD_MONTHS(TRUNC(SYSDATE), 5), 'OPERATIVO');
 
 -- ---------------------------------------------------------------------
--- Paquetes
+-- Paquetes (imagen: ruta dentro de kampu-backend/images/; demo/ trae la foto de ejemplo)
 -- ---------------------------------------------------------------------
-INSERT INTO PAQUETES_TOUR (paquete_id, nombre, descripcion, precio_base, dias, noches, imagen, estado) VALUES (1, 'Machu Picchu Clásico', 'Valle Sagrado, tren a Aguas Calientes y visita guiada a la ciudadela.', 1850, 4, 3, NULL, 'ACTIVO');
+INSERT INTO PAQUETES_TOUR (paquete_id, nombre, descripcion, precio_base, dias, noches, imagen, estado) VALUES (1, 'Machu Picchu Clásico', 'Valle Sagrado, tren a Aguas Calientes y visita guiada a la ciudadela.', 1850, 4, 3, 'demo/machu-picchu.jpg', 'ACTIVO');
 INSERT INTO PAQUETES_TOUR (paquete_id, nombre, descripcion, precio_base, dias, noches, imagen, estado) VALUES (2, 'Lima Gastronómica', 'Centro histórico, mercados, ceviche y degustación en Barranco.', 420, 2, 1, NULL, 'ACTIVO');
 INSERT INTO PAQUETES_TOUR (paquete_id, nombre, descripcion, precio_base, dias, noches, imagen, estado) VALUES (3, 'Arequipa y Cañón del Colca', 'Ciudad blanca, Cruz del Cóndor y termas de Chivay.', 980, 3, 2, NULL, 'ACTIVO');
 INSERT INTO PAQUETES_TOUR (paquete_id, nombre, descripcion, precio_base, dias, noches, imagen, estado) VALUES (4, 'Paracas e Ica Aventura', 'Islas Ballestas, reserva de Paracas, Huacachina y sandboard.', 380, 2, 1, NULL, 'ACTIVO');

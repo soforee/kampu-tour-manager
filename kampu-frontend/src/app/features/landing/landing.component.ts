@@ -9,13 +9,15 @@ import { LandingSearchComponent } from './components/landing-search.component';
 import { LandingToursComponent } from './components/landing-tours.component';
 import { LandingBeneficiosComponent } from './components/landing-beneficios.component';
 import { LandingFooterComponent } from './components/landing-footer.component';
+import { LandingTestimoniosComponent } from './components/landing-testimonios.component';
+import { IconComponent } from '../../shared/icon.component';
 import { Contacto, FiltroBusqueda, TourCard } from './landing.models';
 
 @Component({
   selector: 'app-landing',
   standalone: true,
   imports: [LandingNavbarComponent, LandingHeroComponent, LandingSearchComponent, LandingToursComponent,
-    LandingBeneficiosComponent, LandingFooterComponent],
+    LandingBeneficiosComponent, LandingFooterComponent, LandingTestimoniosComponent, IconComponent],
   templateUrl: './landing.component.html',
   styleUrl: './landing.component.css'
 })
@@ -28,6 +30,8 @@ export class LandingComponent {
   ];
 
   contacto: Contacto = { email: 'reservas@kampu.pe', telefono: '+51 984 000 000', ciudad: 'Cusco, Perú' };
+  // wa.me necesita solo dígitos con el código de país
+  whatsapp = this.contacto.telefono.replace(/\D/g, '');
 
   paquetes = signal<PaqueteTour[]>([]);
   salidas = signal<SalidaProgramada[]>([]);

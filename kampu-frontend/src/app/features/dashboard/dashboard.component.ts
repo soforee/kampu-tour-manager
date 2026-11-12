@@ -84,6 +84,79 @@ export class DashboardComponent {
         paquete: this.store.getPaquete(this.store.getSalida(r.salidaId)?.paqueteId)
       })));
 
+  // ---------- Comparación con el mes anterior (pagos aprobados, en soles) ----------
+  private mes(fecha: string) { return fecha.slice(0, 7); }
+  private claveMes(d: Date) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; }
+  cobros = computed(() => {
+    const hoy = new Date();
+    const actual = this.claveMes(hoy);
+    const anterior = this.claveMes(new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1));
+    let esteMes = 0, mesPasado = 0;
+    for (const p of this.store.pagos()) {
+      if (p.estadoTransaccion !== 'APROBADO') continue;
+      if (this.mes(p.fechaPago) === actual) esteMes += p.montoPen;
+      if (this.mes(p.fechaPago) === anterior) mesPasado += p.montoPen;
+    }
+    const variacion = mesPasado > 0 ? Math.round((esteMes - mesPasado) * 100 / mesPasado) : null;
+    return { esteMes, mesPasado, variacion };
+  });
+  reservasConSaldo = computed(() => this.store.reservas().filter(r => r.estadoReserva !== 'ANULADA' && this.store.saldo(r) > 0).length);
+
+  // ---------- Hoy: traslados del día, salidas que empiezan y pagos por validar ----------
+  hoyIso = new Date().toISOString().slice(0, 10);
+  private fechaLocal(d: Date) { return `${this.claveMes(d)}-${String(d.getDate()).padStart(2, '0')}`; }
+  hoyDatos = computed(() => {
+    const dia = this.fechaLocal(new Date());
+    const operaciones = this.store.operaciones()
+      .filter(o => o.horaProgramadaSalida.startsWith(dia) && o.estadoActual !== 'CANCELADO')
+      .sort((a, b) => a.horaProgramadaSalida.localeCompare(b.horaProgramadaSalida));
+    const salidas = this.store.resumen().filter(r => r.fechaInicio.startsWith(dia) && r.estadoSalida !== 'CANCELADA');
+    const pagosPorValidar = this.store.pagos().filter(p => p.estadoTransaccion === 'PENDIENTE').length;
+    return { operaciones, salidas, pagosPorValidar };
+  });
+
+  // ---------- Gráfico 1: vendido por mes (reservas no anuladas, últimos 6 meses) ----------
+  verTablaVentas = signal(false);
+  ventasPorMes = computed(() => {
+    const hoy = new Date();
+    const meses = Array.from({ length: 6 }, (_, i) => {
+      const d = new Date(hoy.getFullYear(), hoy.getMonth() - 5 + i, 1);
+      return { clave: this.claveMes(d), fecha: d, monto: 0, reservas: 0 };
+    });
+    for (const r of this.store.reservas()) {
+      if (r.estadoReserva === 'ANULADA') continue;
+      const m = meses.find(x => x.clave === this.mes(r.fechaReserva));
+      if (m) { m.monto += r.montoTotal; m.reservas++; }
+    }
+    const max = Math.max(...meses.map(m => m.monto), 1);
+    const tope = this.escala(max);
+    const pico = meses.reduce((a, b) => (b.monto > a.monto ? b : a), meses[0]);
+    return {
+      tope,
+      marcas: [tope, tope / 2, 0],
+      barras: meses.map((m, i) => ({ ...m, alto: (m.monto / tope) * 100, etiqueta: m.monto > 0 && (i === meses.length - 1 || m === pico) }))
+    };
+  });
+
+  // ---------- Gráfico 2: pasajeros por paquete (salidas no canceladas) ----------
+  pasajerosPorPaquete = computed(() => {
+    const mapa = new Map<string, number>();
+    for (const r of this.store.resumen()) {
+      if (r.estadoSalida === 'CANCELADA') continue;
+      mapa.set(r.paqueteNombre, (mapa.get(r.paqueteNombre) ?? 0) + r.pasajeros);
+    }
+    const filas = [...mapa.entries()].map(([nombre, pax]) => ({ nombre, pax })).filter(f => f.pax > 0).sort((a, b) => b.pax - a.pax).slice(0, 6);
+    const max = Math.max(...filas.map(f => f.pax), 1);
+    return filas.map(f => ({ ...f, ancho: (f.pax / max) * 100 }));
+  });
+
+  // Tope "redondo" del eje: 1, 2 o 5 por potencia de 10
+  private escala(max: number) {
+    const p = Math.pow(10, Math.floor(Math.log10(max)));
+    return [1, 2, 5, 10].map(x => x * p).find(x => x >= max) ?? max;
+  }
+  compacto(n: number) { return n >= 1000 ? `${Math.round(n / 100) / 10}K` : `${Math.round(n)}`; }
+
   ocupacion(r: ResumenPaquete) {
     return r.cuposMaximos ? Math.round((r.cuposMaximos - r.cuposDisponibles) * 100 / r.cuposMaximos) : 0;
   }

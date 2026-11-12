@@ -1,3 +1,194 @@
+/* Paleta en variables (R G B): Tailwind las usa en index.html. html.dark cambia solo los valores.
+   .tema-claro fija la paleta clara en una zona (texto claro sobre fotos o franjas oscuras) aunque el tema sea oscuro. */
+:root, .tema-claro {
+  --c-zinc-50: 250 246 230;
+  --c-zinc-100: 242 237 214;
+  --c-zinc-200: 229 222 194;
+  --c-zinc-300: 208 200 166;
+  --c-zinc-400: 133 127 97;    /* más oscuro que el original (#A49D7B): contraste 4:1 sobre el fondo */
+  --c-zinc-500: 120 115 90;
+  --c-zinc-600: 91 87 65;
+  --c-zinc-700: 64 63 44;
+  --c-zinc-800: 58 71 22;
+  --c-zinc-900: 44 54 16;
+  --c-zinc-950: 29 36 9;
+  --c-brand-50: 244 246 228;
+  --c-brand-100: 231 236 201;
+  --c-brand-200: 206 216 156;
+  --c-brand-300: 175 191 104;
+  --c-brand-400: 139 158 63;
+  --c-brand-500: 107 126 43;
+  --c-brand-600: 75 91 29;
+  --c-brand-700: 63 76 24;
+  --c-brand-800: 51 61 20;
+  --c-brand-900: 38 46 15;
+  --c-leaf-50: 250 249 227;
+  --c-leaf-100: 243 240 194;
+  --c-leaf-200: 230 224 143;
+  --c-leaf-300: 215 208 104;
+  --c-leaf-400: 196 189 69;
+  --c-leaf-500: 169 162 50;
+  --c-leaf-600: 135 129 38;
+  --c-leaf-700: 102 97 32;
+  --c-emerald-50: 238 244 230;
+  --c-emerald-100: 217 231 200;
+  --c-emerald-200: 185 210 156;
+  --c-emerald-300: 148 184 108;
+  --c-emerald-400: 111 155 69;
+  --c-emerald-500: 86 128 47;
+  --c-emerald-600: 68 104 37;
+  --c-emerald-700: 54 82 30;
+  --c-emerald-800: 43 66 24;
+  --c-emerald-900: 34 53 19;
+  --c-earth-50: 247 240 232;
+  --c-earth-100: 230 214 199;
+  --c-earth-300: 181 142 109;
+  --c-earth-400: 140 106 76;
+  --c-earth-500: 107 74 50;
+  --c-earth-600: 90 61 40;
+  --c-earth-700: 71 47 31;
+  --c-sand-50: 255 252 240;
+  --c-sand-100: 253 248 230;
+  --c-sand-200: 246 240 218;
+  --c-sand-300: 231 222 191;
+  --c-white: 255 254 248;
+  --c-amber-50: 255 251 235;
+  --c-amber-100: 254 243 199;
+  --c-amber-200: 253 230 138;
+  --c-amber-300: 252 211 77;
+  --c-amber-400: 251 191 36;
+  --c-amber-500: 245 158 11;
+  --c-amber-600: 217 119 6;
+  --c-amber-700: 180 83 9;
+  --c-amber-800: 146 64 14;
+  --c-amber-900: 120 53 15;
+  --c-rose-50: 255 241 242;
+  --c-rose-100: 255 228 230;
+  --c-rose-200: 254 205 211;
+  --c-rose-300: 253 164 175;
+  --c-rose-400: 251 113 133;
+  --c-rose-500: 244 63 94;
+  --c-rose-600: 225 29 72;
+  --c-rose-700: 190 18 60;
+  --c-rose-800: 159 18 57;
+  --c-rose-900: 136 19 55;
+  --c-sky-50: 240 249 255;
+  --c-sky-100: 224 242 254;
+  --c-sky-200: 186 230 253;
+  --c-sky-300: 125 211 252;
+  --c-sky-400: 56 189 248;
+  --c-sky-500: 14 165 233;
+  --c-sky-600: 2 132 199;
+  --c-sky-700: 3 105 161;
+  --c-sky-800: 7 89 133;
+  --c-sky-900: 12 74 110;
+  --c-violet-50: 245 243 255;
+  --c-violet-100: 237 233 254;
+  --c-violet-200: 221 214 254;
+  --c-violet-300: 196 181 253;
+  --c-violet-400: 167 139 250;
+  --c-violet-500: 139 92 246;
+  --c-violet-600: 124 58 237;
+  --c-violet-700: 109 40 217;
+  --c-violet-800: 91 33 182;
+  --c-violet-900: 76 29 149;
+  color-scheme: light;
+}
+html.dark {
+  --c-zinc-50: 32 37 26;
+  --c-zinc-100: 42 47 33;
+  --c-zinc-200: 58 64 45;
+  --c-zinc-300: 78 85 61;
+  --c-zinc-400: 126 130 104;
+  --c-zinc-500: 163 160 135;
+  --c-zinc-600: 194 190 164;
+  --c-zinc-700: 215 210 184;
+  --c-zinc-800: 230 225 200;
+  --c-zinc-900: 242 237 214;
+  --c-zinc-950: 250 246 230;
+  --c-brand-50: 29 34 16;
+  --c-brand-100: 35 42 18;
+  --c-brand-200: 46 55 21;
+  --c-brand-300: 62 76 26;
+  --c-brand-400: 107 126 43;
+  --c-brand-500: 139 158 63;
+  --c-brand-600: 175 191 104;
+  --c-brand-700: 206 216 156;
+  --c-brand-800: 231 236 201;
+  --c-brand-900: 244 246 228;
+  --c-leaf-50: 47 48 21;
+  --c-leaf-100: 69 69 25;
+  --c-leaf-200: 104 102 35;
+  --c-leaf-300: 153 149 56;
+  --c-leaf-400: 215 208 104;
+  --c-leaf-500: 230 224 143;
+  --c-leaf-600: 243 240 194;
+  --c-leaf-700: 250 249 227;
+  --c-emerald-50: 28 36 18;
+  --c-emerald-100: 32 44 20;
+  --c-emerald-200: 41 58 24;
+  --c-emerald-300: 57 85 32;
+  --c-emerald-400: 86 128 47;
+  --c-emerald-500: 111 155 69;
+  --c-emerald-600: 148 184 108;
+  --c-emerald-700: 185 210 156;
+  --c-emerald-800: 217 231 200;
+  --c-emerald-900: 238 244 230;
+  --c-earth-50: 38 34 21;
+  --c-earth-100: 51 42 26;
+  --c-earth-300: 86 63 42;
+  --c-earth-400: 140 106 76;
+  --c-earth-500: 181 142 109;
+  --c-earth-600: 230 214 199;
+  --c-earth-700: 247 240 232;
+  --c-sand-50: 20 23 13;
+  --c-sand-100: 29 33 21;
+  --c-sand-200: 38 43 28;
+  --c-sand-300: 53 60 41;
+  --c-white: 25 29 17;
+  --c-amber-50: 52 36 16;
+  --c-amber-100: 73 43 16;
+  --c-amber-200: 110 59 13;
+  --c-amber-300: 169 96 9;
+  --c-amber-400: 245 158 11;
+  --c-amber-500: 251 191 36;
+  --c-amber-600: 252 211 77;
+  --c-amber-700: 253 230 138;
+  --c-amber-800: 254 243 199;
+  --c-amber-900: 255 251 235;
+  --c-rose-50: 56 26 28;
+  --c-rose-100: 79 25 33;
+  --c-rose-200: 116 23 41;
+  --c-rose-300: 175 29 58;
+  --c-rose-400: 244 63 94;
+  --c-rose-500: 251 113 133;
+  --c-rose-600: 253 164 175;
+  --c-rose-700: 254 205 211;
+  --c-rose-800: 255 228 230;
+  --c-rose-900: 255 241 242;
+  --c-sky-50: 21 42 43;
+  --c-sky-100: 18 53 63;
+  --c-sky-200: 13 71 96;
+  --c-sky-300: 8 106 154;
+  --c-sky-400: 14 165 233;
+  --c-sky-500: 56 189 248;
+  --c-sky-600: 125 211 252;
+  --c-sky-700: 186 230 253;
+  --c-sky-800: 224 242 254;
+  --c-sky-900: 240 249 255;
+  --c-violet-50: 39 29 54;
+  --c-violet-100: 51 31 83;
+  --c-violet-200: 71 35 127;
+  --c-violet-300: 99 51 182;
+  --c-violet-400: 139 92 246;
+  --c-violet-500: 167 139 250;
+  --c-violet-600: 196 181 253;
+  --c-violet-700: 221 214 254;
+  --c-violet-800: 237 233 254;
+  --c-violet-900: 245 243 255;
+  color-scheme: dark;
+}
+
 app-root { display: block; }
 
 html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
@@ -7,6 +198,13 @@ body {
     radial-gradient(1200px 600px at 100% -10%, rgba(196, 189, 69, 0.14), transparent 60%),
     radial-gradient(900px 500px at -10% 110%, rgba(75, 91, 29, 0.07), transparent 60%),
     #FBF6E4;
+  background-attachment: fixed;
+}
+html.dark body {
+  background:
+    radial-gradient(1200px 600px at 100% -10%, rgba(196, 189, 69, 0.07), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(139, 158, 63, 0.06), transparent 60%),
+    #11140B;
   background-attachment: fixed;
 }
 
@@ -45,13 +243,13 @@ input[type='checkbox'], input[type='radio'] { accent-color: #4B5B1D; width: 1rem
 
 .swal2-container.swal2-backdrop-show { background: rgba(29, 36, 9, 0.42) !important; backdrop-filter: blur(4px); }
 .swal2-popup {
-  font-family: inherit; border-radius: 24px !important; background: #FFFEF8; color: #2C3610;
+  font-family: inherit; border-radius: 24px !important; background: rgb(var(--c-white)); color: rgb(var(--c-zinc-900));
   padding: 2rem 1.75rem 1.75rem !important; width: min(28rem, calc(100vw - 2rem)) !important;
   box-shadow: 0 24px 64px -16px rgba(29, 36, 9, .40), 0 2px 8px rgba(29, 36, 9, .08);
-  border: 1px solid rgba(229, 222, 194, .7);
+  border: 1px solid rgb(var(--c-zinc-200) / .7);
 }
-.swal2-title { font-size: 1.3rem !important; font-weight: 900 !important; letter-spacing: -0.01em; color: #2C3610 !important; padding-top: .5rem !important; }
-.swal2-html-container { font-size: .925rem !important; color: #5B5741 !important; line-height: 1.6 !important; }
+.swal2-title { font-size: 1.3rem !important; font-weight: 900 !important; letter-spacing: -0.01em; color: rgb(var(--c-zinc-900)) !important; padding-top: .5rem !important; }
+.swal2-html-container { font-size: .925rem !important; color: rgb(var(--c-zinc-600)) !important; line-height: 1.6 !important; }
 .swal2-icon { transform: scale(.8); margin: .5rem auto 0 !important; }
 .swal2-actions { gap: .5rem; margin-top: 1.5rem !important; }
 .swal2-styled {
@@ -62,10 +260,10 @@ input[type='checkbox'], input[type='radio'] { accent-color: #4B5B1D; width: 1rem
 .swal2-styled:hover { transform: translateY(-1px); filter: brightness(1.08); box-shadow: 0 10px 22px -10px rgba(46, 56, 18, .45); background-image: none !important; }
 .swal2-styled:active { transform: scale(.97); }
 .swal2-styled:focus, .swal2-styled:focus-visible { box-shadow: 0 0 0 4px rgba(107, 126, 43, .25) !important; }
-.swal2-styled.swal2-cancel { background: #FFFEF8 !important; color: #403F2C !important; border: 1px solid #E5DEC2 !important; }
+.swal2-styled.swal2-cancel { background: rgb(var(--c-white)) !important; color: rgb(var(--c-zinc-700)) !important; border: 1px solid rgb(var(--c-zinc-200)) !important; }
 .swal2-select, .swal2-input, .swal2-textarea {
-  border-radius: 12px !important; border: 1px solid #E5DEC2 !important; background: #FFFEF8 !important; font-size: .9rem !important;
-  color: #2C3610; box-shadow: none !important; max-width: calc(100% - 2rem); padding: .6rem .9rem !important;
+  border-radius: 12px !important; border: 1px solid rgb(var(--c-zinc-200)) !important; background: rgb(var(--c-white)) !important; font-size: .9rem !important;
+  color: rgb(var(--c-zinc-900)); box-shadow: none !important; max-width: calc(100% - 2rem); padding: .6rem .9rem !important;
 }
 .swal2-select:focus, .swal2-input:focus { border-color: #6B7E2B !important; box-shadow: 0 0 0 4px rgba(107, 126, 43, .16) !important; outline: none; }
 .swal2-validation-message { background: #FFF1F2 !important; color: #BE123C !important; border-radius: 12px; margin: 1rem 1rem 0 !important; font-size: .85rem !important; }
@@ -143,4 +341,39 @@ body.swal2-toast-shown .swal2-container,
   .panel > main { max-width: none !important; padding: 0 !important; }
   .card { box-shadow: none !important; }
   * { animation: none !important; transition: none !important; }
+}
+
+/* ---------- Tablas ---------- */
+/* Acciones siempre a la vista: la columna queda fija a la derecha cuando la tabla se desplaza */
+@media (min-width: 768px) {
+  .tbl .col-acciones { position: sticky; right: 0; z-index: 1; background: rgb(var(--c-white)); box-shadow: -10px 0 12px -12px rgba(29, 36, 9, .25); }
+  .tbl thead .col-acciones { background: rgb(var(--c-sand-50)); }
+  .tbl tbody tr:hover .col-acciones { background: rgb(var(--c-brand-50)); }
+}
+/* En celular cada fila es una tarjeta: etiqueta a la izquierda (data-label) y valor a la derecha */
+@media (max-width: 767px) {
+  .tbl-tarjetas thead { display: none; }
+  .tbl-tarjetas, .tbl-tarjetas tbody { display: block; }
+  .tbl-tarjetas tbody tr { display: block; margin: .75rem; padding: .35rem .9rem; border: 1px solid rgb(var(--c-zinc-200) / .7); border-radius: 16px; background: rgb(var(--c-white)); }
+  .tbl-tarjetas tbody tr:hover { background: rgb(var(--c-white)) !important; }
+  /* Rejilla: la etiqueta ocupa la columna 1 (todas las filas) y cada dato se apila en la columna 2 */
+  .tbl-tarjetas td[data-label] { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 1rem; justify-items: end; align-items: start;
+                                 padding: .55rem 0; text-align: right; white-space: normal; border-top: 1px dashed rgb(var(--c-zinc-100)); }
+  .tbl-tarjetas td[data-label]:first-child { border-top: 0; }
+  .tbl-tarjetas td[data-label] > * { min-width: 0; }
+  .tbl-tarjetas td[data-label]::before { content: attr(data-label); grid-column: 1; grid-row: 1 / span 12; justify-self: start; padding-top: 2px; text-align: left;
+                                         font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: rgb(var(--c-zinc-400)); }
+  .tbl-tarjetas td[data-label=""] { grid-template-columns: minmax(0, 1fr); }
+  .tbl-tarjetas td[data-label=""]::before { display: none; }
+  .tbl-tarjetas td[colspan] { display: block; }
+  .tbl-tarjetas tbody tr:has(> td[colspan]) { border: 0; margin: 0; padding: 0; }
+}
+/* Registro recién guardado: se resalta un momento */
+.fila-nueva { animation: kampu-nueva 3.2s ease-out; }
+@keyframes kampu-nueva {
+  0%, 35% { background-color: rgb(var(--c-leaf-100)); box-shadow: inset 4px 0 0 rgb(var(--c-leaf-400)); }
+  100% { background-color: transparent; box-shadow: inset 4px 0 0 transparent; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }

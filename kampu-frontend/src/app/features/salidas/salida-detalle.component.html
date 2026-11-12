@@ -1,7 +1,5 @@
 @if (salida(); as s) {
-  <a routerLink="/salidas" class="no-print group inline-flex items-center gap-1.5 rounded-lg px-2 py-1 -ml-2 text-sm font-medium text-zinc-500 hover:bg-white hover:text-zinc-900 hover:shadow-soft transition-all mb-4">
-    <app-icon name="arrow-left" size="w-4 h-4 transition-transform group-hover:-translate-x-0.5" /> Salidas
-  </a>
+  <app-migas [items]="[{ texto: 'Salidas', ruta: '/salidas' }, { texto: (paquete()?.nombre ?? 'Salida') + ' · ' + (s.fechaInicio | date:'dd/MM/yyyy') }]" />
 
   <!-- Cabecera -->
   <div class="no-print card p-5 sm:p-6 mb-6 animate-fade-up">
@@ -171,7 +169,7 @@
     <!-- Columna derecha -->
     <aside class="space-y-6 no-print lg:sticky lg:top-8 min-w-0">
       <section class="card overflow-hidden">
-        <div class="bg-gradient-to-br from-zinc-800 to-zinc-950 px-6 py-5 text-white">
+        <div class="tema-claro bg-gradient-to-br from-zinc-800 to-zinc-950 px-6 py-5 text-white">
           <div class="text-[11px] font-extrabold uppercase tracking-[0.14em] text-leaf-300">Lista para salir</div>
           <div class="mt-1 flex items-baseline gap-2">
             <span class="text-3xl font-black">{{ listos() }}</span><span class="text-zinc-300 font-semibold">de {{ pasos().length }} puntos</span>

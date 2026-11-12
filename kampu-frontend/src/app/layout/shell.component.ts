@@ -3,6 +3,7 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
 import { AuthService } from '../core/services/auth.service';
 import { TourStore } from '../core/services/tour-store.service';
 import { AlertService } from '../core/services/alert.service';
+import { PreferenciasService } from '../core/services/preferencias.service';
 import { IconComponent } from '../shared/icon.component';
 import { LogoComponent } from '../shared/logo.component';
 import { etiqueta } from '../core/utils/etiquetas';
@@ -17,6 +18,7 @@ import { Permiso } from '../core/models';
 })
 export class ShellComponent {
   auth = inject(AuthService);
+  pref = inject(PreferenciasService);
   private store = inject(TourStore);
   private router = inject(Router);
   private alerts = inject(AlertService);

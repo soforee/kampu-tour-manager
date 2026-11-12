@@ -31,4 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
-images/
+# Imágenes subidas desde la app (no se versionan); images/demo/ son las fotos de los datos de demostración
+images/*
+!images/demo/

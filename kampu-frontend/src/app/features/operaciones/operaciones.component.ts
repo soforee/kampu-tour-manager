@@ -9,10 +9,11 @@ import { TourStore } from '../../core/services/tour-store.service';
 import { AlertService } from '../../core/services/alert.service';
 import { BadgeComponent } from '../../shared/badge.component';
 import { IconComponent } from '../../shared/icon.component';
+import { EsqueletoComponent } from '../../shared/esqueleto.component';
 import { ModalComponent } from '../../shared/modal.component';
 import { filtrarEscritura, filtrarPegado, sinRueda } from '../../core/utils/filtro';
 import { FormValidacion, V } from '../../core/utils/validacion';
-import { etiqueta } from '../../core/utils/etiquetas';
+import { etiqueta, iconoLugar } from '../../core/utils/etiquetas';
 import { hoy } from '../../core/utils/date.util';
 
 type Grupo = '' | 'PENDIENTES' | 'EN_CURSO' | 'CERRADAS';
@@ -28,7 +29,7 @@ const EN_CURSO: EstadoOperacion[] = ['ASIGNADO', 'EMBARQUE', 'EN_RUTA'];
 @Component({
   selector: 'app-operaciones',
   standalone: true,
-  imports: [FormsModule, DatePipe, RouterLink, BadgeComponent, IconComponent, ModalComponent],
+  imports: [FormsModule, DatePipe, RouterLink, BadgeComponent, IconComponent, ModalComponent, EsqueletoComponent],
   templateUrl: './operaciones.component.html'
 })
 export class OperacionesComponent {
@@ -37,6 +38,7 @@ export class OperacionesComponent {
   // GESTIONAR_OPERACIONES: Admin y Operador. Ventas solo consulta el tráfico (VER_OPERACIONES)
   gestiona = inject(AuthService).puede('GESTIONAR_OPERACIONES');
   etiqueta = etiqueta;
+  iconoLugar = iconoLugar;
 
   grupos: { valor: Grupo; texto: string }[] = [
     { valor: '', texto: 'Todas' }, { valor: 'PENDIENTES', texto: 'Por asignar' },
@@ -263,7 +265,9 @@ export class OperacionesComponent {
     if (this.store.ocupado()) return;
     this.store.ocupado.set(true);
     peticion.subscribe({
-      next: () => {
+      next: (r) => {
+        const op = r as { operacionId?: number } | null;
+        if (op?.operacionId) this.store.resaltar('operacion-' + op.operacionId);
         this.store.ocupado.set(false);
         this.store.cargarOperaciones();
         this.store.cargarSalidas();

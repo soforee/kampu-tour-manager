@@ -1,7 +1,7 @@
 <span class="inline-flex" [class]="variante === 'vertical' ? 'flex-col items-center gap-2' : 'items-center gap-2.5'">
   <svg viewBox="0 0 126 100" [style.height.px]="alto" [style.width.px]="alto * 1.26" aria-label="KAMPU" role="img" class="shrink-0">
-    <path [attr.fill]="marca" d="M4 0 H31 Q35 0 35 4 V32 Q35 36.5 38.5 33.2 L67 6 Q73 0.6 80 0.6 H109 Q114 1 110.5 4.5 L74 39.5 Q71 42.5 74 45.5 L124.5 94 Q126.5 97.8 121.5 100 H62 Q51 100 49.5 94 Q48.5 89 53 85 Q63 77 65.5 71 Q67.5 65 60 58.5 Q49 50.5 30 46 Q14 42.8 0 42.6 V4 Q0 0 4 0 Z" />
-    <path [attr.fill]="marca" d="M0 45 Q16 46.5 30 50.5 Q42 54 47 59 Q50.5 63 46.5 67.5 Q41 72.5 30 77.5 Q18 82.5 11 90.5 Q6 97 3.5 98.5 Q0 99.5 0 94 Z" />
+    <path [style.fill]="marca" d="M4 0 H31 Q35 0 35 4 V32 Q35 36.5 38.5 33.2 L67 6 Q73 0.6 80 0.6 H109 Q114 1 110.5 4.5 L74 39.5 Q71 42.5 74 45.5 L124.5 94 Q126.5 97.8 121.5 100 H62 Q51 100 49.5 94 Q48.5 89 53 85 Q63 77 65.5 71 Q67.5 65 60 58.5 Q49 50.5 30 46 Q14 42.8 0 42.6 V4 Q0 0 4 0 Z" />
+    <path [style.fill]="marca" d="M0 45 Q16 46.5 30 50.5 Q42 54 47 59 Q50.5 63 46.5 67.5 Q41 72.5 30 77.5 Q18 82.5 11 90.5 Q6 97 3.5 98.5 Q0 99.5 0 94 Z" />
   </svg>
   @if (variante !== 'isotipo') {
     <span class="font-wordmark relative inline-block whitespace-nowrap" [style.font-size.px]="alto * 0.95" [style.color]="texto">Kampu<svg

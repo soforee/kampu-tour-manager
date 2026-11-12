@@ -10,13 +10,14 @@ import { EstadoTransaccion, Moneda } from '../../core/models';
 import { aPEN, TASAS } from '../../core/utils/moneda';
 import { BadgeComponent } from '../../shared/badge.component';
 import { IconComponent } from '../../shared/icon.component';
+import { MigasComponent } from '../../shared/migas.component';
 import { filtrarEscritura, filtrarPegado, sinRueda } from '../../core/utils/filtro';
 import { FormValidacion, V } from '../../core/utils/validacion';
 
 @Component({
   selector: 'app-reserva-detalle',
   standalone: true,
-  imports: [FormsModule, RouterLink, CurrencyPipe, DatePipe, BadgeComponent, IconComponent],
+  imports: [FormsModule, RouterLink, CurrencyPipe, DatePipe, BadgeComponent, IconComponent, MigasComponent],
   templateUrl: './reserva-detalle.component.html'
 })
 export class ReservaDetalleComponent {

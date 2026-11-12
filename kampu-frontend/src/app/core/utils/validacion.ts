@@ -149,6 +149,13 @@ export class FormValidacion {
     return true;
   }
 
+  // Valida solo algunos campos (un paso de un asistente): los marca como tocados para mostrar sus errores
+  validos(campos: string[]): boolean {
+    const errores = this.reglas();
+    campos.forEach(c => this.tocar(c));
+    return campos.every(c => !errores[c]);
+  }
+
   reiniciar() {
     this.tocados = {};
     this.intentado = false;

@@ -8,6 +8,7 @@ import { TourStore } from '../../core/services/tour-store.service';
 import { cuando, diasHasta } from '../../core/utils/date.util';
 import { BadgeComponent } from '../../shared/badge.component';
 import { IconComponent } from '../../shared/icon.component';
+import { MigasComponent } from '../../shared/migas.component';
 import { LogoComponent } from '../../shared/logo.component';
 
 interface Paso { ok: boolean; titulo: string; detalle: string; }
@@ -17,7 +18,7 @@ interface Paso { ok: boolean; titulo: string; detalle: string; }
 @Component({
   selector: 'app-salida-detalle',
   standalone: true,
-  imports: [RouterLink, DatePipe, CurrencyPipe, BadgeComponent, IconComponent, LogoComponent],
+  imports: [RouterLink, DatePipe, CurrencyPipe, BadgeComponent, IconComponent, LogoComponent, MigasComponent],
   templateUrl: './salida-detalle.component.html',
   styleUrl: './salida-detalle.component.css'
 })
