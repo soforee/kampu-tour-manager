@@ -148,10 +148,10 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({DataAccessException.class, PersistenceException.class, TransactionSystemException.class})
-    public ResponseEntity<ErrorDTO> baseDeDatos(Exception e) {
+    public ResponseEntity<ErrorDTO> baseDeDatos(Exception e, jakarta.servlet.http.HttpServletRequest req) {
         String mensaje = ErroresOracle.mensaje(e);
         if (mensaje != null) return responder(HttpStatus.BAD_REQUEST, mensaje);
-        return general(e);
+        return general(e, req);
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
@@ -165,10 +165,11 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorDTO> general(Exception e) {
+    public ResponseEntity<ErrorDTO> general(Exception e, jakarta.servlet.http.HttpServletRequest req) {
         String mensajeOracle = ErroresOracle.mensaje(e);
         if (mensajeOracle != null) return responder(HttpStatus.BAD_REQUEST, mensajeOracle);
-        System.err.println("Error no controlado: " + e.getMessage());
+        // La petición que falló ayuda a ubicar el problema (el detalle técnico no se envía al navegador)
+        System.err.println("Error no controlado en " + req.getMethod() + " " + req.getRequestURI() + ": " + e.getMessage());
         e.printStackTrace();
         return responder(HttpStatus.INTERNAL_SERVER_ERROR, "Ocurrió un error inesperado en el servidor.");
     }
